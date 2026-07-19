@@ -1,0 +1,25 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "oncuidar-v1",
+          "appId": "1:335519445973:android:bd51d48b3ad3a35c37835c",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "oncuidar-v1",
+          "configurations": {
+            "android": "1:335519445973:android:bd51d48b3ad3a35c37835c",
+            "ios": "1:335519445973:ios:8a70a679e2e3a5cf37835c"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

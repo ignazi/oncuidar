@@ -1,0 +1,24 @@
+[
+  {
+    "title": "Cómo medir la fiebre",
+    "category": "Videos",
+    "topic": "Fiebre",
+    "body": "Video educativo paso a paso sobre cómo medir la fiebre en un niño con cáncer usando un termómetro digital.",
+    "fileUrl": "https://firebasestorage.googleapis.com/v0/b/oncuidar-v1.firebasestorage.app/o/videos%2Fmanejo-de-la-fiebre-infantil_simPl0Y2.mp4?alt=media&token=ed807ed4-a9b1-45db-b989-d91320e62ac2",
+    "fileType": "video"
+  },
+  {
+    "title": "Manual de Control de Síntomas",
+    "category": "Guías",
+    "topic": "Cuidados Paliativos",
+    "body": "Guía práctica para el manejo de síntomas en cuidados paliativos oncológicos. Incluye manejo del dolor, náuseas, dificultad respiratoria y cuidados generales.",
+    "fileUrl": "https://firebasestorage.googleapis.com/v0/b/oncuidar-v1.firebasestorage.app/o/Guias%2Fmanual-control-de-sintomas-cuidados-paliativos-cancer-infantil.pdf?alt=media&token=1a58b622-749a-4567-ab22-16816bee064d",
+    "fileType": "pdf"
+  },
+  {
+    "title": "Preparación para consulta oncológica",
+    "category": "Checklist",
+    "topic": "Consulta médica",
+    "body": "- Traer Carnet del ISAPRE/FONASA\n- Traer último informe médico y resultados de exámenes\n- Anotar preguntas para el médico antes de ir\n- Llevar lista de medicamentos actuales con dosis\n- Ir acompañado de alguien de confianza\n- Traer cuaderno de seguimiento de síntomas\n- Anotar cambios desde la última consulta\n- Preparar dudas sobre efectos secundarios"
+  }
+]

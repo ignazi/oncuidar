@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ══════════════════════════════════════
+    // USUARIOS — Cada uno solo ve sus datos
+    // ══════════════════════════════════════
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Conversaciones de orientación
+      match /chats/{chatId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Pacientes del cuidador
+      match /patients/{patientId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+
+        // Registros diarios del paciente
+        match /dailyRecords/{recordId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+
+        // Recordatorios del paciente
+        match /reminders/{reminderId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+
+        // Checklists creados por el cuidador
+        match /userChecklists/{checklistId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+      }
+    }
+
+    // ══════════════════════════════════════
+    // CONTENIDO COMPARTIDO — Lectura para autenticados
+    // ══════════════════════════════════════
+
+    // Reglas de orientación (solo admin escribe)
+    match /orientationRules/{ruleId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Contenido educativo (solo admin escribe)
+    match /educationalContent/{articleId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Preguntas frecuentes (solo admin escribe)
+    match /faqs/{faqId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}

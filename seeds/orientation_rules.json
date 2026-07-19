@@ -1,0 +1,177 @@
+[
+  {
+    "category": "fiebre",
+    "subQuestion": "¿Qué hago si tiene fiebre?",
+    "answer": "Si la temperatura es igual o mayor a 38 °C, registra la hora y la temperatura. Mantén al niño hidratado (ofrece agua o suero oral cada 10-15 minutos), vístelo con ropa ligera y evita abrigarlo en exceso. Observa otros síntomas como decaimiento, dolor o dificultad para respirar. Consulta de inmediato si la fiebre supera 38.5 °C, no cede en 1 hora, el niño está muy decaído, tiene dificultad para respirar o presenta sangrado inusual. Ante la duda, contacta siempre al equipo de salud.",
+    "alertLevel": "yellow",
+    "tags": ["fiebre", "temperatura", "38", "calor", "hipertermia"]
+  },
+  {
+    "category": "fiebre",
+    "subQuestion": "¿Cuándo la fiebre es una emergencia?",
+    "answer": "La fiebre es una emergencia cuando: supera los 38.5 °C y no baja con antipiréticos indicados, se acompaña de decaimiento marcado (el niño no responde, está muy somnoliento o confuso), hay dificultad para respirar, sangrado inusual (moretones, sangrado de encías, sangre en deposiciones), convulsiones, o si el niño rechaza completamente los líquidos y no puede orinar. En cualquiera de estos casos, acude de urgencia al hospital de referencia de tu centro PINDA.",
+    "alertLevel": "red",
+    "tags": ["fiebre", "emergencia", "urgencia", "38.5", "convulsiones", "sangrado"]
+  },
+  {
+    "category": "gastrointestinal",
+    "subQuestion": "¿Qué hago si vomita?",
+    "answer": "Mantén la calma. Ofrece pequeños sorbos de agua o suero oral cada 10-15 minutos. No le des líquidos en gran cantidad de una sola vez. Evita alimentos sólidos por al menos 2 horas después del último vómito. Si tolera los líquidos, puedes reintroducir alimentos suaves (caldo, puré, gelatina) de a poco. Consulta de inmediato si el vómito es persistente (más de 4-6 episodios en 12 horas), tiene sangre o bilis (color verde/amarillo intenso), el niño no puede retener líquidos, presenta signos de deshidratación (boca seca, llanto sin lágrimas, orina escasa) o está muy decaído.",
+    "alertLevel": "yellow",
+    "tags": ["vómito", "vomitar", "náuseas", "gastrointestinal", "deshidratación", "suero"]
+  },
+  {
+    "category": "gastrointestinal",
+    "subQuestion": "¿Qué hago si tiene diarrea?",
+    "answer": "Lo más importante es mantenerlo hidratado. Ofrece suero oral después de cada deposición (50-100 ml si es niño pequeño, 100-200 ml si es más grande). Evita lácteos, jugos azucarados y comidas grasosas. Ofrece comidas suaves como arroz, plátano, manzana rallada, pan tostado o pollo hervido (dieta BRAT modificada). Consulta si la diarrea es muy frecuente (más de 6-8 deposiciones al día), tiene sangre o mucosidad, se acompaña de vómitos persistentes, fiebre alta o signos de deshidratación (boca seca, ojos hundidos, poca orina, piel seca).",
+    "alertLevel": "yellow",
+    "tags": ["diarrea", "deposiciones", "deshidratación", "suero oral", "gastrointestinal"]
+  },
+  {
+    "category": "dolor",
+    "subQuestion": "¿Qué hago si tiene dolor?",
+    "answer": "Registra dónde tiene el dolor, desde cuándo comenzó y qué intensidad tiene (usa una escala del 0 al 10, donde 0 es sin dolor y 10 es el peor dolor imaginable). Mantén al niño cómodo y en reposo. No administres medicamentos sin indicación médica previa. Aplica compresas frías o calor local según el tipo de dolor si el equipo médico lo ha indicado. Consulta si el dolor aumenta de intensidad, no cede con los analgésicos indicados, o se acompaña de fiebre, decaimiento, dificultad para respirar, o cualquier síntoma nuevo. El dolor no controlado afecta la calidad de vida del niño y debe ser evaluado por el equipo tratante (Lewandowska, 2022).",
+    "alertLevel": "yellow",
+    "tags": ["dolor", "analgesia", "cómodo", "intensidad", "escala"]
+  },
+  {
+    "category": "dolor",
+    "subQuestion": "¿Qué hago si tiene dolor de cabeza persistente?",
+    "answer": "Observa si el dolor viene acompañado de fiebre, náuseas, visión borrosa, sensibilidad a la luz o rigidez en el cuello. Asegura que descanse en un ambiente tranquilo y oscuro. Consulta al equipo médico si el dolor de cabeza es persistente, empeora progresivamente, o se acompaña de vómitos en proyectil, cambios en la visión o somnolencia excesiva, ya que podrían ser signos de complicaciones neurológicas que requieren evaluación urgente.",
+    "alertLevel": "yellow",
+    "tags": ["dolor de cabeza", "cefalea", "neurológico", "visión"]
+  },
+  {
+    "category": "decaimiento",
+    "subQuestion": "¿Qué hago si está muy decaído?",
+    "answer": "Observa si responde normalmente cuando le hablas, si puede beber líquidos y si presenta fiebre, palidez, sueño excesivo o dificultad para respirar. Si el decaimiento es marcado, aparece de forma repentina o te preocupa su estado general, contacta al equipo de salud o acude a urgencia. El decaimiento puede ser señal de infección, deshidratación o progresión de la enfermedad de base. No lo dejes solo y mantén un registro de su nivel de conciencia cada 2 horas (Nair et al., 2017).",
+    "alertLevel": "red",
+    "tags": ["decaimiento", "somnoliento", "letargo", "sin energía", "fatiga"]
+  },
+  {
+    "category": "decaimiento",
+    "subQuestion": "¿Qué hago si está muy cansado o fatigado?",
+    "answer": "La fatiga es común durante el tratamiento oncológico. Permítele descansar cuando lo necesite, pero incentívalo a realizar actividades livianas como caminatas cortas o juegos sedentarios si se siente con energía. Asegura una buena hidratación y alimentación fraccionada (comer poco y seguido). Consulta si la fatiga es tan intensa que no puede levantarse de la cama, se acompaña de palidez extrema, dificultad para respirar o mareos, ya que podría ser señal de anemia o infección que requiere evaluación médica.",
+    "alertLevel": "yellow",
+    "tags": ["fatiga", "cansancio", "sin energía", "reposo", "anemia"]
+  },
+  {
+    "category": "alimentacion",
+    "subQuestion": "¿Qué hago si no quiere comer?",
+    "answer": "Ofrece alimentos suaves y de fácil masticación en pequeñas cantidades varias veces al día (comer poco y seguido). Prioriza siempre la hidratación. No lo fuerces a comer, ya que puede generar rechazo. Prueba con comidas frías o temperatura ambiente (los olores son menos intensos), batidos nutritivos, purés, caldos, gelatinas o papillas. Consulta si no tolera líquidos, baja mucho la ingesta (menos del 50% de lo habitual por más de 2 días), pierde peso significativamente o la falta de apetito se acompaña de dolor, náuseas o vómitos persistentes. Un equipo de nutricionista oncológica pediátrica puede ayudar a manejar estos síntomas (Lewandowska, 2022).",
+    "alertLevel": "yellow",
+    "tags": ["comer", "apetito", "alimentación", "nutrición", "comidas", "peso"]
+  },
+  {
+    "category": "alimentacion",
+    "subQuestion": "¿Qué alimentos son recomendables durante el tratamiento?",
+    "answer": "Durante el tratamiento oncológico se recomienda una dieta equilibrada rica en proteínas magras (pollo, pescado, huevo), carbohidratos complejos (arroz, avena, quinoa), frutas y verduras bien lavadas (preferiblemente cocidas para evitar infecciones). Evita los alimentos crudos (sushi, ceviche, carnes poco cocidas), lácteos no pasteurizados, y frutas con cáscara que no se puedan lavar bien. Fracciona las comidas en porciones pequeñas cada 2-3 horas. Si hay mucositis o llagas en la boca, ofrece alimentos fríos o tibios (no calientes), suaves y fáciles de tragar como purés, batidos, helados de fruta natural, gelatinas y caldos. Consulta con el equipo de nutrición del hospital PINDA para un plan personalizado.",
+    "alertLevel": "green",
+    "tags": ["comida", "dieta", "recomendaciones", "nutrición", "alimentación saludable"]
+  },
+  {
+    "category": "infeccion",
+    "subQuestion": "¿Qué signos de infección debo vigilar?",
+    "answer": "Durante el tratamiento oncológico, el riesgo de infecciones es mayor. Vigila: fiebre (temperatura ≥ 38 °C), escalofríos o tiritona, enrojecimiento o pus en heridas o zona del catéter, tos persistente, dolor al orinar, diarrea con sangre, ganglios inflamados, o cualquier signo de malestar general. Si tu hijo está en tratamiento de quimioterapia y presenta fiebre ≥ 38 °C, DEBES consultar de inmediato, incluso si es de madrugada. No esperes a que pase. La neutropenia febril es una emergencia médica que requiere atención hospitalaria urgente.",
+    "alertLevel": "red",
+    "tags": ["infección", "fiebre", "neutropenia", "quimioterapia", "catéter", "emergencia"]
+  },
+  {
+    "category": "infeccion",
+    "subQuestion": "¿Cómo prevenir infecciones en casa?",
+    "answer": "Lávate las manos frecuentemente con agua y jabón, especialmente antes de tocar al niño y después de ir al baño o cambiar pañales. Mantén las superficies limpias y ventiladas. Evita visitas de personas resfriadas o con enfermedades contagiosas. Limita las salidas a lugares con mucha concentración de personas. Asegúrate de que las frutas y verduras estén bien lavadas o cocidas. Cepilla los dientes del niño con un cepillo suave después de cada comida para prevenir infecciones bucales. Si tiene catéter, revisa diariamente que esté limpio, seco y sin signos de infección (enrojecimiento, hinchazón, dolor o secreción). Consulta al equipo de salud ante cualquier duda sobre el cuidado del catéter.",
+    "alertLevel": "green",
+    "tags": ["prevención", "higiene", "infección", "catéter", "manos", "limpieza"]
+  },
+  {
+    "category": "medicamentos",
+    "subQuestion": "¿Cómo administrar los medicamentos correctamente?",
+    "answer": "Sigue estrictamente los horarios y dosis indicados por el equipo médico. No modifiques ni suspendas los medicamentos sin consultar. Usa recordatorios (alarma en el celular, calendario) para no olvidar las dosis. Lleva un registro escrito de cada dosis administrada, incluyendo la fecha, hora y cualquier reacción observada. Si el niño vomita después de tomar un medicamento, consulta al equipo de salud antes de repetir la dosis. Mantén todos los medicamentos fuera del alcance de los niños y en un lugar fresco y seco. Revisa las fechas de vencimiento periódicamente.",
+    "alertLevel": "green",
+    "tags": ["medicamentos", "dosis", "horarios", "administración", "recordatorio"]
+  },
+  {
+    "category": "medicamentos",
+    "subQuestion": "¿Qué hago si olvidé darle una dosis?",
+    "answer": "Si olvidaste una dosis, adminístrala apenas te des cuenta, a menos que esté muy cerca de la siguiente dosis programada. En ese caso, salta la dosis olvidada y continúa con el horario regular. Nunca dupliques la dosis para compensar la olvidada. Si tienes dudas, contacta al equipo de salud o al farmacéutico del hospital. Llevar un registro de dosis ayuda a evitar estos olvidos.",
+    "alertLevel": "green",
+    "tags": ["medicamentos", "dosis olvidada", "horarios"]
+  },
+  {
+    "category": "emergencia",
+    "subQuestion": "¿Cuándo debo consultar de urgencia?",
+    "answer": "Consulta de URGENCIA de inmediato si observas: fiebre ≥ 38 °C en un niño en quimioterapia, dificultad para respirar (respiración rápida, quejido, se le hunden las costillas), sangrado inusual (moretones sin golpe, sangrado de encías, sangre en deposiciones u orina, vómito con sangre), decaimiento marcado (no responde, muy somnoliento, confuso), convulsiones, dolor intenso que no cede, vómitos o diarrea persistentes con signos de deshidratación (boca seca, ojos hundidos, sin lágrimas, orina escasa), o cualquier signo que te genere preocupación como cuidador. Confía en tu intuición: nadie conoce mejor al niño que tú (Nair et al., 2017). Ante la duda, llama siempre al equipo de salud o acude al servicio de urgencia del hospital PINDA de referencia.",
+    "alertLevel": "red",
+    "tags": ["urgencia", "emergencia", "consultar", "hospital", "PINDA", "signos de alarma"]
+  },
+  {
+    "category": "emergencia",
+    "subQuestion": "¿Qué datos debo tener a mano para una urgencia?",
+    "answer": "Ten siempre disponible: nombre completo del niño y su diagnóstico, nombre y teléfono del oncólogo tratante, hospital PINDA de referencia, dirección y teléfono del servicio de urgencia más cercano, lista de medicamentos actuales con dosis, peso actual del niño, alergias conocidas, carnet de salud y documento de identidad. Guarda estos datos en una tarjeta o en tu celular para llevarlos siempre contigo. También ten a mano el número de contacto del equipo de salud para consultas telefónicas rápidas (Programa PINDA, Ministerio de Salud de Chile, 2021).",
+    "alertLevel": "green",
+    "tags": ["emergencia", "urgencia", "datos", "contactos", "PINDA", "preparación"]
+  },
+  {
+    "category": "emocional",
+    "subQuestion": "¿Cómo apoyar emocionalmente a mi hijo durante el tratamiento?",
+    "answer": "Mantén una comunicación abierta y honesta, adaptada a su edad. Explícale los procedimientos con palabras simples antes de que ocurran. Permítele expresar sus miedos y emociones sin juzgarlo. Crea rutinas predecibles que le den seguridad. Incentiva el juego y actividades que disfrute, adaptadas a su energía. Busca apoyo para ti también: los cuidadores también necesitan contención emocional. Según Lewandowska (2022), las necesidades psicosociales de los padres incluyen apoyo emocional, información clara sobre la enfermedad y participación activa en el cuidado. No dudes en solicitar apoyo psicológico en el centro de salud, tanto para tu hijo como para ti y tu familia.",
+    "alertLevel": "green",
+    "tags": ["emocional", "apoyo", "psicológico", "comunicación", "familia", "cuidadores"]
+  },
+  {
+    "category": "emocional",
+    "subQuestion": "¿Dónde puedo encontrar apoyo como cuidador?",
+    "answer": "Ser cuidador de un niño con cáncer es una tarea exigente. Busca apoyo en: el equipo psicosocial del hospital (psicólogos, trabajadores sociales, enfermeras educadoras), grupos de apoyo para padres de niños con cáncer (como los que organiza la Fundación Nuestros Hijos), familiares y amigos que puedan ayudarte con tareas concretas (cuidar a otros hijos, preparar comidas, acompañar al hospital). No descuides tu propia salud: duerme lo suficiente, come bien y acepta ayuda cuando te la ofrezcan. Un cuidador agotado no puede cuidar bien. La literatura muestra que el apoyo social es un factor protector clave para los cuidadores de niños con cáncer (Lewandowska, 2022; Nair et al., 2017).",
+    "alertLevel": "green",
+    "tags": ["apoyo", "cuidador", "cuidadores", "fnh", "contención", "familiar"]
+  },
+  {
+    "category": "cuidados_generales",
+    "subQuestion": "¿Qué cuidados debo tener con el catéter o puerto?",
+    "answer": "Mantén el apósito limpio y seco. No mojes el catéter al bañarse (usa un protector impermeable). Revisa diariamente si hay enrojecimiento, hinchazón, dolor, calor o secreción en el sitio de inserción. Si notas cualquiera de estos signos, informa al equipo de salud de inmediato. Asegúrate de que el catéter esté fijado correctamente para evitar tirones. No manipules ni intentes destapar el catéter por tu cuenta. Sigue las instrucciones de tu enfermera sobre el cuidado específico del tipo de catéter que tiene tu hijo.",
+    "alertLevel": "yellow",
+    "tags": ["catéter", "puerto", "cuidados", "infección", "enfermería"]
+  },
+  {
+    "category": "cuidados_generales",
+    "subQuestion": "¿Qué hago si sale sangre por la boca o la nariz?",
+    "answer": "Mantén la calma. Si sangra por la nariz, sienta al niño con la cabeza ligeramente inclinada hacia adelante (no hacia atrás) y presiona suavemente la nariz durante 10 minutos. Si sangra por la boca, haz que enjuague con agua fría (no trague). Revisa si hay moretones nuevos sin causa aparente. Consulta de inmediato si el sangrado no se detiene después de 10-15 minutos de presión, es abundante, o si hay sangrado en deposiciones (heces negras o con sangre) o en la orina. Durante el tratamiento oncológico, cualquier sangrado inusual debe ser evaluado por el equipo médico.",
+    "alertLevel": "red",
+    "tags": ["sangrado", "moretones", "plaquetas", "encías", "nariz", "hemorragia"]
+  },
+  {
+    "category": "cuidados_generales",
+    "subQuestion": "¿Qué hago si tiene llagas en la boca (mucositis)?",
+    "answer": "La mucositis es un efecto secundario común de algunos tratamientos. Ofrece comidas frías o tibias (no calientes), suaves y fáciles de tragar: purés, batidos, helados de fruta natural, gelatinas, caldos tibios. Evita comidas ácidas, picantes, crocantes o muy saladas. Cepilla los dientes con un cepillo de cerdas muy suaves después de cada comida. Usa enjuagues con suero fisiológico o bicarbonato diluido según indicación médica. Consulta si el dolor es tan intenso que el niño no puede comer ni beber, o si aparecen ampollas o placas blancas que podrían ser infección por hongos.",
+    "alertLevel": "yellow",
+    "tags": ["mucositis", "llagas", "boca", "dolor oral", "comer", "cepillado"]
+  },
+  {
+    "category": "informacion_general",
+    "subQuestion": "¿Qué es el Programa PINDA?",
+    "answer": "El Programa Nacional de Cáncer Infantil (PINDA) del Ministerio de Salud de Chile es el programa gubernamental que garantiza el diagnóstico, tratamiento y seguimiento integral de todos los niños y adolescentes con cáncer en el país, sin importar su previsión de salud. PINDA coordina una red de hospitales públicos con unidades de oncología pediátrica, equipos multidisciplinarios (médicos, enfermeras, psicólogos, trabajadores sociales) y protocolos de tratamiento estandarizados. El programa asegura que ningún niño quede sin tratamiento por razones económicas (Ministerio de Salud de Chile, 2021).",
+    "alertLevel": "green",
+    "tags": ["PINDA", "programa", "ministerio de salud", "chile", "gobierno", "cobertura"]
+  },
+  {
+    "category": "informacion_general",
+    "subQuestion": "¿Dónde puedo encontrar información confiable sobre el cáncer infantil?",
+    "answer": "Puedes encontrar información confiable en: el equipo de salud de tu hospital PINDA (médico tratante, enfermera educadora, psicóloga), el sitio web de la Fundación Nuestros Hijos (fnh.cl), que ofrece guías y recursos para cuidadores, el sitio del Ministerio de Salud de Chile (diprece.minsal.cl/programas-de-salud/cancer/cancer-infantil/), los materiales educativos entregados por tu centro de salud, y esta misma aplicación Oncuidar. Desconfía de información en redes sociales o sitios no verificados. Siempre consulta con el equipo médico si tienes dudas sobre lo que leíste. Estudios recientes muestran que los chatbots y aplicaciones pueden ser herramientas complementarias útiles, pero no reemplazan la comunicación con el equipo de salud (Arnis et al., 2024; Lau et al., 2025).",
+    "alertLevel": "green",
+    "tags": ["información", "recursos", "confiable", "fnh", "PINDA", "internet"]
+  },
+  {
+    "category": "informacion_general",
+    "subQuestion": "¿Puedo usar inteligencia artificial o chatbots para consultar sobre el cuidado de mi hijo?",
+    "answer": "Los chatbots y asistentes como el de esta aplicación pueden ser herramientas de apoyo para resolver dudas frecuentes y recordar pautas de cuidado, pero NUNCA reemplazan la opinión de un profesional de la salud. Si tienes una duda sobre la condición específica de tu hijo, siempre debes contactar a su equipo tratante. Estudios internacionales recientes muestran que los padres aceptan y valoran el uso de chatbots como complemento en el manejo de enfermedades crónicas pediátricas, siempre que la información sea precisa, esté validada por profesionales y el chatbot pueda derivar a atención humana cuando sea necesario (Arnis et al., 2024; Lau et al., 2025). Esta app sigue esos principios: las respuestas están basadas en guías clínicas, y siempre se recomienda contactar al equipo de salud ante cualquier duda o emergencia.",
+    "alertLevel": "green",
+    "tags": ["chatbot", "inteligencia artificial", "ia", "app", "tecnología", "información"]
+  },
+  {
+    "category": "informacion_general",
+    "subQuestion": "¿Por qué es importante registrar los síntomas diariamente?",
+    "answer": "Llevar un registro diario de temperatura, síntomas, alimentación, estado de ánimo y medicamentos administrados ayuda al equipo médico a tomar decisiones informadas sobre el tratamiento. Los patrones que observes (fiebre que aparece siempre a la misma hora, días de mayor decaimiento, alimentos que tolera mejor) son información valiosa para ajustar el plan de cuidado. El registro también te ayuda a ti como cuidador a notar cambios tempranos y actuar a tiempo. Puedes usar la función 'Registro diario' de esta aplicación para llevar un seguimiento estructurado. La evidencia muestra que el monitoreo sistemático por parte de los padres mejora la detección temprana de complicaciones (Nair et al., 2017; Lewandowska, 2022).",
+    "alertLevel": "green",
+    "tags": ["registro", "síntomas", "daily record", "seguimiento", "monitoreo"]
+  }
+]
