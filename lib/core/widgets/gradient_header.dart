@@ -11,6 +11,7 @@ import '../theme/app_colors.dart';
 class GradientHeader extends StatelessWidget {
   final bool showBackButton;
   final VoidCallback? onBackPressed;
+  final IconData backIcon;
   final String? title;
   final Widget? trailing;
   final Widget? child;
@@ -22,6 +23,7 @@ class GradientHeader extends StatelessWidget {
     super.key,
     this.showBackButton = false,
     this.onBackPressed,
+    this.backIcon = Icons.home_rounded,
     this.title,
     this.trailing,
     this.child,
@@ -164,8 +166,8 @@ class GradientHeader extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.home_rounded,
+                  child: Icon(
+                    backIcon,
                     color: Colors.white,
                     size: 16,
                   ),

@@ -226,10 +226,10 @@ void main() {
       await tester.pumpWidget(buildHistory(container));
       await tester.pumpAndSettle();
 
-      // Tap the edit icon button (finds multiple from mock, use first)
-      final editButtons = find.byIcon(Icons.edit);
-      expect(editButtons, findsWidgets);
-      await tester.tap(editButtons.first);
+      // Swipe right on the Dismissible to trigger edit via confirmDismiss
+      final dismissible = find.byType(Dismissible);
+      expect(dismissible, findsOneWidget);
+      await tester.drag(dismissible, const Offset(500, 0));
       await tester.pumpAndSettle();
 
       // Should navigate to /record/edit/r1
@@ -259,10 +259,10 @@ void main() {
       await tester.pumpWidget(buildHistory(container));
       await tester.pumpAndSettle();
 
-      // Tap the delete icon (first one from mock data)
-      final deleteButtons = find.byIcon(Icons.delete_outline);
-      expect(deleteButtons, findsWidgets);
-      await tester.tap(deleteButtons.first);
+      // Swipe left on the Dismissible to trigger delete dialog
+      final dismissible = find.byType(Dismissible);
+      expect(dismissible, findsOneWidget);
+      await tester.drag(dismissible, const Offset(-500, 0));
       await tester.pumpAndSettle();
 
       // Confirmation dialog should appear
@@ -292,7 +292,8 @@ void main() {
       await tester.pumpWidget(buildHistory(container));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.delete_outline).first);
+      // Swipe left to trigger delete dialog
+      await tester.drag(find.byType(Dismissible), const Offset(-500, 0));
       await tester.pumpAndSettle();
 
       // Tap Cancel
@@ -324,7 +325,8 @@ void main() {
       await tester.pumpWidget(buildHistory(container));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.delete_outline).first);
+      // Swipe left to trigger delete dialog
+      await tester.drag(find.byType(Dismissible), const Offset(-500, 0));
       await tester.pumpAndSettle();
 
       // Tap Eliminar

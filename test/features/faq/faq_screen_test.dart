@@ -133,8 +133,9 @@ void main() {
       await tester.pumpWidget(buildFaq(container));
       await tester.pumpAndSettle();
 
-      // Tap "Fiebre" category chip
-      await tester.tap(find.text('Fiebre'));
+      // Tap "Fiebre" category chip — use .first since the category name
+      // also appears on the FAQ item itself
+      await tester.tap(find.text('Fiebre').first);
       await tester.pumpAndSettle();
 
       expect(find.text('¿Qué temperatura se considera fiebre?'), findsOneWidget);
@@ -165,8 +166,8 @@ void main() {
       await tester.pumpWidget(buildFaq(container));
       await tester.pumpAndSettle();
 
-      // First tap Fiebre, then Todas
-      await tester.tap(find.text('Fiebre'));
+      // First tap Fiebre, then Todas — use .first for chip taps
+      await tester.tap(find.text('Fiebre').first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Todas'));
       await tester.pumpAndSettle();
@@ -193,9 +194,10 @@ void main() {
       await tester.pumpWidget(buildFaq(container));
       await tester.pumpAndSettle();
 
-      // "Todas" and "Higiene" chips should exist
+      // "Todas" chip appears once; "Higiene" appears as chip AND as
+      // category label on the FAQ item, so use findsWidgets
       expect(find.text('Todas'), findsOneWidget);
-      expect(find.text('Higiene'), findsOneWidget);
+      expect(find.text('Higiene'), findsWidgets);
     });
   });
 
@@ -205,7 +207,14 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
-      final container = makeContainer();
+      // faqsProvider yields defaultFaqItems first, so we must override it
+      // to return an empty list to actually test the empty state
+      final container = ProviderContainer(
+        overrides: [
+          firestoreServiceProvider.overrideWithValue(testService),
+          faqsProvider.overrideWithValue(const AsyncData([])),
+        ],
+      );
       addTearDown(container.dispose);
 
       await tester.pumpWidget(buildFaq(container));

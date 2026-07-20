@@ -132,8 +132,8 @@ void main() {
       );
       await seedArticle(
         id: 'art2',
-        title: 'PDF de ejercicios',
-        category: 'PDFs',
+        title: 'Video de ejercicios',
+        category: 'Videos',
         topic: 'Ejercicio',
         body: 'Contenido...',
       );
@@ -144,12 +144,13 @@ void main() {
       await tester.pumpWidget(buildLibrary(container));
       await tester.pumpAndSettle();
 
-      // Tap Guías filter chip
+      // Tap Guías filter chip — note: 'Guías' filter also shows PDFs and
+      // Infografías, so we use a 'Videos' category article to test filtering
       await tester.tap(find.text('Guías').first);
       await tester.pumpAndSettle();
 
       expect(find.text('Guía de nutrición'), findsOneWidget);
-      expect(find.text('PDF de ejercicios'), findsNothing);
+      expect(find.text('Video de ejercicios'), findsNothing);
     });
 
     testWidgets('Todos chip shows all articles', (tester) async {
@@ -167,8 +168,8 @@ void main() {
       );
       await seedArticle(
         id: 'art2',
-        title: 'PDF de ejercicios',
-        category: 'PDFs',
+        title: 'Video de ejercicios',
+        category: 'Videos',
         topic: 'Ejercicio',
         body: 'Contenido...',
       );
@@ -186,7 +187,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Guía de nutrición'), findsOneWidget);
-      expect(find.text('PDF de ejercicios'), findsOneWidget);
+      expect(find.text('Video de ejercicios'), findsOneWidget);
     });
   });
 
@@ -219,15 +220,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify Firestore was updated
-      final patientDoc = await fakeFirestore
-          .collection('users')
-          .doc(testUid)
-          .collection('patients')
-          .doc(testPatientId)
-          .get();
+      final userDoc = await fakeFirestore.collection('users').doc(testUid).get();
 
       final favorites =
-          List<String>.from(patientDoc.data()?['favoriteArticles'] ?? []);
+          List<String>.from(userDoc.data()?['favoriteArticles'] ?? []);
       expect(favorites, contains('art1'));
     });
   });

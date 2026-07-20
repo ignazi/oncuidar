@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'alert_level.dart';
 import 'vital_signs.dart';
 import 'symptom_entry.dart';
@@ -42,12 +44,8 @@ class DailyRecord {
       DailyRecord(
         id: id,
         patientId: map['patientId'] as String? ?? '',
-        date: map['date'] is DateTime
-            ? map['date'] as DateTime
-            : DateTime.tryParse(map['date']?.toString() ?? '') ?? DateTime.now(),
-        createdAt: map['createdAt'] is DateTime
-            ? map['createdAt'] as DateTime
-            : DateTime.tryParse(map['createdAt']?.toString() ?? '') ?? DateTime.now(),
+        date: _parseDateTime(map['date']),
+        createdAt: _parseDateTime(map['createdAt']),
         recordType: map['recordType'] as String? ?? 'programado',
         vitalSigns: map['vitalSigns'] != null
             ? VitalSigns.fromMap(map['vitalSigns'] as Map<String, dynamic>)
@@ -63,4 +61,10 @@ class DailyRecord {
         ),
         alertMessage: map['alertMessage'] as String?,
       );
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value is DateTime) return value;
+    if (value is Timestamp) return value.toDate();
+    return DateTime.tryParse(value?.toString() ?? '') ?? DateTime.now();
+  }
 }

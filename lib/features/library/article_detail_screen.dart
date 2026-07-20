@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:open_filex/open_filex.dart';
+import 'dart:io';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/gradient_header.dart';
 import '../../core/providers/providers.dart';
+import '../../core/services/content_cache_service.dart';
 import '../../models/educational_content.dart';
 
 class ArticleDetailScreen extends ConsumerStatefulWidget {
@@ -20,6 +23,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   EducationalContent? _article;
   bool _isLoading = true;
   String? _error;
+  bool _isDownloading = false;
 
   @override
   void initState() {
@@ -48,10 +52,81 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
     }
   }
 
+  Future<void> _openFile() async {
+    if (_article == null || _article!.fileUrl == null) return;
+
+    final cacheService = ContentCacheService();
+    final fileId = _article!.cacheKey;
+
+    try {
+      final cached = await cacheService.getCachedFile(fileId);
+      if (cached != null) {
+        _launchLocalFile(cached);
+        return;
+      }
+
+      // No cached — download first
+      if (!mounted) return;
+      setState(() => _isDownloading = true);
+
+      final downloaded = await cacheService.downloadFile(
+        _article!.fileUrl!,
+        fileId,
+      );
+
+      if (mounted) {
+        _launchLocalFile(downloaded);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al abrir el archivo: $e',
+              style: GoogleFonts.nunito(fontSize: 14),
+            ),
+            backgroundColor: AppColors.alertRed,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
+  }
+
+  Future<void> _launchLocalFile(File file) async {
+    try {
+      final result = await OpenFilex.open(file.path);
+      if (result.type != ResultType.done && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result.message.isNotEmpty
+                  ? result.message
+                  : 'No hay una aplicación para abrir este tipo de archivo.',
+              style: GoogleFonts.nunito(fontSize: 14),
+            ),
+            backgroundColor: AppColors.alertRed,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al abrir el archivo: $e',
+              style: GoogleFonts.nunito(fontSize: 14),
+            ),
+            backgroundColor: AppColors.alertRed,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final patientAsync = ref.watch(currentPatientProvider);
-    final patient = patientAsync.value;
     final favoritesAsync = ref.watch(favoriteArticlesProvider);
     final favorites = favoritesAsync.value ?? [];
     final isFavorite = favorites.contains(widget.id);
@@ -64,20 +139,18 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
             showBackButton: true,
             title: _article?.title ?? 'Detalle del artículo',
             onBackPressed: () => context.pop(),
-            trailing: patient != null
-                ? GestureDetector(
-                    onTap: () async {
-                      await ref
-                          .read(firestoreServiceProvider)
-                          .toggleArticleFavorite(patient.id, widget.id);
-                    },
-                    child: Icon(
-                      isFavorite ? Icons.bookmark : Icons.bookmark_border,
-                      color: isFavorite ? Colors.amber : Colors.white,
-                      size: 24,
-                    ),
-                  )
-                : null,
+            trailing: GestureDetector(
+              onTap: () async {
+                await ref
+                    .read(firestoreServiceProvider)
+                    .toggleArticleFavorite(widget.id);
+              },
+              child: Icon(
+                isFavorite ? Icons.bookmark : Icons.bookmark_border,
+                color: isFavorite ? Colors.amber : Colors.white,
+                size: 24,
+              ),
+            ),
           ),
           Expanded(
             child: _isLoading
@@ -152,6 +225,43 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                           color: AppColors.textPrimary,
                         ),
                       ),
+                      if (_article!.fileUrl != null) ...[
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _isDownloading ? null : _openFile,
+                            icon: _isDownloading
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.open_in_new, size: 18),
+                            label: Text(
+                              _isDownloading
+                                  ? 'Descargando...'
+                                  : 'Abrir archivo adjunto',
+                              style: GoogleFonts.nunito(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.goldPrimary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

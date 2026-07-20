@@ -1,13 +1,22 @@
+import 'dart:io';
+
+import 'package:excel/excel.dart' as xlsx;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/gradient_header.dart';
 import '../../core/providers/providers.dart';
+import '../../models/app_user.dart';
 import '../../models/daily_record.dart';
+import '../../models/patient.dart';
 import '../../models/vital_signs.dart';
 
 const _statusConfig = {
@@ -32,10 +41,13 @@ const _statusConfig = {
 };
 
 class HistoryScreen extends ConsumerStatefulWidget {
-  const HistoryScreen({super.key, this.filterDate});
+  const HistoryScreen({super.key, this.filterDate, this.origin});
 
   /// Si se prove, filtra registros de ese día (sin hora).
   final DateTime? filterDate;
+
+  /// Origen de la navegación: 'record' para volver con icono de registro.
+  final String? origin;
 
   @override
   ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
@@ -47,6 +59,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   bool _isLoadingMore = false;
   bool _hasMore = true;
   final List<DailyRecord> _extraRecords = [];
+  DateTime? _startDate;
+  DateTime? _endDate;
 
   DateTime? get _activeDateFilter => widget.filterDate;
 
@@ -67,6 +81,28 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     return '${h.toString().padLeft(2, '0')}:$m $period';
   }
 
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  bool _matchesDateFilter(DailyRecord record) {
+    final dashboardDate = _activeDateFilter;
+    if (dashboardDate != null && !_isSameDay(record.date, dashboardDate)) {
+      return false;
+    }
+    final start = _startDate;
+    if (start != null) {
+      final startDay = DateTime(start.year, start.month, start.day);
+      if (record.date.isBefore(startDay)) return false;
+    }
+    final end = _endDate;
+    if (end != null) {
+      final endExclusive = DateTime(end.year, end.month, end.day)
+          .add(const Duration(days: 1));
+      if (!record.date.isBefore(endExclusive)) return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final recordsAsync = ref.watch(dailyRecordsProvider);
@@ -83,6 +119,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           GradientHeader(
             showBackButton: true,
             title: 'Ver historial',
+            backIcon: widget.origin == 'record'
+                ? Icons.show_chart
+                : Icons.home_rounded,
             onBackPressed: () => context.pop(),
           ),
           Expanded(
@@ -120,15 +159,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 ];
 
                 // Filtro por fecha del día (si vino del dashboard)
-                final dateFiltered = _activeDateFilter != null
-                    ? allRecords.where((r) {
-                        final rd = r.date;
-                        final f = _activeDateFilter!;
-                        return rd.year == f.year &&
-                            rd.month == f.month &&
-                            rd.day == f.day;
-                      }).toList()
-                    : allRecords;
+                final dateFiltered = allRecords.where(_matchesDateFilter).toList();
 
                 final filtered = _selectedFilter == 'Todos'
                     ? dateFiltered
@@ -149,6 +180,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   children: [
                     const SizedBox(height: 12),
                     _buildFilterChips(),
+                    const SizedBox(height: 8),
+                    _buildDateActions(filtered),
                     const SizedBox(height: 12),
                     Expanded(
                       child: filtered.isEmpty
@@ -218,6 +251,643 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildDateActions(List<DailyRecord> filteredRecords) {
+    final hasRange = _startDate != null || _endDate != null;
+    final label = hasRange
+        ? '${_startDate != null ? _dateStr(_startDate!) : 'Inicio'} - ${_endDate != null ? _dateStr(_endDate!) : 'Hoy'}'
+        : 'Filtrar fecha';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _pickDateRange,
+              icon: const Icon(Icons.date_range, size: 16),
+              label: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.goldDark,
+                side: BorderSide(
+                  color: AppColors.goldPrimary.withValues(alpha: 0.35),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          if (hasRange) ...[
+            const SizedBox(width: 8),
+            IconButton(
+              onPressed: () => setState(() {
+                _startDate = null;
+                _endDate = null;
+              }),
+              icon: const Icon(Icons.close),
+              color: AppColors.textSecondary,
+            ),
+          ],
+          const SizedBox(width: 8),
+          IconButton.filled(
+            onPressed: filteredRecords.isEmpty
+                ? null
+                : () => _exportPdf(filteredRecords),
+            icon: const Icon(Icons.picture_as_pdf, size: 18),
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.goldPrimary,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: AppColors.divider,
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton.filled(
+            onPressed: filteredRecords.isEmpty
+                ? null
+                : () => _exportExcel(filteredRecords),
+            icon: const Icon(Icons.table_chart, size: 18),
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0xFF217346),
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: AppColors.divider,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickDateRange() async {
+    final now = DateTime.now();
+    final range = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 5),
+      lastDate: DateTime(now.year + 1),
+      initialDateRange: _startDate != null && _endDate != null
+          ? DateTimeRange(start: _startDate!, end: _endDate!)
+          : null,
+      helpText: 'Filtrar historial',
+      saveText: 'Aplicar',
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: Theme.of(context).colorScheme.copyWith(
+                primary: AppColors.goldPrimary,
+              ),
+        ),
+        child: child!,
+      ),
+    );
+    if (range == null) return;
+    setState(() {
+      _startDate = range.start;
+      _endDate = range.end;
+    });
+  }
+
+  Future<void> _exportPdf(List<DailyRecord> records) async {
+    try {
+      final patient = ref.read(currentPatientProvider).value;
+      final user = ref.read(userProvider).value;
+      final dir = await getTemporaryDirectory();
+      final file = File(
+        '${dir.path}${Platform.pathSeparator}historial_oncuidar_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      );
+      await file.writeAsBytes(await _buildHistoryPdf(records, patient, user), flush: true);
+      final result = await OpenFilex.open(file.path);
+      if (result.type != ResultType.done && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result.message.isNotEmpty
+                  ? result.message
+                  : 'No hay una aplicación para abrir PDF.',
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudo generar el PDF: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _exportExcel(List<DailyRecord> records) async {
+    try {
+      final patient = ref.read(currentPatientProvider).value;
+      final user = ref.read(userProvider).value;
+      final excel = xlsx.Excel.createExcel();
+      // Eliminar Sheet1 por defecto
+      if (excel.sheets.containsKey('Sheet1')) {
+        excel.delete('Sheet1');
+      }
+      final sheet = excel['Historial'];
+
+      // Estilos
+      final titleStyle = xlsx.CellStyle(
+        bold: true,
+        fontSize: 14,
+        backgroundColorHex: xlsx.ExcelColor.fromHexString('#E8A820'),
+        fontColorHex: xlsx.ExcelColor.fromHexString('#FFFFFF'),
+      );
+      final sectionStyle = xlsx.CellStyle(
+        bold: true,
+        fontSize: 11,
+        backgroundColorHex: xlsx.ExcelColor.fromHexString('#FFF4D0'),
+      );
+      final labelStyle = xlsx.CellStyle(
+        bold: true,
+        fontSize: 10,
+      );
+      final valueStyle = xlsx.CellStyle(
+        fontSize: 10,
+      );
+      final columnHeaderStyle = xlsx.CellStyle(
+        bold: true,
+        fontSize: 11,
+        backgroundColorHex: xlsx.ExcelColor.fromHexString('#E8A820'),
+        fontColorHex: xlsx.ExcelColor.fromHexString('#FFFFFF'),
+      );
+
+      var row = 0;
+
+      // Título
+      _setMergedCell(sheet, row, 'HISTORIAL ONCUIDAR', titleStyle);
+      row++;
+
+      // Paciente
+      if (patient != null) {
+        _setMergedCell(sheet, row, 'PACIENTE', sectionStyle);
+        row++;
+        _setLabelValue(sheet, row, 'Nombre', patient.fullName, labelStyle, valueStyle);
+        row++;
+        if (patient.age != null) {
+          _setLabelValue(sheet, row, 'Edad', '${patient.age} años', labelStyle, valueStyle);
+          row++;
+        }
+        if (patient.birthDate != null) {
+          _setLabelValue(sheet, row, 'Fecha de nacimiento', _dateStr(patient.birthDate!), labelStyle, valueStyle);
+          row++;
+        }
+        _setLabelValue(sheet, row, 'Diagnóstico', patient.diagnosis, labelStyle, valueStyle);
+        row++;
+        if (patient.treatmentPhase != null && patient.treatmentPhase!.isNotEmpty) {
+          _setLabelValue(sheet, row, 'Fase del tratamiento', patient.treatmentPhase!, labelStyle, valueStyle);
+          row++;
+        }
+        if (patient.diagnosisDate != null) {
+          _setLabelValue(sheet, row, 'Fecha de diagnóstico', _dateStr(patient.diagnosisDate!), labelStyle, valueStyle);
+          row++;
+        }
+        row++;
+      }
+
+      // Cuidador
+      if (user != null) {
+        _setMergedCell(sheet, row, 'CUIDADOR', sectionStyle);
+        row++;
+        _setLabelValue(sheet, row, 'Nombre', user.displayName, labelStyle, valueStyle);
+        row++;
+        if (user.relationship != null && user.relationship!.isNotEmpty) {
+          _setLabelValue(sheet, row, 'Parentesco', user.relationship!, labelStyle, valueStyle);
+          row++;
+        }
+        if (user.email != null && user.email!.isNotEmpty) {
+          _setLabelValue(sheet, row, 'Email', user.email!, labelStyle, valueStyle);
+          row++;
+        }
+        if (user.phone != null && user.phone!.isNotEmpty) {
+          _setLabelValue(sheet, row, 'Teléfono', user.phone!, labelStyle, valueStyle);
+          row++;
+        }
+        row++;
+      }
+
+      // Centro de salud
+      if (patient?.healthCenterName != null &&
+          patient!.healthCenterName!.isNotEmpty) {
+        _setMergedCell(sheet, row, 'CENTRO DE SALUD', sectionStyle);
+        row++;
+        _setLabelValue(sheet, row, 'Nombre', patient.healthCenterName!, labelStyle, valueStyle);
+        row++;
+        if (patient.healthCenterAddress != null && patient.healthCenterAddress!.isNotEmpty) {
+          _setLabelValue(sheet, row, 'Dirección', patient.healthCenterAddress!, labelStyle, valueStyle);
+          row++;
+        }
+        if (patient.healthCenterPhone != null && patient.healthCenterPhone!.isNotEmpty) {
+          _setLabelValue(sheet, row, 'Teléfono', patient.healthCenterPhone!, labelStyle, valueStyle);
+          row++;
+        }
+        row++;
+      }
+
+      // Contacto de emergencia
+      if (patient?.emergencyContactName != null &&
+          patient!.emergencyContactName!.isNotEmpty) {
+        _setMergedCell(sheet, row, 'CONTACTO DE EMERGENCIA', sectionStyle);
+        row++;
+        _setLabelValue(sheet, row, 'Nombre', patient.emergencyContactName!, labelStyle, valueStyle);
+        row++;
+        if (patient.emergencyContactPhone != null && patient.emergencyContactPhone!.isNotEmpty) {
+          _setLabelValue(sheet, row, 'Teléfono', patient.emergencyContactPhone!, labelStyle, valueStyle);
+          row++;
+        }
+        row++;
+      }
+
+      // Info del reporte
+      _setLabelValue(sheet, row, 'Rango',
+          '${_startDate != null ? _dateStr(_startDate!) : 'sin inicio'} - ${_endDate != null ? _dateStr(_endDate!) : 'sin fin'}',
+          labelStyle, valueStyle);
+      row++;
+      _setLabelValue(sheet, row, 'Total registros', '${records.length}', labelStyle, valueStyle);
+      row++;
+      _setLabelValue(sheet, row, 'Generado',
+          '${_dateStr(DateTime.now())} ${_timeStr(DateTime.now())}',
+          labelStyle, valueStyle);
+      row += 2;
+
+      // Encabezados de columna
+      final headers = [
+        'Fecha',
+        'Hora',
+        'Tipo',
+        'Estado',
+        'Temp.',
+        'Freq. Card.',
+        'Sat. O₂',
+        'Freq. Resp.',
+        'Síntomas',
+        'Observaciones',
+      ];
+
+      for (var i = 0; i < headers.length; i++) {
+        final cell = sheet.cell(
+          xlsx.CellIndex.indexByColumnRow(columnIndex: i, rowIndex: row),
+        );
+        cell.value = xlsx.TextCellValue(headers[i]);
+        cell.cellStyle = columnHeaderStyle;
+      }
+      row++;
+
+      // Datos
+      for (final rec in records) {
+        final vs = rec.vitalSigns;
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row)).value = xlsx.TextCellValue(_dateStr(rec.date));
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row)).value = xlsx.TextCellValue(_timeStr(rec.createdAt));
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: row)).value = xlsx.TextCellValue(rec.recordType);
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: row)).value = xlsx.TextCellValue(rec.alertLevel.name);
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: row)).value = xlsx.TextCellValue(vs?.temperature != null ? '${vs!.temperature}°C' : '');
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: row)).value = xlsx.TextCellValue(vs?.heartRate != null ? '${vs!.heartRate} lpm' : '');
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: row)).value = xlsx.TextCellValue(vs?.oxygenSaturation != null ? '${vs!.oxygenSaturation}%' : '');
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: row)).value = xlsx.TextCellValue(vs?.respiratoryRate != null ? '${vs!.respiratoryRate} rpm' : '');
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: row)).value = xlsx.TextCellValue(
+          rec.symptoms.map((s) => '${s.name} ${s.intensity}/10').join(', '),
+        );
+        sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: row)).value = xlsx.TextCellValue(rec.generalNotes ?? '');
+        row++;
+      }
+
+      // Auto-anchos de columnas
+      for (var i = 0; i < headers.length; i++) {
+        sheet.setColumnWidth(i, 18);
+      }
+
+      final dir = await getTemporaryDirectory();
+      final file = File(
+        '${dir.path}${Platform.pathSeparator}historial_oncuidar_${DateTime.now().millisecondsSinceEpoch}.xlsx',
+      );
+      final bytes = excel.save();
+      if (bytes != null) {
+        await file.writeAsBytes(bytes, flush: true);
+        final result = await OpenFilex.open(file.path);
+        if (result.type != ResultType.done && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result.message.isNotEmpty
+                    ? result.message
+                    : 'No hay una aplicación para abrir Excel.',
+              ),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudo generar el Excel: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  void _setMergedCell(
+    xlsx.Sheet sheet,
+    int row,
+    String value,
+    xlsx.CellStyle style,
+  ) {
+    final start = xlsx.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row);
+    final end = xlsx.CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: row);
+    sheet.merge(start, end);
+    final cell = sheet.cell(start);
+    cell.value = xlsx.TextCellValue(value);
+    cell.cellStyle = style;
+  }
+
+  void _setLabelValue(
+    xlsx.Sheet sheet,
+    int row,
+    String label,
+    String value,
+    xlsx.CellStyle labelStyle,
+    xlsx.CellStyle valueStyle,
+  ) {
+    final labelCell = sheet.cell(
+      xlsx.CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row),
+    );
+    labelCell.value = xlsx.TextCellValue(label);
+    labelCell.cellStyle = labelStyle;
+
+    final start = xlsx.CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: row);
+    final end = xlsx.CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: row);
+    sheet.merge(start, end);
+    final valueCell = sheet.cell(start);
+    valueCell.value = xlsx.TextCellValue(value);
+    valueCell.cellStyle = valueStyle;
+  }
+
+  Future<List<int>> _buildHistoryPdf(
+    List<DailyRecord> records,
+    Patient? patient,
+    AppUser? user,
+  ) async {
+    final pdf = pw.Document();
+    final goldColor = PdfColor.fromHex('#E8A820');
+    final lightGold = PdfColor.fromHex('#FFF4D0');
+    final darkText = PdfColor.fromHex('#333333');
+    final secondaryText = PdfColor.fromHex('#666666');
+
+    final titleStyle = pw.TextStyle(
+      fontSize: 20,
+      fontWeight: pw.FontWeight.bold,
+      color: PdfColors.white,
+    );
+    final sectionStyle = pw.TextStyle(
+      fontSize: 13,
+      fontWeight: pw.FontWeight.bold,
+      color: goldColor,
+    );
+    final labelStyle = pw.TextStyle(
+      fontSize: 10,
+      fontWeight: pw.FontWeight.bold,
+      color: darkText,
+    );
+    final valueStyle = pw.TextStyle(
+      fontSize: 10,
+      color: secondaryText,
+    );
+    final columnHeaderStyle = pw.TextStyle(
+      fontSize: 9,
+      fontWeight: pw.FontWeight.bold,
+      color: PdfColors.white,
+    );
+    final cellStyle = pw.TextStyle(
+      fontSize: 8,
+      color: darkText,
+    );
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(30),
+        header: (context) => pw.Container(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: pw.BoxDecoration(
+            color: goldColor,
+            borderRadius: pw.BorderRadius.circular(8),
+          ),
+          child: pw.Row(
+            children: [
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('HISTORIAL ONCUIDAR', style: titleStyle),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      'Generado: ${_dateStr(DateTime.now())} ${_timeStr(DateTime.now())}',
+                      style: pw.TextStyle(
+                        fontSize: 9,
+                        color: PdfColors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        footer: (context) => pw.Container(
+          alignment: pw.Alignment.centerRight,
+          margin: const pw.EdgeInsets.only(top: 10),
+          child: pw.Text(
+            'Página ${context.pageNumber} de ${context.pagesCount}',
+            style: pw.TextStyle(fontSize: 8, color: secondaryText),
+          ),
+        ),
+        build: (context) {
+          final widgets = <pw.Widget>[];
+          widgets.add(pw.SizedBox(height: 15));
+
+          // ── Paciente ──
+          if (patient != null) {
+            widgets.add(_buildPdfSection('PACIENTE', sectionStyle, lightGold));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(_buildPdfRow('Nombre', patient.fullName, labelStyle, valueStyle));
+            if (patient.age != null) {
+              widgets.add(_buildPdfRow('Edad', '${patient.age} años', labelStyle, valueStyle));
+            }
+            if (patient.birthDate != null) {
+              widgets.add(_buildPdfRow('Fecha de nacimiento', _dateStr(patient.birthDate!), labelStyle, valueStyle));
+            }
+            widgets.add(_buildPdfRow('Diagnóstico', patient.diagnosis, labelStyle, valueStyle));
+            if (patient.treatmentPhase != null && patient.treatmentPhase!.isNotEmpty) {
+              widgets.add(_buildPdfRow('Fase del tratamiento', patient.treatmentPhase!, labelStyle, valueStyle));
+            }
+            if (patient.diagnosisDate != null) {
+              widgets.add(_buildPdfRow('Fecha de diagnóstico', _dateStr(patient.diagnosisDate!), labelStyle, valueStyle));
+            }
+            widgets.add(pw.SizedBox(height: 10));
+          }
+
+          // ── Cuidador ──
+          if (user != null) {
+            widgets.add(_buildPdfSection('CUIDADOR', sectionStyle, lightGold));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(_buildPdfRow('Nombre', user.displayName, labelStyle, valueStyle));
+            if (user.relationship != null && user.relationship!.isNotEmpty) {
+              widgets.add(_buildPdfRow('Parentesco', user.relationship!, labelStyle, valueStyle));
+            }
+            if (user.email != null && user.email!.isNotEmpty) {
+              widgets.add(_buildPdfRow('Email', user.email!, labelStyle, valueStyle));
+            }
+            if (user.phone != null && user.phone!.isNotEmpty) {
+              widgets.add(_buildPdfRow('Teléfono', user.phone!, labelStyle, valueStyle));
+            }
+            widgets.add(pw.SizedBox(height: 10));
+          }
+
+          // ── Centro de salud ──
+          if (patient?.healthCenterName != null && patient!.healthCenterName!.isNotEmpty) {
+            widgets.add(_buildPdfSection('CENTRO DE SALUD', sectionStyle, lightGold));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(_buildPdfRow('Nombre', patient.healthCenterName!, labelStyle, valueStyle));
+            if (patient.healthCenterAddress != null && patient.healthCenterAddress!.isNotEmpty) {
+              widgets.add(_buildPdfRow('Dirección', patient.healthCenterAddress!, labelStyle, valueStyle));
+            }
+            if (patient.healthCenterPhone != null && patient.healthCenterPhone!.isNotEmpty) {
+              widgets.add(_buildPdfRow('Teléfono', patient.healthCenterPhone!, labelStyle, valueStyle));
+            }
+            widgets.add(pw.SizedBox(height: 10));
+          }
+
+          // ── Contacto de emergencia ──
+          if (patient?.emergencyContactName != null && patient!.emergencyContactName!.isNotEmpty) {
+            widgets.add(_buildPdfSection('CONTACTO DE EMERGENCIA', sectionStyle, lightGold));
+            widgets.add(pw.SizedBox(height: 6));
+            widgets.add(_buildPdfRow('Nombre', patient.emergencyContactName!, labelStyle, valueStyle));
+            if (patient.emergencyContactPhone != null && patient.emergencyContactPhone!.isNotEmpty) {
+              widgets.add(_buildPdfRow('Teléfono', patient.emergencyContactPhone!, labelStyle, valueStyle));
+            }
+            widgets.add(pw.SizedBox(height: 10));
+          }
+
+          // ── Resumen del reporte ──
+          widgets.add(_buildPdfSection('RESUMEN', sectionStyle, lightGold));
+          widgets.add(pw.SizedBox(height: 6));
+          widgets.add(_buildPdfRow(
+            'Rango',
+            '${_startDate != null ? _dateStr(_startDate!) : 'sin inicio'} - ${_endDate != null ? _dateStr(_endDate!) : 'sin fin'}',
+            labelStyle, valueStyle,
+          ));
+          widgets.add(_buildPdfRow('Total registros', '${records.length}', labelStyle, valueStyle));
+          widgets.add(pw.SizedBox(height: 15));
+
+          // ── Tabla de registros ──
+          widgets.add(_buildPdfSection('REGISTROS', sectionStyle, lightGold));
+          widgets.add(pw.SizedBox(height: 8));
+
+          if (records.isEmpty) {
+            widgets.add(pw.Text(
+              'No hay registros para el rango seleccionado.',
+              style: valueStyle,
+            ));
+          } else {
+            // Tabla de signos vitales
+            widgets.add(_buildRecordsTable(records, columnHeaderStyle, cellStyle, goldColor));
+          }
+
+          return widgets;
+        },
+      ),
+    );
+
+    return await pdf.save();
+  }
+
+  pw.Widget _buildPdfSection(String title, pw.TextStyle style, PdfColor bgColor) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: pw.BoxDecoration(
+        color: bgColor,
+        borderRadius: pw.BorderRadius.circular(4),
+      ),
+      child: pw.Text(title, style: style),
+    );
+  }
+
+  pw.Widget _buildPdfRow(String label, String value, pw.TextStyle labelStyle, pw.TextStyle valueStyle) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(bottom: 3),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.SizedBox(
+            width: 140,
+            child: pw.Text(label, style: labelStyle),
+          ),
+          pw.Expanded(
+            child: pw.Text(value, style: valueStyle),
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildRecordsTable(
+    List<DailyRecord> records,
+    pw.TextStyle headerStyle,
+    pw.TextStyle cellStyle,
+    PdfColor goldColor,
+  ) {
+    final headers = ['Fecha', 'Hora', 'Tipo', 'Estado', 'Temp.', 'Freq. Card.', 'Sat. O₂', 'Freq. Resp.'];
+
+    final data = records.map((rec) {
+      final vs = rec.vitalSigns;
+      return [
+        _dateStr(rec.date),
+        _timeStr(rec.createdAt),
+        rec.recordType,
+        rec.alertLevel.name,
+        vs?.temperature != null ? '${vs!.temperature}°C' : '-',
+        vs?.heartRate != null ? '${vs!.heartRate} lpm' : '-',
+        vs?.oxygenSaturation != null ? '${vs!.oxygenSaturation}%' : '-',
+        vs?.respiratoryRate != null ? '${vs!.respiratoryRate} rpm' : '-',
+      ];
+    }).toList();
+
+    return pw.TableHelper.fromTextArray(
+      headers: headers,
+      data: data,
+      headerStyle: headerStyle,
+      headerDecoration: pw.BoxDecoration(
+        color: goldColor,
+        borderRadius: pw.BorderRadius.only(
+          topLeft: pw.Radius.circular(4),
+          topRight: pw.Radius.circular(4),
+        ),
+      ),
+      headerPadding: const pw.EdgeInsets.all(6),
+      cellStyle: cellStyle,
+      cellAlignment: pw.Alignment.centerLeft,
+      cellPadding: const pw.EdgeInsets.all(5),
+      cellHeight: 22,
+      oddRowDecoration: pw.BoxDecoration(
+        color: PdfColor.fromHex('#FAFAFA'),
+      ),
+      border: pw.TableBorder(
+        horizontalInside: pw.BorderSide(
+          color: PdfColor.fromHex('#E0E0E0'),
+          width: 0.5,
+        ),
       ),
     );
   }
@@ -514,25 +1184,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   ),
                   child: Column(
                     children: [
-                      if (vs != null)
-                        GridView.count(
-                          crossAxisCount: 2,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          mainAxisSpacing: 6,
-                          crossAxisSpacing: 6,
-                          childAspectRatio: 3,
-                          children: [
-                            if (vs.temperature != null)
-                              _vitalDetailCard('Temperatura', '${vs.temperature} °C'),
-                            if (vs.heartRate != null)
-                              _vitalDetailCard('Frec. cardíaca', '${vs.heartRate} lpm'),
-                            if (vs.oxygenSaturation != null)
-                              _vitalDetailCard('Saturación O₂', '${vs.oxygenSaturation} %'),
-                            if (vs.respiratoryRate != null)
-                              _vitalDetailCard('Frec. respiratoria', '${vs.respiratoryRate} rpm'),
-                          ],
-                        ),
                       if (rec.symptoms.isNotEmpty)
                         ...rec.symptoms.map((s) => Container(
                               width: double.infinity,
@@ -726,37 +1377,4 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
   }
 
-  Widget _vitalDetailCard(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFE8A820).withValues(alpha: 0.15),
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.nunito(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.nunito(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

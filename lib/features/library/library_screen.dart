@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:open_filex/open_filex.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/gradient_header.dart';
 import '../../core/utils/offline_utils.dart';
@@ -13,7 +13,6 @@ import '../../core/providers/providers.dart';
 import '../../core/services/content_cache_service.dart';
 import '../../core/services/firestore_service.dart';
 import '../../models/educational_content.dart';
-import '../../models/patient.dart';
 import '../../models/user_checklist.dart';
 import 'video_player_screen.dart';
 
@@ -146,88 +145,113 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   Future<void> _openFile(EducationalContent content) async {
-    if (content.fileUrl == null) return;
+    if (content.fileUrl == null) {
+      // Sin archivo — ir al detalle del artículo
+      if (mounted) context.push('/library/${content.id}');
+      return;
+    }
     final fileId = content.cacheKey;
-    final file = await _cacheService.getCachedFile(fileId);
 
-    if (file == null) {
-      // No está descargado — preguntar si quiere descargar
-      if (!mounted) return;
-      final shouldDownload = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(
-            'Descargar contenido',
-            style: GoogleFonts.nunito(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          content: Text(
-            '"${content.title}" no está descargado. ¿Querés descargarlo para verlo offline?',
-            style: GoogleFonts.nunito(fontSize: 14),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(
-                'Cancelar',
-                style: GoogleFonts.nunito(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(
-                'Descargar',
-                style: GoogleFonts.nunito(
-                  fontSize: 13,
-                  color: AppColors.goldPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-      if (shouldDownload == true) {
+    try {
+      final file = await _cacheService.getCachedFile(fileId);
+
+      if (file == null) {
+        // No está descargado — descargar automáticamente
+        if (!mounted) return;
         await _toggleDownload(content);
-        // Si se descargó, abrir
         final downloadedFile = await _cacheService.getCachedFile(fileId);
         if (downloadedFile != null && mounted) {
           _openLocalFile(content, downloadedFile);
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'No se pudo descargar el archivo.',
+                style: GoogleFonts.nunito(fontSize: 14),
+              ),
+              backgroundColor: AppColors.alertRed,
+            ),
+          );
         }
+        return;
       }
-      return;
-    }
 
-    _openLocalFile(content, file);
+      _openLocalFile(content, file);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al abrir el archivo: $e',
+              style: GoogleFonts.nunito(fontSize: 14),
+            ),
+            backgroundColor: AppColors.alertRed,
+          ),
+        );
+      }
+    }
   }
 
   void _openLocalFile(EducationalContent content, File file) {
-    final type = content.fileType ?? content.category.toLowerCase();
+    try {
+      final type = content.fileType ?? content.category.toLowerCase();
 
-    if (type == 'video') {
-      Navigator.of(context, rootNavigator: true).push(
-        MaterialPageRoute(
-          builder: (_) => VideoPlayerScreen(
-            videoFile: file,
-            title: content.title,
+      if (type == 'video') {
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute(
+            builder: (_) => VideoPlayerScreen(
+              videoFile: file,
+              title: content.title,
+            ),
           ),
-        ),
-      );
-    } else {
-      // PDFs, imágenes, etc. — abrir con url_launcher
-      launchFile(file);
+        );
+      } else {
+        // PDFs, imágenes, etc. — abrir con url_launcher
+        launchFile(file);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al abrir el archivo: $e',
+              style: GoogleFonts.nunito(fontSize: 14),
+            ),
+            backgroundColor: AppColors.alertRed,
+          ),
+        );
+      }
     }
   }
 
   Future<void> launchFile(File file) async {
-    final uri = Uri.file(file.path);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final result = await OpenFilex.open(file.path);
+      if (result.type != ResultType.done && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result.message.isNotEmpty
+                  ? result.message
+                  : 'No hay una aplicación para abrir este tipo de archivo.',
+              style: GoogleFonts.nunito(fontSize: 14),
+            ),
+            backgroundColor: AppColors.alertRed,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al abrir el archivo: $e',
+              style: GoogleFonts.nunito(fontSize: 14),
+            ),
+            backgroundColor: AppColors.alertRed,
+          ),
+        );
+      }
     }
   }
 
@@ -263,8 +287,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Widget build(BuildContext context) {
     final contentAsync = ref.watch(educationalContentProvider);
     final favoritesAsync = ref.watch(favoriteArticlesProvider);
-    final patientAsync = ref.watch(currentPatientProvider);
-    final patient = patientAsync.value;
     final firestoreService = ref.read(firestoreServiceProvider);
     final userChecklistsAsync = ref.watch(userChecklistsProvider);
 
@@ -307,7 +329,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         child: _buildContent(
                           articles: articles,
                           favorites: favorites,
-                          patient: patient,
                           firestoreService: firestoreService,
                           userChecklists: userChecklistsAsync.value ?? [],
                         ),
@@ -480,7 +501,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Widget _buildContent({
     required List<EducationalContent> articles,
     required List<String> favorites,
-    Patient? patient,
     required FirestoreService firestoreService,
     required List<UserChecklist> userChecklists,
   }) {
@@ -494,15 +514,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             ..._filterByCategory(articles, 'Infografías'),
           ]
         : <EducationalContent>[];
-    var checklists = _activeFilter == 'Todos' || _activeFilter == 'Checklist'
-        ? _filterByCategory(articles, 'Checklist')
-        : <EducationalContent>[];
+    final checklists = <EducationalContent>[];
 
     // Filtrar guardados si está activo
     if (_showSavedOnly) {
       videos = videos.where((a) => favorites.contains(a.id)).toList();
       guias = guias.where((a) => favorites.contains(a.id)).toList();
-      checklists = checklists.where((a) => favorites.contains(a.id)).toList();
     }
 
     final showUserChecklists =
@@ -510,8 +527,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     final hasAnyContent = videos.isNotEmpty ||
         guias.isNotEmpty ||
-        checklists.isNotEmpty ||
-        (showUserChecklists && userChecklists.isNotEmpty);
+        showUserChecklists;
 
     if (!hasAnyContent) {
       return Center(
@@ -534,12 +550,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           const SizedBox(height: 8),
           ...videos.map(
             (a) => _buildVideoCard(
-              article: a,
-              isFavorite: favorites.contains(a.id),
-              onTap: () => _openFile(a),
-              onBookmark: () {
-                if (patient == null) return;
-                firestoreService.toggleArticleFavorite(patient.id, a.id);
+                          article: a,
+                          isFavorite: favorites.contains(a.id),
+                          onTap: () => _openFile(a),
+                          onBookmark: () {
+                firestoreService.toggleArticleFavorite(a.id);
               },
             ),
           ),
@@ -553,10 +568,10 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               article: a,
               isFavorite: favorites.contains(a.id),
               section: _ResourceSection.guias,
-              onTap: () => context.push('/library/${a.id}'),
+              onTap: () =>
+                  a.fileUrl != null ? _openFile(a) : context.push('/library/${a.id}'),
               onBookmark: () {
-                if (patient == null) return;
-                firestoreService.toggleArticleFavorite(patient.id, a.id);
+                firestoreService.toggleArticleFavorite(a.id);
               },
             ),
           ),
@@ -575,8 +590,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               section: _ResourceSection.checklist,
               onTap: () => _showChecklist(a),
               onBookmark: () {
-                if (patient == null) return;
-                firestoreService.toggleArticleFavorite(patient.id, a.id);
+                firestoreService.toggleArticleFavorite(a.id);
               },
             ),
           ),
@@ -809,13 +823,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       ),
     };
 
-    String? statusLabel;
-    Color? statusBg;
-    if (isFavorite) {
-      statusLabel = 'Guardado';
-      statusBg = AppColors.goldPrimary;
-    }
-
     final hasFile = article.fileUrl != null;
 
     return GestureDetector(
@@ -888,24 +895,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ],
               ),
             ),
-            if (statusLabel != null) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: statusBg,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  statusLabel,
-                  style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
             const SizedBox(width: 6),
             GestureDetector(
               onTap: onBookmark,

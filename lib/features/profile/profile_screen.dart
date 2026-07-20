@@ -36,6 +36,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           GradientHeader(
             showBackButton: true,
             title: 'Mi perfil',
+            trailing: GestureDetector(
+              onTap: _showLogoutDialog,
+              child: Container(
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.logout, color: Colors.white, size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Cerrar sesión',
+                      style: GoogleFonts.nunito(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           Expanded(
             child: userAsync.when(
@@ -120,11 +147,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 _buildPatientCard(patient, patients),
                 const SizedBox(height: 12),
                 _buildSupportInfoCard(patient),
-                const SizedBox(height: 12),
-                _buildActionButtons(patient),
                 const SizedBox(height: 20),
-                _buildLogoutButton(),
-                const SizedBox(height: 8),
                 Text(
                   'v1.0.0',
                   style: GoogleFonts.nunito(
@@ -545,99 +568,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  // ── Sección 4: Acciones ──
 
-  Widget _buildActionButtons(Patient? patient) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.download_rounded,
-            label: 'Descargar historial',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Próximamente: exportación a PDF')),
-              );
-            },
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.settings_rounded,
-            label: 'Configurar registro',
-            onTap: patient != null ? () => _showConfigureRecordDialog(patient) : null,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.goldPrimary.withValues(alpha: 0.15)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.goldDark, size: 22),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: AppColors.goldDark,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Sección 5: Cerrar sesión ──
-
-  Widget _buildLogoutButton() {
-    return GestureDetector(
-      onTap: () => _showLogoutDialog(),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.logout, size: 16, color: AppColors.error),
-            const SizedBox(width: 6),
-            Text(
-              'Cerrar sesión',
-              style: GoogleFonts.nunito(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.error,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _showLogoutDialog() {
     showDialog(
@@ -997,123 +928,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: GoogleFonts.nunito(fontWeight: FontWeight.w700, color: AppColors.goldPrimary)),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showConfigureRecordDialog(Patient patient) {
-    int maxRecords = patient.maxRecordsPerDay;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text('Configurar registro',
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w700)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Cantidad máxima de registros programados por día:',
-                style: GoogleFonts.nunito(fontSize: 13, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildCountBtn(
-                    icon: Icons.remove,
-                    onTap: maxRecords > 1
-                        ? () => setDialogState(() => maxRecords--)
-                        : null,
-                  ),
-                  Container(
-                    width: 64,
-                    height: 64,
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: AppColors.goldLight,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.goldPrimary, width: 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$maxRecords',
-                        style: GoogleFonts.poppins(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.goldDark,
-                        ),
-                      ),
-                    ),
-                  ),
-                  _buildCountBtn(
-                    icon: Icons.add,
-                    onTap: maxRecords < 10
-                        ? () => setDialogState(() => maxRecords++)
-                        : null,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Se mostrará como "Registro programado X/$maxRecords"',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
-                  fontSize: 11,
-                  color: AppColors.textTertiary,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancelar', style: GoogleFonts.nunito(color: AppColors.textSecondary)),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(ctx);
-                try {
-                  await ref.read(firestoreServiceProvider).updatePatient(
-                        patient.id,
-                        {'maxRecordsPerDay': maxRecords},
-                      );
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Máximo de registros: $maxRecords por día')),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e')),
-                    );
-                  }
-                }
-              },
-              child: Text('Guardar',
-                  style: GoogleFonts.nunito(fontWeight: FontWeight.w700, color: AppColors.goldPrimary)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCountBtn({required IconData icon, VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: onTap != null ? AppColors.goldPrimary : AppColors.divider,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(icon, color: Colors.white, size: 20),
       ),
     );
   }

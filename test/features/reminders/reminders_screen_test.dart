@@ -168,7 +168,10 @@ void main() {
       await tester.tap(find.text('Nuevo +'));
       await settle(tester);
 
-      await tester.enterText(find.byKey(const Key('reminder_title')), 'Control médico');
+      // The title TextField has no Key — find the first TextField in the dialog
+      // (hint text is 'Título del recordatorio')
+      final titleField = find.byType(TextField).first;
+      await tester.enterText(titleField, 'Control médico');
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Guardar'));
@@ -207,12 +210,15 @@ void main() {
       await tester.pumpWidget(buildReminders(container));
       await settle(tester);
 
-      // Find toggle - it's the 44x24 container at the end of each reminder card
+      // The toggle is a custom GestureDetector wrapping a 48x26 Container.
+      // Find it by the GestureDetector that wraps the toggle container.
       final toggleFinder = find.byWidgetPredicate(
         (widget) =>
-            widget is Container &&
-            widget.constraints?.maxWidth == 44 &&
-            widget.constraints?.maxHeight == 24,
+            widget is GestureDetector &&
+            widget.child is Container &&
+            (widget.child as Container).constraints != null &&
+            (widget.child as Container).constraints!.maxWidth == 48 &&
+            (widget.child as Container).constraints!.maxHeight == 26,
       );
 
       expect(toggleFinder, findsWidgets);
@@ -249,8 +255,11 @@ void main() {
       await tester.pumpWidget(buildReminders(container));
       await settle(tester);
 
-      await tester.tap(find.byIcon(Icons.delete_outline).first);
-      await settle(tester);
+      // Swipe left on the Dismissible to trigger delete dialog
+      final dismissible = find.byType(Dismissible);
+      expect(dismissible, findsOneWidget);
+      await tester.drag(dismissible, const Offset(-500, 0));
+      await tester.pumpAndSettle();
 
       expect(find.text('¿Eliminar este recordatorio?'), findsOneWidget);
       expect(find.text('Eliminar'), findsOneWidget);
@@ -272,11 +281,12 @@ void main() {
       await tester.pumpWidget(buildReminders(container));
       await settle(tester);
 
-      await tester.tap(find.byIcon(Icons.delete_outline).first);
-      await settle(tester);
+      // Swipe left to trigger delete dialog
+      await tester.drag(find.byType(Dismissible), const Offset(-500, 0));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Cancelar'));
-      await settle(tester);
+      await tester.pumpAndSettle();
 
       final reminders = await fakeFirestore
           .collection('users')
@@ -303,11 +313,12 @@ void main() {
       await tester.pumpWidget(buildReminders(container));
       await settle(tester);
 
-      await tester.tap(find.byIcon(Icons.delete_outline).first);
-      await settle(tester);
+      // Swipe left to trigger delete dialog
+      await tester.drag(find.byType(Dismissible), const Offset(-500, 0));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Eliminar'));
-      await settle(tester);
+      await tester.pumpAndSettle();
 
       final reminders = await fakeFirestore
           .collection('users')

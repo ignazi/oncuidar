@@ -199,30 +199,26 @@ class FirestoreService {
 
   // ── Favorites ──
 
-  Future<void> toggleArticleFavorite(
-      String patientId, String articleId) async {
-    final patientRef =
-        _db.collection('users').doc(_uid).collection('patients').doc(patientId);
-    final doc = await patientRef.get();
-    final favorites =
-        List<String>.from(doc.data()?['favoriteArticles'] ?? []);
+  Future<void> toggleArticleFavorite(String articleId, [String? legacyArticleId]) async {
+    articleId = legacyArticleId ?? articleId;
+    final doc = await _userDoc.get();
+    final data = doc.data() as Map<String, dynamic>?;
+    final favorites = List<String>.from(data?['favoriteArticles'] ?? []);
     if (favorites.contains(articleId)) {
       favorites.remove(articleId);
     } else {
       favorites.add(articleId);
     }
-    await patientRef.update({'favoriteArticles': favorites});
+    await _userDoc.set({'favoriteArticles': favorites}, SetOptions(merge: true));
   }
 
-  Stream<List<String>> favoriteArticlesStream(String patientId) {
-    return _db
-        .collection('users')
-        .doc(_uid)
-        .collection('patients')
-        .doc(patientId)
+  Stream<List<String>> favoriteArticlesStream() {
+    return _userDoc
         .snapshots()
-        .map((snap) =>
-            List<String>.from(snap.data()?['favoriteArticles'] ?? []));
+        .map((snap) {
+          final data = snap.data() as Map<String, dynamic>?;
+          return List<String>.from(data?['favoriteArticles'] ?? []);
+        });
   }
 
   // ── Chats (conversaciones de orientación) ──

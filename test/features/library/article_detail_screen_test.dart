@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,6 @@ void main() {
   late FakeFirebaseFirestore fakeFirestore;
   late FirestoreService testService;
   const testUid = 'test-uid-123';
-  const testPatientId = 'patient-1';
 
   setUp(() {
     fakeFirestore = FakeFirebaseFirestore();
@@ -35,20 +35,6 @@ void main() {
         home: Scaffold(body: ArticleDetailScreen(id: id)),
       ),
     );
-  }
-
-  Future<void> seedPatient() async {
-    await fakeFirestore
-        .collection('users')
-        .doc(testUid)
-        .collection('patients')
-        .doc(testPatientId)
-        .set({
-      'fullName': 'Lucas García',
-      'diagnosis': 'Leucemia',
-      'caregiverId': testUid,
-      'createdAt': DateTime(2024, 2, 1),
-    });
   }
 
   Future<void> seedArticle({
@@ -75,7 +61,6 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
-      await seedPatient();
       await seedArticle(
         id: 'art1',
         title: 'Cuidados durante quimioterapia',
@@ -134,7 +119,6 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
-      await seedPatient();
       await seedArticle(
         id: 'art1',
         title: 'Guía de nutrición',
@@ -155,16 +139,14 @@ void main() {
       await tester.tap(bookmarkIcon);
       await tester.pumpAndSettle();
 
-      // Verify Firestore was updated
-      final patientDoc = await fakeFirestore
+      // Favorites are now stored at USER level, not patient level
+      final userDoc = await fakeFirestore
           .collection('users')
           .doc(testUid)
-          .collection('patients')
-          .doc(testPatientId)
           .get();
 
       final favorites =
-          List<String>.from(patientDoc.data()?['favoriteArticles'] ?? []);
+          List<String>.from(userDoc.data()?['favoriteArticles'] ?? []);
       expect(favorites, contains('art1'));
 
       // Verify icon changed to bookmark
@@ -177,7 +159,6 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
 
-      await seedPatient();
       await seedArticle(
         id: 'art1',
         title: 'Guía de nutrición',
@@ -186,13 +167,11 @@ void main() {
         body: 'Contenido...',
       );
 
-      // Pre-set article as favorite
+      // Pre-set article as favorite at USER level
       await fakeFirestore
           .collection('users')
           .doc(testUid)
-          .collection('patients')
-          .doc(testPatientId)
-          .update({'favoriteArticles': ['art1']});
+          .set({'favoriteArticles': ['art1']}, SetOptions(merge: true));
 
       final container = makeContainer();
       addTearDown(container.dispose);
@@ -207,16 +186,14 @@ void main() {
       await tester.tap(find.byIcon(Icons.bookmark));
       await tester.pumpAndSettle();
 
-      // Verify removed from Firestore
-      final patientDoc = await fakeFirestore
+      // Verify removed from Firestore (user level)
+      final userDoc = await fakeFirestore
           .collection('users')
           .doc(testUid)
-          .collection('patients')
-          .doc(testPatientId)
           .get();
 
       final favorites =
-          List<String>.from(patientDoc.data()?['favoriteArticles'] ?? []);
+          List<String>.from(userDoc.data()?['favoriteArticles'] ?? []);
       expect(favorites, isNot(contains('art1')));
 
       // Verify icon changed back

@@ -9,6 +9,7 @@ import '../../core/services/clinical_rules_engine.dart';
 import '../../core/utils/offline_utils.dart';
 import '../../core/providers/providers.dart';
 import '../../models/daily_record.dart';
+import '../../models/patient.dart';
 import '../../models/vital_signs.dart';
 import '../../models/symptom_entry.dart';
 import '../../models/alert_level.dart';
@@ -36,6 +37,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
   AlertLevel _currentAlert = AlertLevel.normal;
   bool _isLoading = false;
   bool _recordLoaded = false;
+  DateTime? _originalDate;
   DateTime? _originalCreatedAt;
 
   static const _symptomOptions = [
@@ -58,16 +60,6 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
     _heartRateController.addListener(_evaluateAlert);
     _oxygenController.addListener(_evaluateAlert);
     _respRateController.addListener(_evaluateAlert);
-    if (widget.recordId != null) {
-      ref.listen(dailyRecordsProvider, (prev, next) {
-        if (!_recordLoaded) {
-          final records = next.value;
-          if (records != null) {
-            _loadExistingRecord(records);
-          }
-        }
-      });
-    }
   }
 
   void _loadExistingRecord(List<DailyRecord> records) {
@@ -76,6 +68,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
 
     _recordLoaded = true;
     _recordType = record.recordType;
+    _originalDate = record.date;
     _originalCreatedAt = record.createdAt;
     if (record.vitalSigns != null) {
       if (record.vitalSigns!.temperature != null) {
@@ -160,7 +153,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
       final record = DailyRecord(
         id: recordId,
         patientId: patient.id,
-        date: now,
+        date: _originalDate ?? now,
         createdAt: _originalCreatedAt ?? now,
         recordType: _recordType,
         vitalSigns: _buildVitalSigns(),
@@ -178,7 +171,11 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
       if (mounted) {
         final isOnline = ref.read(isConnectedProvider).value ?? true;
         showOfflineSaveSuccess(context, isOnline: isOnline);
-        context.go('/dashboard');
+        if (widget.recordId != null && context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/dashboard');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -199,10 +196,19 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final recordsAsync = ref.watch(dailyRecordsProvider);
+    if (widget.recordId != null && !_recordLoaded && recordsAsync.value != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_recordLoaded) {
+          setState(() => _loadExistingRecord(recordsAsync.value!));
+        }
+      });
+    }
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) context.go('/dashboard');
+        if (!didPop) _goBack();
       },
       child: Scaffold(
       backgroundColor: AppColors.cream,
@@ -212,23 +218,48 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
           GradientHeader(
             showBackButton: true,
             title: widget.recordId != null ? 'Editar registro' : 'Registro diario',
-            onBackPressed: () => context.go('/dashboard'),
+            onBackPressed: _goBack,
             trailing: widget.recordId == null
-                ? GestureDetector(
-                    onTap: () => context.push('/history'),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: () => context.push('/history', extra: {'origin': 'record'}),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.history,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.history,
-                        color: Colors.white,
-                        size: 16,
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          final patient = ref.read(currentPatientProvider).value;
+                          if (patient != null) _showConfigureRecordDialog(patient);
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.tune,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   )
                 : null,
           ),
@@ -294,6 +325,122 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
   }
 
   // ── Tipo de registro: 2 columnas ──
+  void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/dashboard');
+    }
+  }
+
+  void _showConfigureRecordDialog(Patient patient) {
+    int maxRecords = patient.maxRecordsPerDay;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(
+            'Configurar registro',
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Registros programados por día:',
+                style: GoogleFonts.nunito(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildCountButton(
+                    icon: Icons.remove,
+                    onTap: maxRecords > 1
+                        ? () => setDialogState(() => maxRecords--)
+                        : null,
+                  ),
+                  Container(
+                    width: 64,
+                    height: 64,
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.goldLight,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.goldPrimary, width: 2),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$maxRecords',
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.goldDark,
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildCountButton(
+                    icon: Icons.add,
+                    onTap: maxRecords < 10
+                        ? () => setDialogState(() => maxRecords++)
+                        : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'Cancelar',
+                style: GoogleFonts.nunito(color: AppColors.textSecondary),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await ref.read(firestoreServiceProvider).updatePatient(
+                  patient.id,
+                  {'maxRecordsPerDay': maxRecords},
+                );
+              },
+              child: Text(
+                'Guardar',
+                style: GoogleFonts.nunito(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.goldPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCountButton({required IconData icon, VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: onTap != null ? AppColors.goldPrimary : AppColors.divider,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
+    );
+  }
+
   Widget _buildRecordTypeGrid() {
     final records = ref.watch(dailyRecordsProvider).value ?? [];
     final patient = ref.watch(currentPatientProvider).value;

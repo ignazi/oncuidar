@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -20,6 +21,7 @@ class NotificationService {
     if (_initialized) return;
 
     tz.initializeTimeZones();
+    await _configureLocalTimeZone();
 
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -45,6 +47,16 @@ class NotificationService {
     log('NotificationService initialized');
   }
 
+  Future<void> _configureLocalTimeZone() async {
+    try {
+      final timezone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timezone.identifier));
+      log('Local timezone configured: ${timezone.identifier}');
+    } catch (e) {
+      log('Could not configure local timezone, using default: $e');
+    }
+  }
+
   /// Pide permiso de notificaciones al usuario (Android 13+ / iOS)
   /// Retorna true si se concedió el permiso.
   Future<bool> requestPermission() async {
@@ -54,6 +66,8 @@ class NotificationService {
     if (androidPlugin != null) {
       final granted = await androidPlugin.requestNotificationsPermission();
       log('Android notification permission granted: $granted');
+      final exactGranted = await androidPlugin.requestExactAlarmsPermission();
+      log('Android exact alarm permission granted: $exactGranted');
     }
 
     // iOS
@@ -77,6 +91,18 @@ class NotificationService {
     return docId.hashCode & 0x7FFFFFFF;
   }
 
+  static const _dayMap = {
+    'lun': DateTime.monday,
+    'mar': DateTime.tuesday,
+    'mie': DateTime.wednesday,
+    'jue': DateTime.thursday,
+    'vie': DateTime.friday,
+    'sab': DateTime.saturday,
+    'dom': DateTime.sunday,
+  };
+
+  int _repeatId(int baseId, int weekday) => (baseId + weekday) & 0x7FFFFFFF;
+
   tz.TZDateTime _nextMatchingDay(
       DateTime scheduledTime, List<String> repeatDays) {
     final now = tz.TZDateTime.now(tz.local);
@@ -89,18 +115,8 @@ class NotificationService {
       scheduledTime.minute,
     );
 
-    const dayMap = {
-      'lun': DateTime.monday,
-      'mar': DateTime.tuesday,
-      'mie': DateTime.wednesday,
-      'jue': DateTime.thursday,
-      'vie': DateTime.friday,
-      'sab': DateTime.saturday,
-      'dom': DateTime.sunday,
-    };
-
     final targetWeekdays =
-        repeatDays.map((d) => dayMap[d]).whereType<int>().toList()..sort();
+        repeatDays.map((d) => _dayMap[d]).whereType<int>().toList()..sort();
 
     for (int i = 0; i < 7; i++) {
       final test = candidate.add(Duration(days: i));
@@ -127,7 +143,24 @@ class NotificationService {
     tz.TZDateTime tzDateTime;
 
     if (repeatDays != null && repeatDays.isNotEmpty) {
-      tzDateTime = _nextMatchingDay(scheduledTime, repeatDays);
+      await cancelReminder(id);
+      for (final weekday in repeatDays.map((d) => _dayMap[d]).whereType<int>()) {
+        tzDateTime = _nextMatchingDay(
+          scheduledTime,
+          _dayMap.entries
+              .where((entry) => entry.value == weekday)
+              .map((entry) => entry.key)
+              .toList(),
+        );
+        await _scheduleOne(
+          id: _repeatId(id, weekday),
+          title: title,
+          body: body,
+          scheduledDate: tzDateTime,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        );
+      }
+      return;
     } else {
       tzDateTime = tz.TZDateTime(
         tz.local,
@@ -142,13 +175,28 @@ class NotificationService {
       }
     }
 
-    log('Scheduling notification $id for $tzDateTime');
+    await _scheduleOne(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tzDateTime,
+    );
+  }
+
+  Future<void> _scheduleOne({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledDate,
+    DateTimeComponents? matchDateTimeComponents,
+  }) async {
+    log('Scheduling notification $id for $scheduledDate');
     try {
       await _plugin.zonedSchedule(
         id: id,
         title: title,
         body: body,
-        scheduledDate: tzDateTime,
+        scheduledDate: scheduledDate,
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'reminder_channel',
@@ -166,6 +214,7 @@ class NotificationService {
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: matchDateTimeComponents,
       );
       log('Notification $id scheduled successfully');
     } catch (e) {
@@ -175,6 +224,9 @@ class NotificationService {
 
   Future<void> cancelReminder(int id) async {
     await _plugin.cancel(id: id);
+    for (final weekday in _dayMap.values) {
+      await _plugin.cancel(id: _repeatId(id, weekday));
+    }
     log('Cancelled notification $id');
   }
 

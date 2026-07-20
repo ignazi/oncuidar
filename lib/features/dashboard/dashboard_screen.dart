@@ -355,7 +355,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 onPressed: () {
                   final today = DateTime.now();
                   final todayOnly = DateTime(today.year, today.month, today.day);
-                  context.push('/history', extra: todayOnly);
+                  context.push('/history', extra: {'filterDate': todayOnly});
                 },
                 icon: const Icon(Icons.history, size: 18),
                 label: Text(
@@ -510,7 +510,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       Icons.history,
                       'Historial',
                       'Registros pasados',
-                      () => context.push('/history'),
+                      () => context.push('/history', extra: {'origin': 'dashboard'}),
                       const Color(0xFF8B5CF6),
                     ),
                   ),

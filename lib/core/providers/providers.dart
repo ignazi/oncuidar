@@ -126,11 +126,7 @@ final userChecklistsProvider = StreamProvider<List<UserChecklist>>((ref) {
 });
 
 final favoriteArticlesProvider = StreamProvider<List<String>>((ref) {
-  final patientAsync = ref.watch(currentPatientProvider);
-  if (patientAsync is AsyncLoading) return const Stream.empty();
-  final patient = patientAsync.value;
-  if (patient == null) return Stream.value([]);
-  return ref.watch(firestoreServiceProvider).favoriteArticlesStream(patient.id);
+  return ref.watch(firestoreServiceProvider).favoriteArticlesStream();
 });
 
 // ── Shared content (not patient-dependent) ──

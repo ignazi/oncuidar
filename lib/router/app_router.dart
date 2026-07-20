@@ -63,9 +63,13 @@ final router = GoRouter(
         ),
         GoRoute(
           path: '/history',
-          builder: (_, state) => HistoryScreen(
-            filterDate: state.extra as DateTime?,
-          ),
+          builder: (_, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            return HistoryScreen(
+              filterDate: extra?['filterDate'] as DateTime?,
+              origin: extra?['origin'] as String?,
+            );
+          },
         ),
       ],
     ),
