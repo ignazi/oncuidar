@@ -464,8 +464,8 @@ class _OrientationScreenState extends ConsumerState<OrientationScreen> {
                 GestureDetector(
                   onTap: _toggleSearch,
                   child: Container(
-                    width: 36,
-                    height: 36,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
@@ -473,7 +473,7 @@ class _OrientationScreenState extends ConsumerState<OrientationScreen> {
                     child: Icon(
                       _isSearching ? Icons.close : Icons.search,
                       color: Colors.white,
-                      size: 16,
+                      size: 20,
                     ),
                   ),
                 ),
@@ -481,8 +481,8 @@ class _OrientationScreenState extends ConsumerState<OrientationScreen> {
                 GestureDetector(
                   onTap: _showConversationsDrawer,
                   child: Container(
-                    width: 36,
-                    height: 36,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
@@ -490,7 +490,7 @@ class _OrientationScreenState extends ConsumerState<OrientationScreen> {
                     child: const Icon(
                       Icons.add,
                       color: Colors.white,
-                      size: 16,
+                      size: 20,
                     ),
                   ),
                 ),

@@ -554,7 +554,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: row)).value = xlsx.TextCellValue(vs?.oxygenSaturation != null ? '${vs!.oxygenSaturation}%' : '');
         sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: row)).value = xlsx.TextCellValue(vs?.respiratoryRate != null ? '${vs!.respiratoryRate} rpm' : '');
         sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: row)).value = xlsx.TextCellValue(
-          rec.symptoms.map((s) => '${s.name} ${s.intensity}/10').join(', '),
+          rec.symptoms.map((s) => '${s.name} ${s.label} (${s.intensity}/10)').join(', '),
         );
         sheet.cell(xlsx.CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: row)).value = xlsx.TextCellValue(rec.generalNotes ?? '');
         row++;
@@ -848,7 +848,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     pw.TextStyle cellStyle,
     PdfColor goldColor,
   ) {
-    final headers = ['Fecha', 'Hora', 'Tipo', 'Estado', 'Temp.', 'Freq. Card.', 'Sat. O₂', 'Freq. Resp.'];
+    final headers = ['Fecha', 'Hora', 'Tipo', 'Estado', 'Temp.', 'Freq. Card.', 'Sat. O\u2082', 'Freq. Resp.', 'S\u00EDntomas', 'Observaciones'];
 
     final data = records.map((rec) {
       final vs = rec.vitalSigns;
@@ -857,10 +857,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         _timeStr(rec.createdAt),
         rec.recordType,
         rec.alertLevel.name,
-        vs?.temperature != null ? '${vs!.temperature}°C' : '-',
+        vs?.temperature != null ? '${vs!.temperature}\u00B0C' : '-',
         vs?.heartRate != null ? '${vs!.heartRate} lpm' : '-',
         vs?.oxygenSaturation != null ? '${vs!.oxygenSaturation}%' : '-',
         vs?.respiratoryRate != null ? '${vs!.respiratoryRate} rpm' : '-',
+        rec.symptoms.map((s) => '${s.name} ${s.label} (${s.intensity}/10)').join(', '),
+        rec.generalNotes ?? '-',
       ];
     }).toList();
 
@@ -1090,28 +1092,28 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                           Row(
                             children: [
                               Text(
-                                _dateStr(rec.date),
-                                style: GoogleFonts.nunito(
-                                  fontSize: 13,
+                                  _dateStr(rec.date),
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                _timeStr(rec.createdAt),
-                                style: GoogleFonts.nunito(
-                                  fontSize: 12,
+                                  _timeStr(rec.createdAt),
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 13,
                                   color: AppColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 recordLabel,
-                                style: GoogleFonts.nunito(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF8A5A05),
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF8A5A05),
                                 ),
                               ),
                             ],
@@ -1152,7 +1154,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                           Text(
                             st.label,
                             style: GoogleFonts.nunito(
-                              fontSize: 12,
+                              fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: st.text,
                             ),
@@ -1188,12 +1190,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         ...rec.symptoms.map((s) => Container(
                               width: double.infinity,
                               margin: const EdgeInsets.only(top: 6),
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: s.color.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: const Color(0xFFE8A820).withValues(alpha: 0.15),
+                                  color: s.color.withValues(alpha: 0.2),
                                 ),
                               ),
                               child: Row(
@@ -1202,16 +1204,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                   Text(
                                     'Síntoma',
                                     style: GoogleFonts.nunito(
-                                      fontSize: 13,
+                                      fontSize: 14,
                                       color: AppColors.textSecondary,
                                     ),
                                   ),
                                   Text(
-                                    '${s.name} · ${s.intensity}/10',
+                                    '${s.name} · ${s.label} (${s.intensity}/10)',
                                     style: GoogleFonts.nunito(
-                                      fontSize: 13,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
+                                      color: s.color,
                                     ),
                                   ),
                                 ],
@@ -1359,21 +1361,21 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
-          Text(
-            value,
-            style: GoogleFonts.nunito(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: GoogleFonts.nunito(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
     );
   }
 

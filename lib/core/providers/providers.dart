@@ -34,13 +34,13 @@ final authStateProvider = StreamProvider<User?>((ref) {
 
 // ── User ──
 
-final userProvider = StreamProvider<AppUser?>((ref) {
+final userProvider = StreamProvider.autoDispose<AppUser?>((ref) {
   return ref.watch(firestoreServiceProvider).userStream();
 });
 
 // ── Patient List ──
 
-final patientsListProvider = StreamProvider<List<Patient>>((ref) {
+final patientsListProvider = StreamProvider.autoDispose<List<Patient>>((ref) {
   return ref.watch(firestoreServiceProvider).patientsStream();
 });
 
@@ -83,7 +83,7 @@ final selectedPatientIdProvider =
 /// Prioridad: ID guardado en SharedPreferences → primer paciente → null.
 /// Se recalcula cuando cambia la lista de pacientes (por ej. si se borra uno)
 /// o cuando el usuario cambia la selección.
-final currentPatientProvider = StreamProvider<Patient?>((ref) {
+final currentPatientProvider = StreamProvider.autoDispose<Patient?>((ref) {
   final selectedId = ref.watch(selectedPatientIdProvider);
   return ref.watch(firestoreServiceProvider).patientsStream().map((list) {
     if (list.isEmpty) return null;
@@ -101,7 +101,7 @@ final currentPatientProvider = StreamProvider<Patient?>((ref) {
 
 // ── Patient-dependent providers ──
 
-final dailyRecordsProvider = StreamProvider<List<DailyRecord>>((ref) {
+final dailyRecordsProvider = StreamProvider.autoDispose<List<DailyRecord>>((ref) {
   final patientAsync = ref.watch(currentPatientProvider);
   if (patientAsync is AsyncLoading) return const Stream.empty();
   final patient = patientAsync.value;
@@ -109,7 +109,7 @@ final dailyRecordsProvider = StreamProvider<List<DailyRecord>>((ref) {
   return ref.watch(firestoreServiceProvider).dailyRecordsStream(patient.id);
 });
 
-final remindersProvider = StreamProvider<List<Reminder>>((ref) {
+final remindersProvider = StreamProvider.autoDispose<List<Reminder>>((ref) {
   final patientAsync = ref.watch(currentPatientProvider);
   if (patientAsync is AsyncLoading) return const Stream.empty();
   final patient = patientAsync.value;
@@ -117,7 +117,7 @@ final remindersProvider = StreamProvider<List<Reminder>>((ref) {
   return ref.watch(firestoreServiceProvider).remindersStream(patient.id);
 });
 
-final userChecklistsProvider = StreamProvider<List<UserChecklist>>((ref) {
+final userChecklistsProvider = StreamProvider.autoDispose<List<UserChecklist>>((ref) {
   final patientAsync = ref.watch(currentPatientProvider);
   if (patientAsync is AsyncLoading) return const Stream.empty();
   final patient = patientAsync.value;
@@ -125,7 +125,7 @@ final userChecklistsProvider = StreamProvider<List<UserChecklist>>((ref) {
   return ref.watch(firestoreServiceProvider).userChecklistsStream(patient.id);
 });
 
-final favoriteArticlesProvider = StreamProvider<List<String>>((ref) {
+final favoriteArticlesProvider = StreamProvider.autoDispose<List<String>>((ref) {
   return ref.watch(firestoreServiceProvider).favoriteArticlesStream();
 });
 
@@ -219,7 +219,7 @@ final faqsProvider = StreamProvider<List<FaqItem>>((ref) async* {
 // ── Chats (conversaciones de orientación) ──
 
 /// Provee la lista de conversaciones del usuario desde Firestore.
-final conversationsProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
+final conversationsProvider = StreamProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
   return ref.watch(firestoreServiceProvider).chatsStream();
 });
 

@@ -113,7 +113,7 @@ class GradientHeader extends StatelessWidget {
             style: GoogleFonts.nunito(
               color: Colors.white,
               fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
               letterSpacing: -0.25,
               height: 1.2,
               shadows: const [
@@ -160,8 +160,8 @@ class GradientHeader extends StatelessWidget {
               GestureDetector(
                 onTap: onBackPressed ?? () => GoRouter.of(context).pop(),
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
@@ -169,7 +169,7 @@ class GradientHeader extends StatelessWidget {
                   child: Icon(
                     backIcon,
                     color: Colors.white,
-                    size: 16,
+                    size: 20,
                   ),
                 ),
               ),
@@ -180,8 +180,8 @@ class GradientHeader extends StatelessWidget {
                     title!,
                     style: GoogleFonts.nunito(
                       color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
                       letterSpacing: -0.25,
                       shadows: const [
                         Shadow(

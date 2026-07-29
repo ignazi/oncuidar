@@ -30,7 +30,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
   final _respRateController = TextEditingController();
   final _notesController = TextEditingController();
 
-  int _selectedIntensity = 5;
+  int _selectedIntensity = 0;
   final List<SymptomEntry> _symptoms = [];
   String _selectedSymptom = '';
 
@@ -41,14 +41,35 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
   DateTime? _originalCreatedAt;
 
   static const _symptomOptions = [
+    // Generales / constitucionales
     'Fiebre',
-    'Vómito',
-    'Dolor',
     'Fatiga',
-    'Diarrea',
-    'Tos',
+    'Debilidad',
+    'Pérdida de peso',
+    'Infección',
+    'Anemia',
+    // Gastrointestinales
+    'Náuseas',
+    'Vómito',
     'Pérdida de apetito',
+    'Diarrea',
+    'Constipación',
+    'Trastorno de la deglución',
+    // Respiratorios
+    'Tos',
     'Dificultad respiratoria',
+    'Estertores pre mortem',
+    // Neurológicos / psiquiátricos
+    'Dolor',
+    'Convulsiones',
+    'Alteración de conciencia',
+    'Insomnio',
+    'Ansiedad y angustia',
+    'Depresión',
+    // Urinarios
+    'Incontinencia urinaria',
+    'Retención urinaria',
+    // Otros
     'Sangrado',
     'Otro',
   ];
@@ -122,7 +143,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
         SymptomEntry(name: _selectedSymptom, intensity: _selectedIntensity),
       );
       _selectedSymptom = '';
-      _selectedIntensity = 5;
+      _selectedIntensity = 0;
     });
     _evaluateAlert();
   }
@@ -130,6 +151,15 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
   void _removeSymptom(SymptomEntry s) {
     setState(() => _symptoms.remove(s));
     _evaluateAlert();
+  }
+
+  String _intensityRange(int value) {
+    if (value == 0) return '';
+    if (value <= 2) return '(1-2)';
+    if (value <= 4) return '(3-4)';
+    if (value <= 6) return '(5-6)';
+    if (value <= 8) return '(7-8)';
+    return '(9-10)';
   }
 
   Future<void> _saveRecord() async {
@@ -174,7 +204,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
         if (widget.recordId != null && context.canPop()) {
           context.pop();
         } else {
-          context.go('/dashboard');
+          _resetForm();
         }
       }
     } catch (e) {
@@ -226,8 +256,8 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                       GestureDetector(
                         onTap: () => context.push('/history', extra: {'origin': 'record'}),
                         child: Container(
-                          width: 36,
-                          height: 36,
+                          width: 42,
+                          height: 42,
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
@@ -235,7 +265,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                           child: const Icon(
                             Icons.history,
                             color: Colors.white,
-                            size: 16,
+                            size: 20,
                           ),
                         ),
                       ),
@@ -246,8 +276,8 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                           if (patient != null) _showConfigureRecordDialog(patient);
                         },
                         child: Container(
-                          width: 36,
-                          height: 36,
+                          width: 42,
+                          height: 42,
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
@@ -255,7 +285,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                           child: const Icon(
                             Icons.tune,
                             color: Colors.white,
-                            size: 16,
+                            size: 20,
                           ),
                         ),
                       ),
@@ -311,12 +341,30 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
     );
   }
 
+  void _resetForm() {
+    setState(() {
+      _recordType = 'programado';
+      _originalDate = null;
+      _originalCreatedAt = null;
+      _tempController.clear();
+      _heartRateController.clear();
+      _oxygenController.clear();
+      _respRateController.clear();
+      _notesController.clear();
+      _symptoms.clear();
+      _selectedSymptom = '';
+      _selectedIntensity = 0;
+      _currentAlert = AlertLevel.normal;
+      _recordLoaded = false;
+    });
+  }
+
   // ── Section title (uppercase, font-bold) ──
   Widget _buildSectionTitle(String text) {
     return Text(
       text.toUpperCase(),
       style: GoogleFonts.nunito(
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: FontWeight.w700,
         color: const Color(0xFF8A5A05),
         letterSpacing: 0.5,
@@ -457,15 +505,25 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
     }).length;
 
     final displayCount = todayCount + 1;
+    final isAtMax = todayCount >= maxPerDay;
+    final countLabel = isAtMax ? '$maxPerDay/$maxPerDay' : '$displayCount/$maxPerDay';
+
+    // Si está al máximo y estaba en programado, forzar a extra
+    if (isAtMax && _recordType == 'programado') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _recordType = 'extra');
+      });
+    }
 
     return Row(
       children: [
         Expanded(
           child: _buildRecordTypeButton(
             'programado',
-            widget.recordId != null
-                ? 'Registro programado'
-                : 'Registro programado $displayCount/$maxPerDay',
+              widget.recordId != null
+                  ? 'Registro programado'
+                  : 'Registro programado $countLabel',
+            disabled: isAtMax,
           ),
         ),
         const SizedBox(width: 8),
@@ -476,19 +534,20 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
     );
   }
 
-  Widget _buildRecordTypeButton(String value, String label) {
+  Widget _buildRecordTypeButton(String value, String label, {bool disabled = false}) {
     final selected = _recordType == value;
+    final effectiveSelected = selected && !disabled;
     return GestureDetector(
-      onTap: () => setState(() => _recordType = value),
+      onTap: disabled ? null : () => setState(() => _recordType = value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFFFF0C2) : Colors.white,
+          color: effectiveSelected ? const Color(0xFFFFF0C2) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? const Color(0xFFD99A16) : const Color(0xFFE8A820).withValues(alpha: 0.15),
-            width: selected ? 1.5 : 1,
+            color: effectiveSelected ? const Color(0xFFD99A16) : (disabled ? const Color(0xFFE0D8C8) : const Color(0xFFE8A820).withValues(alpha: 0.15)),
+            width: effectiveSelected ? 1.5 : 1,
           ),
         ),
         child: Center(
@@ -496,11 +555,13 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
             label,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: selected
-                  ? const Color(0xFF7A4E05)
-                  : const Color(0xFF9A8060),
+              color: disabled
+                  ? const Color(0xFFC8B8A0)
+                  : (effectiveSelected
+                      ? const Color(0xFF7A4E05)
+                      : const Color(0xFF9A8060)),
             ),
           ),
         ),
@@ -585,7 +646,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
     bool allowDecimal = false,
   }) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -595,13 +656,13 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
         children: [
           // Icon container
           Container(
-            width: 32,
-            height: 32,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 16),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 10),
           // Label + input + unit
@@ -613,7 +674,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                 Text(
                   label,
                   style: GoogleFonts.nunito(
-                    fontSize: 13,
+                    fontSize: 15,
                     color: const Color(0xFF9A8060),
                   ),
                 ),
@@ -627,14 +688,14 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                             ? TextInputType.numberWithOptions(decimal: true)
                             : TextInputType.number,
                         style: GoogleFonts.nunito(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
                           color: const Color(0xFF2C1A00),
                         ),
                         decoration: InputDecoration(
                           hintText: placeholder,
                           hintStyle: GoogleFonts.nunito(
-                            fontSize: 14,
+                            fontSize: 15,
                             color: const Color(0xFFD0BFA0),
                           ),
                           isDense: true,
@@ -646,7 +707,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                     Text(
                       unit,
                       style: GoogleFonts.nunito(
-                        fontSize: 12,
+                    fontSize: 15,
                         color: const Color(0xFF9A8060),
                       ),
                     ),
@@ -696,9 +757,9 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                   child: DropdownButton<String>(
                     value: _selectedSymptom.isEmpty ? null : _selectedSymptom,
                     hint: Text(
-                      'Selecciona un síntoma',
+                      'Selecciona un s\u00EDntoma',
                       style: GoogleFonts.nunito(
-                        fontSize: 13,
+                        fontSize: 15,
                         color: AppColors.textHint,
                       ),
                     ),
@@ -708,7 +769,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                       return DropdownMenuItem(value: s, child: Text(
                         s,
                         style: GoogleFonts.nunito(
-                          fontSize: 13,
+                          fontSize: 15,
                           color: AppColors.textPrimary,
                         ),
                       ));
@@ -736,65 +797,66 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
           ),
           const SizedBox(height: 10),
 
-          // Intensidad 1-10 grid
+          // Intensidad — slider with label + range
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Intensidad',
                 style: GoogleFonts.nunito(
-                  fontSize: 12,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF8A5A05),
                 ),
               ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: SymptomEntry.colorFor(_selectedIntensity).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${SymptomEntry.labelFor(_selectedIntensity)} ${_intensityRange(_selectedIntensity)}'.trim(),
+                  style: GoogleFonts.nunito(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: SymptomEntry.colorFor(_selectedIntensity),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               Text(
                 '$_selectedIntensity/10',
                 style: GoogleFonts.nunito(
-                  fontSize: 12,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
                   color: const Color(0xFF9A8060),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 10,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
+          const SizedBox(height: 8),
+          // Slider
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: SymptomEntry.colorFor(_selectedIntensity),
+              inactiveTrackColor: SymptomEntry.colorFor(_selectedIntensity).withValues(alpha: 0.15),
+              thumbColor: SymptomEntry.colorFor(_selectedIntensity),
+              overlayColor: SymptomEntry.colorFor(_selectedIntensity).withValues(alpha: 0.08),
+              trackHeight: 6,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 11),
+              tickMarkShape: const RoundSliderTickMarkShape(),
+              activeTickMarkColor: Colors.white,
+              inactiveTickMarkColor: const Color(0xFFE0D0B0),
+              showValueIndicator: ShowValueIndicator.never,
             ),
-            itemCount: 10,
-            itemBuilder: (ctx, i) {
-              final val = i + 1;
-              final selected = _selectedIntensity == val;
-              return GestureDetector(
-                onTap: () => setState(() => _selectedIntensity = val),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? const Color(0xFFE8A820)
-                        : const Color(0xFFFFF4D0),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$val',
-                      style: GoogleFonts.nunito(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: selected
-                            ? Colors.white
-                            : const Color(0xFF7A6030),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+            child: Slider(
+              value: _selectedIntensity.toDouble(),
+              min: 0,
+              max: 10,
+              divisions: 10,
+              onChanged: (v) => setState(() => _selectedIntensity = v.round()),
+            ),
           ),
           const SizedBox(height: 10),
 
@@ -807,7 +869,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                 child: Text(
                   'Puedes agregar más de un síntoma.',
                   style: GoogleFonts.nunito(
-                    fontSize: 12,
+                    fontSize: 14,
                     color: const Color(0xFF9A8060),
                   ),
                 ),
@@ -825,30 +887,30 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF4D0),
+                      color: s.color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: const Color(0xFFE8A820).withValues(alpha: 0.2),
+                        color: s.color.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${s.name} · ${s.intensity}/10',
+                          '${s.name} · ${s.label} (${s.intensity}/10)',
                           style: GoogleFonts.nunito(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF7A4E05),
+                            color: s.color,
                           ),
                         ),
                         const SizedBox(width: 4),
                         GestureDetector(
                           onTap: () => _removeSymptom(s),
-                          child: const Icon(
+                          child: Icon(
                             Icons.close,
-                            size: 12,
-                            color: Color(0xFF9A8060),
+                            size: 14,
+                            color: s.color,
                           ),
                         ),
                       ],
@@ -866,13 +928,13 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
   Widget _buildNotesField() {
     return TextField(
       controller: _notesController,
-      maxLines: 4,
-      style: GoogleFonts.nunito(fontSize: 14),
+      maxLines: 2,
+      style: GoogleFonts.nunito(fontSize: 15),
       decoration: InputDecoration(
         hintText:
             'Observaciones adicionales (opcional). Puedes guardar solo este campo si es lo disponible.',
         hintStyle: GoogleFonts.nunito(
-          fontSize: 13,
+          fontSize: 15,
           color: AppColors.textHint,
         ),
         filled: true,
@@ -958,7 +1020,7 @@ class _DailyRecordScreenState extends ConsumerState<DailyRecordScreen> {
                 Text(
                   subtitle,
                   style: GoogleFonts.nunito(
-                    fontSize: 12,
+                    fontSize: 13,
                     color: color.withValues(alpha: 0.8),
                   ),
                 ),

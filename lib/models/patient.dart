@@ -13,6 +13,7 @@ class Patient {
   final String? emergencyContactName;
   final String? emergencyContactPhone;
   final int maxRecordsPerDay;
+  final bool notificationsEnabled;
   final DateTime createdAt;
 
   Patient({
@@ -30,6 +31,7 @@ class Patient {
     this.emergencyContactName,
     this.emergencyContactPhone,
     this.maxRecordsPerDay = 3,
+    this.notificationsEnabled = true,
     required this.createdAt,
   });
 
@@ -45,6 +47,7 @@ class Patient {
         'healthCenterPhone': healthCenterPhone,
         'emergencyContactName': emergencyContactName,
         'emergencyContactPhone': emergencyContactPhone,
+        'notificationsEnabled': notificationsEnabled,
         'maxRecordsPerDay': maxRecordsPerDay,
         'createdAt': createdAt,
       };
@@ -67,6 +70,7 @@ class Patient {
         healthCenterPhone: map['healthCenterPhone'] as String?,
         emergencyContactName: map['emergencyContactName'] as String?,
         emergencyContactPhone: map['emergencyContactPhone'] as String?,
+        notificationsEnabled: map['notificationsEnabled'] as bool? ?? true,
         maxRecordsPerDay: map['maxRecordsPerDay'] as int? ?? 3,
         createdAt: map['createdAt'] is DateTime
             ? map['createdAt'] as DateTime

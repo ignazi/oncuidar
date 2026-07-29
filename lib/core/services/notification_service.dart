@@ -134,6 +134,7 @@ class NotificationService {
     required String body,
     required DateTime scheduledTime,
     List<String>? repeatDays,
+    String? payload,
   }) async {
     if (!_initialized) {
       log('WARNING: NotificationService not initialized, initializing now');
@@ -158,6 +159,7 @@ class NotificationService {
           body: body,
           scheduledDate: tzDateTime,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          payload: payload,
         );
       }
       return;
@@ -180,6 +182,7 @@ class NotificationService {
       title: title,
       body: body,
       scheduledDate: tzDateTime,
+      payload: payload,
     );
   }
 
@@ -189,6 +192,7 @@ class NotificationService {
     required String body,
     required tz.TZDateTime scheduledDate,
     DateTimeComponents? matchDateTimeComponents,
+    String? payload,
   }) async {
     log('Scheduling notification $id for $scheduledDate');
     try {
@@ -197,6 +201,7 @@ class NotificationService {
         title: title,
         body: body,
         scheduledDate: scheduledDate,
+        payload: payload,
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'reminder_channel',

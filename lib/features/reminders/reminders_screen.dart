@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/gradient_header.dart';
 import '../../core/providers/providers.dart';
 import '../../core/services/notification_service.dart';
+import '../../models/patient.dart';
 import '../../models/reminder.dart';
 
 class _TypeConfig {
@@ -71,7 +74,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.goldPrimary : AppColors.goldLight,
           borderRadius: BorderRadius.circular(20),
@@ -79,7 +82,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
         child: Text(
           label,
           style: GoogleFonts.nunito(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
             color: isSelected ? Colors.white : const Color(0xFF7A6030),
           ),
@@ -99,7 +102,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.goldPrimary : AppColors.goldLight,
           borderRadius: BorderRadius.circular(12),
@@ -107,7 +110,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
         child: Text(
           _formatDay(day),
           style: GoogleFonts.nunito(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
             color: isSelected ? Colors.white : const Color(0xFF7A6030),
           ),
@@ -344,10 +347,10 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     return TextField(
       controller: controller,
       maxLines: maxLines,
-      style: GoogleFonts.nunito(fontSize: 14, color: AppColors.textPrimary),
+      style: GoogleFonts.nunito(fontSize: 15, color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: GoogleFonts.nunito(fontSize: 14, color: AppColors.textHint),
+        hintStyle: GoogleFonts.nunito(fontSize: 15, color: AppColors.textHint),
         filled: true,
         fillColor: AppColors.inputBg,
         contentPadding:
@@ -378,12 +381,29 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     return Text(
       text,
       style: GoogleFonts.nunito(
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: FontWeight.w700,
         color: AppColors.textTertiary,
         letterSpacing: 0.3,
       ),
     );
+  }
+
+  /// Calcula el texto del countdown hasta la próxima ocurrencia.
+  /// Para create: si la hora ya pasó hoy, suma 1 día.
+  /// Para edit: usa la fecha del reminder.
+  String _formatCountdown(DateTime target) {
+    final now = DateTime.now();
+    var adjusted = target;
+    // Si ya pasó, proyectar a mañana (create) o mantener (edit se basa en su fecha)
+    if (adjusted.isBefore(now)) {
+      adjusted = adjusted.add(const Duration(days: 1));
+    }
+    final diff = adjusted.difference(now);
+    if (diff.isNegative) return '0h 00min';
+    final hours = diff.inHours;
+    final minutes = diff.inMinutes.remainder(60);
+    return '${hours}h ${minutes.toString().padLeft(2, '0')}min';
   }
 
   // ─────────────────────────────────────
@@ -399,6 +419,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     required ValueChanged<TimeOfDay> onTimeChanged,
     required List<String> selectedDays,
     required BuildContext dialogContext,
+    String countdownText = '', // si no se pasa, no se muestra
   }) {
     final allDays = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
     return SingleChildScrollView(
@@ -414,7 +435,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                 hintText: 'Descripción (opcional)',
                 maxLines: 2),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _buildSectionLabel('Tipo'),
           const SizedBox(height: 8),
           Wrap(
@@ -443,7 +464,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _buildSectionLabel('Hora'),
           const SizedBox(height: 8),
           _buildTimePicker(
@@ -451,7 +472,38 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
             selectedTime: selectedTime,
             onPicked: onTimeChanged,
           ),
-          const SizedBox(height: 16),
+          if (countdownText.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.goldLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: AppColors.goldPrimary.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.alarm,
+                        size: 18, color: AppColors.goldDark),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Suena en $countdownText',
+                      style: GoogleFonts.nunito(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.goldDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 20),
           _buildSectionLabel('Días de repetición'),
           const SizedBox(height: 8),
           Wrap(
@@ -510,7 +562,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                     Text(
                       'Cancelar',
                       style: GoogleFonts.nunito(
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textSecondary,
                       ),
@@ -550,7 +602,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                     Text(
                       saveLabel,
                       style: GoogleFonts.nunito(
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
@@ -593,7 +645,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                     const SizedBox(width: 6),
                     Text('Cancelar',
                         style: GoogleFonts.nunito(
-                          fontSize: 14,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textSecondary,
                         )),
@@ -631,7 +683,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                     const SizedBox(width: 6),
                     Text('Eliminar',
                         style: GoogleFonts.nunito(
-                          fontSize: 14,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         )),
@@ -646,6 +698,63 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
   }
 
   // ─────────────────────────────────────
+  //  DIALOG FRAME (shared — estilo dashboard: blanco + gold sutil)
+  // ─────────────────────────────────────
+  Widget _buildDialogFrame({
+    required String title,
+    required IconData icon,
+    required Widget body,
+    required Widget actions,
+  }) {
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      backgroundColor: Colors.white,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Title ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AppColors.goldLight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: AppColors.goldPrimary, size: 16),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.nunito(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF2C1A00),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Body ──
+          body,
+
+          // ── Actions ──
+          actions,
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────
   //  CREATE DIALOG
   // ─────────────────────────────────────
   Future<void> _showCreateDialog({String initialType = 'medicamento'}) async {
@@ -654,43 +763,63 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     String selectedType = initialType;
     TimeOfDay selectedTime = TimeOfDay.now();
     List<String> selectedDays = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
+    String countdownText = '';
+    Timer? countdownTimer;
 
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          actionsPadding: EdgeInsets.zero,
-          title: Text(
-            'Nuevo recordatorio',
-            style: GoogleFonts.nunito(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+        builder: (ctx, setDialogState) {
+          // Iniciar countdown en vivo al abrir el diálogo
+          if (countdownTimer == null) {
+            countdownText =
+                _formatCountdown(_buildDateTime(DateTime.now(), selectedTime));
+            countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+              setDialogState(() {
+                countdownText = _formatCountdown(
+                    _buildDateTime(DateTime.now(), selectedTime));
+              });
+            });
+          }
+
+          return _buildDialogFrame(
+            icon: Icons.add_rounded,
+            title: 'Nuevo recordatorio',
+            body: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: _buildDialogBody(
+                titleCtrl: titleCtrl,
+                descCtrl: descCtrl,
+                selectedType: selectedType,
+                onTypeChanged: (v) => setDialogState(() => selectedType = v),
+                setDialogState: setDialogState,
+                selectedTime: selectedTime,
+                onTimeChanged: (t) => setDialogState(() {
+                  selectedTime = t;
+                  countdownText = _formatCountdown(
+                      _buildDateTime(DateTime.now(), t));
+                }),
+                selectedDays: selectedDays,
+                dialogContext: ctx,
+                countdownText: countdownText,
+              ),
             ),
-          ),
-          content: _buildDialogBody(
-            titleCtrl: titleCtrl,
-            descCtrl: descCtrl,
-            selectedType: selectedType,
-            onTypeChanged: (v) => setDialogState(() => selectedType = v),
-            setDialogState: setDialogState,
-            selectedTime: selectedTime,
-            onTimeChanged: (t) => setDialogState(() => selectedTime = t),
-            selectedDays: selectedDays,
-            dialogContext: ctx,
-          ),
-          actions: [
-            _buildDialogActions(
-              ctx: ctx,
-              onCancel: () => Navigator.pop(ctx, false),
-              onSave: () {
-                if (titleCtrl.text.trim().isNotEmpty) Navigator.pop(ctx, true);
-              },
+            actions: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _buildDialogActions(
+                ctx: ctx,
+                onCancel: () => Navigator.pop(ctx, false),
+                onSave: () {
+                  if (titleCtrl.text.trim().isNotEmpty) Navigator.pop(ctx, true);
+                },
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
+
+    countdownTimer?.cancel();
 
     if (saved == true && titleCtrl.text.trim().isNotEmpty) {
       final dt = _buildDateTime(DateTime.now(), selectedTime);
@@ -715,13 +844,16 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
             .read(firestoreServiceProvider)
             .addReminder(patient.id, reminder);
 
-        await NotificationService().scheduleReminder(
-          id: NotificationService.safeId(docId),
-          title: _getTypeLabel(reminder.type),
-          body: '${reminder.title}${reminder.description != null ? ' · ${reminder.description}' : ''}',
-          scheduledTime: dt,
-          repeatDays: selectedDays,
-        );
+        if (patient.notificationsEnabled) {
+          await NotificationService().scheduleReminder(
+            id: NotificationService.safeId(docId),
+            title: '${patient.fullName}: ${_getTypeLabel(reminder.type)}',
+            body: '${reminder.title}${reminder.description != null ? ' · ${reminder.description}' : ''}',
+            scheduledTime: dt,
+            repeatDays: selectedDays,
+            payload: patient.id,
+          );
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -748,45 +880,65 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     TimeOfDay selectedTime =
         TimeOfDay(hour: reminder.dateTime.hour, minute: reminder.dateTime.minute);
     List<String> selectedDays = List<String>.from(reminder.repeatDays ?? []);
+    String countdownText = '';
+    Timer? countdownTimer;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          actionsPadding: EdgeInsets.zero,
-          title: Text(
-            'Editar recordatorio',
-            style: GoogleFonts.nunito(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+        builder: (ctx, setDialogState) {
+          // Iniciar countdown en vivo al abrir el diálogo
+          if (countdownTimer == null) {
+            countdownText = _formatCountdown(
+                _buildDateTime(reminder.dateTime, selectedTime));
+            countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+              setDialogState(() {
+                countdownText = _formatCountdown(
+                    _buildDateTime(reminder.dateTime, selectedTime));
+              });
+            });
+          }
+
+          return _buildDialogFrame(
+            icon: Icons.edit_rounded,
+            title: 'Editar recordatorio',
+            body: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: _buildDialogBody(
+                titleCtrl: titleCtrl,
+                descCtrl: descCtrl,
+                selectedType: selectedType,
+                onTypeChanged: (v) => setDialogState(() => selectedType = v),
+                setDialogState: setDialogState,
+                selectedTime: selectedTime,
+                onTimeChanged: (t) => setDialogState(() {
+                  selectedTime = t;
+                  countdownText = _formatCountdown(
+                      _buildDateTime(reminder.dateTime, t));
+                }),
+                selectedDays: selectedDays,
+                dialogContext: ctx,
+                countdownText: countdownText,
+              ),
             ),
-          ),
-          content: _buildDialogBody(
-            titleCtrl: titleCtrl,
-            descCtrl: descCtrl,
-            selectedType: selectedType,
-            onTypeChanged: (v) => setDialogState(() => selectedType = v),
-            setDialogState: setDialogState,
-            selectedTime: selectedTime,
-            onTimeChanged: (t) => setDialogState(() => selectedTime = t),
-            selectedDays: selectedDays,
-            dialogContext: ctx,
-          ),
-          actions: [
-            _buildDialogActions(
-              ctx: ctx,
-              onCancel: () => Navigator.pop(ctx, false),
-              onSave: () {
-                if (titleCtrl.text.trim().isNotEmpty) Navigator.pop(ctx, true);
-              },
-              saveLabel: 'Actualizar',
-              saveIcon: Icons.save_rounded,
+            actions: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _buildDialogActions(
+                ctx: ctx,
+                onCancel: () => Navigator.pop(ctx, false),
+                onSave: () {
+                  if (titleCtrl.text.trim().isNotEmpty) Navigator.pop(ctx, true);
+                },
+                saveLabel: 'Actualizar',
+                saveIcon: Icons.save_rounded,
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
+
+    countdownTimer?.cancel();
 
     if (confirmed == true) {
       final patient = ref.read(currentPatientProvider).value;
@@ -809,13 +961,14 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
             );
 
         await NotificationService().cancelReminder(NotificationService.safeId(reminder.id));
-        if (reminder.isActive) {
+        if (reminder.isActive && patient.notificationsEnabled) {
           await NotificationService().scheduleReminder(
             id: NotificationService.safeId(reminder.id),
-            title: _getTypeLabel(selectedType),
+            title: '${patient.fullName}: ${_getTypeLabel(selectedType)}',
             body: '${titleCtrl.text.trim()}${descCtrl.text.isNotEmpty ? ' · ${descCtrl.text.trim()}' : ''}',
             scheduledTime: newDt,
             repeatDays: selectedDays,
+            payload: patient.id,
           );
         }
       } catch (e) {
@@ -840,30 +993,81 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
   Future<void> _showDeleteDialog(Reminder reminder) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        actionsPadding: EdgeInsets.zero,
-        title: Text(
-          '¿Eliminar este recordatorio?',
-          style: GoogleFonts.nunito(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+      builder: (ctx) => _buildDialogFrame(
+        icon: Icons.delete_outline_rounded,
+        title: 'Eliminar recordatorio',
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                reminder.title,
+                style: GoogleFonts.nunito(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(Icons.access_time,
+                      size: 14, color: AppColors.textSecondary),
+                  const SizedBox(width: 4),
+                  Text(
+                    _formatTime(reminder.dateTime),
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  _buildTypeLabelRow(reminder.type),
+                ],
+              ),
+              if (reminder.repeatDays != null &&
+                  reminder.repeatDays!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 4,
+                  children: reminder.repeatDays!.map((d) => Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.goldLight,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      _formatDay(d),
+                      style: GoogleFonts.nunito(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF7A6030),
+                      ),
+                    ),
+                  )).toList(),
+                ),
+              ],
+              const SizedBox(height: 16),
+              Text(
+                '¿Estás seguro de eliminar este recordatorio?',
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
-        content: Text(
-          reminder.title,
-          style: GoogleFonts.nunito(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        actions: [
-          _buildDeleteDialogActions(
+        actions: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: _buildDeleteDialogActions(
             onCancel: () => Navigator.pop(ctx, false),
             onDelete: () => Navigator.pop(ctx, true),
           ),
-        ],
+        ),
       ),
     );
 
@@ -905,13 +1109,43 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
           );
 
       if (newActive) {
-        await NotificationService().scheduleReminder(
-          id: NotificationService.safeId(reminder.id),
-          title: _getTypeLabel(reminder.type),
-          body: '${reminder.title}${reminder.description != null ? ' · ${reminder.description}' : ''}',
-          scheduledTime: reminder.dateTime,
-          repeatDays: reminder.repeatDays,
-        );
+        if (patient.notificationsEnabled) {
+          await NotificationService().scheduleReminder(
+            id: NotificationService.safeId(reminder.id),
+            title: '${patient.fullName}: ${_getTypeLabel(reminder.type)}',
+            body: '${reminder.title}${reminder.description != null ? ' · ${reminder.description}' : ''}',
+            scheduledTime: reminder.dateTime,
+            repeatDays: reminder.repeatDays,
+            payload: patient.id,
+          );
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.alarm, color: Colors.white, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Activado — suena en ${_formatCountdown(reminder.dateTime)}',
+                      style: GoogleFonts.nunito(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: AppColors.goldPrimary,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
       } else {
         await NotificationService().cancelReminder(NotificationService.safeId(reminder.id));
       }
@@ -927,12 +1161,110 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     }
   }
 
+  // ─────────────────────────────────────
+  //  MASTER NOTIFICATION TOGGLE
+  // ─────────────────────────────────────
+  Widget _buildNotificationToggle(Patient patient) {
+    final enabled = patient.notificationsEnabled;
+    return GestureDetector(
+      onTap: () => _toggleAllNotifications(patient),
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          enabled ? Icons.notifications_active : Icons.notifications_off,
+          color: Colors.white,
+          size: 22,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleAllNotifications(Patient patient) async {
+    final enable = !patient.notificationsEnabled;
+
+    try {
+      await ref.read(firestoreServiceProvider).updatePatient(patient.id, {
+        'notificationsEnabled': enable,
+      });
+
+      if (!enable) {
+        final reminders = ref.read(remindersProvider).value ?? [];
+        for (final r in reminders) {
+          await NotificationService()
+              .cancelReminder(NotificationService.safeId(r.id));
+        }
+      } else {
+        final reminders = ref.read(remindersProvider).value ?? [];
+        for (final r in reminders.where((r) => r.isActive)) {
+          await NotificationService().scheduleReminder(
+            id: NotificationService.safeId(r.id),
+            title: '${patient.fullName}: ${_getTypeLabel(r.type)}',
+            body:
+                '${r.title}${r.description != null ? ' · ${r.description}' : ''}',
+            scheduledTime: r.dateTime,
+            repeatDays: r.repeatDays,
+            payload: patient.id,
+          );
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  enable ? Icons.notifications_active : Icons.notifications_off,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    enable
+                        ? 'Notificaciones activadas para ${patient.fullName}'
+                        : 'Notificaciones desactivadas para ${patient.fullName}',
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: enable ? AppColors.goldPrimary : AppColors.textPrimary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error al actualizar preferencias'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   // ═══════════════════════════════════════
   //  BUILD
   // ═══════════════════════════════════════
   @override
   Widget build(BuildContext context) {
     final remindersAsync = ref.watch(remindersProvider);
+    final patientAsync = ref.watch(currentPatientProvider);
 
     return PopScope(
       canPop: false,
@@ -946,6 +1278,9 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
           GradientHeader(
             showBackButton: true,
             title: 'Recordatorios',
+            trailing: patientAsync.value != null
+                ? _buildNotificationToggle(patientAsync.value!)
+                : null,
           ),
           Expanded(
             child: remindersAsync.when(
@@ -962,10 +1297,8 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // ── Quick add ──
-                      _buildSectionLabel('Agregar recordatorio'),
-                      const SizedBox(height: 10),
-                      _buildQuickAddGrid(),
-                      const SizedBox(height: 24),
+                      _buildQuickAddSection(),
+                      const SizedBox(height: 20),
 
                       // ── Reminders list ──
                       _buildSectionLabel('Mis recordatorios'),
@@ -981,13 +1314,13 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                                 const SizedBox(height: 10),
                                 Text('No tienes recordatorios.',
                                     style: GoogleFonts.nunito(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
                                         color: AppColors.textSecondary)),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 6),
                                 Text('Usa los botones de arriba para crear uno.',
                                     style: GoogleFonts.nunito(
-                                        fontSize: 13,
+                                        fontSize: 14,
                                         color: AppColors.textHint)),
                               ],
                             ),
@@ -1028,7 +1361,9 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                                   child: const Icon(Icons.delete_outline,
                                       color: Colors.white, size: 22),
                                 ),
-                                child: _buildReminderCard(r),
+                                child: _buildReminderCard(r,
+                                  notificationsEnabled: patientAsync.value?.notificationsEnabled ?? true,
+                                ),
                               ),
                             )),
                     ],
@@ -1045,19 +1380,23 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
   // ─────────────────────────────────────
   //  QUICK ADD GRID
   // ─────────────────────────────────────
-  Widget _buildQuickAddGrid() {
-    return GridView.count(
-      crossAxisCount: 4,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
-      childAspectRatio: 0.82,
+  Widget _buildQuickAddSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildQuickAddButton(Icons.medication, 'Medicamento', 'medicamento'),
-        _buildQuickAddButton(Icons.thermostat, 'Medición', 'medicion'),
-        _buildQuickAddButton(Icons.event, 'Cita médica', 'cita'),
-        _buildQuickAddButton(Icons.add, 'Nuevo +', 'medicamento'),
+        _buildSectionLabel('Agregar recordatorio'),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(child: _buildQuickAddButton(Icons.medication, 'Medicamento', 'medicamento')),
+            const SizedBox(width: 6),
+            Expanded(child: _buildQuickAddButton(Icons.thermostat, 'Medición', 'medicion')),
+            const SizedBox(width: 6),
+            Expanded(child: _buildQuickAddButton(Icons.event, 'Cita médica', 'cita')),
+            const SizedBox(width: 6),
+            Expanded(child: _buildQuickAddButton(Icons.add_rounded, 'Nuevo', 'medicamento')),
+          ],
+        ),
       ],
     );
   }
@@ -1066,17 +1405,15 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     return GestureDetector(
       onTap: () => _showCreateDialog(initialType: initialType),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
         decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-              color: AppColors.goldPrimary.withValues(alpha: 0.20)),
+          color: AppColors.goldPrimary,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: AppColors.goldPrimary.withValues(alpha: 0.08),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
+              color: AppColors.goldPrimary.withValues(alpha: 0.3),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -1087,20 +1424,20 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF0C2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: AppColors.goldPrimary, size: 18),
+              child: Icon(icon, color: Colors.white, size: 18),
             ),
             const SizedBox(height: 6),
             Text(
               label,
               textAlign: TextAlign.center,
               style: GoogleFonts.nunito(
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF7A5F30),
-                height: 1.2,
+                color: Colors.white,
+                height: 1.15,
               ),
             ),
           ],
@@ -1112,9 +1449,28 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
   // ─────────────────────────────────────
   //  REMINDER CARD
   // ─────────────────────────────────────
-  Widget _buildReminderCard(Reminder reminder) {
+  Widget _buildTypeLabelRow(String type) {
+    final cfg = _getTypeConfig(type);
+    return Row(
+      children: [
+        Icon(cfg.icon, size: 14, color: cfg.color),
+        const SizedBox(width: 6),
+        Text(
+          _getTypeLabel(type),
+          style: GoogleFonts.nunito(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: cfg.color,
+          ),
+        ),
+      ],
+    );
+  }
+  Widget _buildReminderCard(Reminder reminder,
+      {bool notificationsEnabled = true}) {
     final config = _getTypeConfig(reminder.type);
     final days = (reminder.repeatDays ?? []).map(_formatDay).toList();
+    final isEffectivelyActive = reminder.isActive && notificationsEnabled;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1139,14 +1495,14 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: reminder.isActive
+              color: isEffectivelyActive
                   ? const Color(0xFFFFF0C2)
                   : const Color(0xFFF0EDE8),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               config.icon,
-              color: reminder.isActive
+              color: isEffectivelyActive
                   ? config.color
                   : const Color(0xFFB0A08A),
               size: 20,
@@ -1162,9 +1518,9 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                 Text(
                   reminder.title,
                   style: GoogleFonts.nunito(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: reminder.isActive
+                    color: isEffectivelyActive
                         ? AppColors.textPrimary
                         : AppColors.textSecondary,
                   ),
@@ -1173,12 +1529,12 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                 Row(
                   children: [
                     const Icon(Icons.access_time,
-                        size: 14, color: AppColors.textSecondary),
+                        size: 16, color: AppColors.textSecondary),
                     const SizedBox(width: 4),
                     Text(
                       _formatTime(reminder.dateTime),
                       style: GoogleFonts.nunito(
-                        fontSize: 13,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textSecondary,
                       ),
@@ -1193,7 +1549,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.nunito(
-                      fontSize: 12,
+                      fontSize: 14,
                       fontStyle: FontStyle.italic,
                       color: AppColors.textSecondary,
                     ),
@@ -1209,20 +1565,20 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: reminder.isActive
+                          color: isEffectivelyActive
                               ? const Color(0xFFFFF4D0)
                               : const Color(0xFFF0EDE8),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          day,
-                          style: GoogleFonts.nunito(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: reminder.isActive
-                                ? const Color(0xFF7A6030)
-                                : AppColors.textSecondary,
-                          ),
+                          child: Text(
+                            day,
+                            style: GoogleFonts.nunito(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isEffectivelyActive
+                                  ? const Color(0xFF7A6030)
+                                  : AppColors.textSecondary,
+                            ),
                         ),
                       );
                     }).toList(),
@@ -1239,14 +1595,14 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
               width: 48,
               height: 26,
               decoration: BoxDecoration(
-                color: reminder.isActive
+                color: isEffectivelyActive
                     ? AppColors.goldMid
                     : const Color(0xFFD8D0C8),
                 borderRadius: BorderRadius.circular(13),
               ),
               child: AnimatedAlign(
                 duration: const Duration(milliseconds: 200),
-                alignment: reminder.isActive
+                alignment: isEffectivelyActive
                     ? Alignment.centerRight
                     : Alignment.centerLeft,
                 child: Container(

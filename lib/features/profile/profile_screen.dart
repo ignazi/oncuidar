@@ -39,22 +39,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             trailing: GestureDetector(
               onTap: _showLogoutDialog,
               child: Container(
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                height: 42,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
+                  color: Colors.black.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.logout, color: Colors.white, size: 16),
-                    const SizedBox(width: 6),
+                    const Icon(Icons.logout, color: Colors.white, size: 18),
+                    const SizedBox(width: 8),
                     Text(
                       'Cerrar sesión',
                       style: GoogleFonts.nunito(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
