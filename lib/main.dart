@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
@@ -51,7 +52,63 @@ class _OncuidarAppState extends ConsumerState<OncuidarApp> {
         router.go('/reminders');
       });
     };
+
+    // Al autenticarse: reprogramar recordatorios activos desde Firestore.
+    // Al cerrar sesión: cancelar todas las notificaciones del OS.
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        _rescheduleReminders();
+      } else {
+        NotificationService().cancelAllReminders();
+      }
+    });
   }
+
+  /// Reprograma localmente todos los recordatorios activos del usuario
+  /// autenticado. Se llama al login y al reabrir la app con sesión activa.
+  Future<void> _rescheduleReminders() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final firestore = ref.read(firestoreServiceProvider);
+
+      // Limpiar alarmas previas para evitar duplicados
+      await NotificationService().cancelAllReminders();
+
+      // Obtener todos los pacientes del usuario
+      final patients = await firestore.patientsStream().first;
+
+      for (final patient in patients) {
+        if (!patient.notificationsEnabled) continue;
+
+        final reminders = await firestore.remindersStream(patient.id).first;
+
+        for (final reminder in reminders) {
+          if (!reminder.isActive) continue;
+
+          await NotificationService().scheduleReminder(
+            id: NotificationService.safeId(reminder.id),
+            title: '${patient.fullName}: ${_typeLabel(reminder.type)}',
+            body:
+                '${reminder.title}${reminder.description != null ? ' · ${reminder.description}' : ''}',
+            scheduledTime: reminder.dateTime,
+            repeatDays: reminder.repeatDays,
+            payload: patient.id,
+          );
+        }
+      }
+    } catch (e) {
+      // Best-effort: si falla la reprogramación no bloquear el arranque
+    }
+  }
+
+  static String _typeLabel(String type) => switch (type) {
+        'medicamento' => 'Medicamento',
+        'medicion' => 'Medición',
+        'cita' => 'Cita médica',
+        _ => 'Recordatorio',
+      };
 
   @override
   Widget build(BuildContext context) {

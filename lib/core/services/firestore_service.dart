@@ -25,11 +25,16 @@ class FirestoreService {
     return user.uid;
   }
 
+  /// Returns true when there is an authenticated user (or test uid).
+  /// Use this in stream methods to emit empty results instead of throwing.
+  bool get _isAuthenticated => _testUid != null || _auth?.currentUser != null;
+
   DocumentReference get _userDoc => _db.collection('users').doc(_uid);
 
   // ── Users ──
 
   Stream<AppUser?> userStream() {
+    if (!_isAuthenticated) return Stream.value(null);
     return _userDoc.snapshots().map(
           (snap) => snap.exists
               ? AppUser.fromMap(snap.id, snap.data() as Map<String, dynamic>)
@@ -44,6 +49,7 @@ class FirestoreService {
   // ── Patients ──
 
   Stream<List<Patient>> patientsStream() {
+    if (!_isAuthenticated) return Stream.value([]);
     return _userDoc.collection('patients').snapshots().map(
           (snap) => snap.docs
               .map((d) => Patient.fromMap(d.id, d.data()))
@@ -71,6 +77,7 @@ class FirestoreService {
 
   /// Stream de los últimos [_dailyRecordsLimit] registros (para dashboard/recientes).
   Stream<List<DailyRecord>> dailyRecordsStream(String pid) {
+    if (!_isAuthenticated) return Stream.value([]);
     return _dailyRecordsCol(pid)
         .orderBy('createdAt', descending: true)
         .limit(_dailyRecordsLimit)
@@ -112,6 +119,7 @@ class FirestoreService {
       _userDoc.collection('patients').doc(pid).collection('reminders');
 
   Stream<List<Reminder>> remindersStream(String pid) {
+    if (!_isAuthenticated) return Stream.value([]);
     return _remindersCol(pid).snapshots().map(
           (snap) => snap.docs
               .map((d) => Reminder.fromMap(d.id, d.data() as Map<String, dynamic>))
@@ -138,6 +146,7 @@ class FirestoreService {
       _userDoc.collection('patients').doc(pid).collection('userChecklists');
 
   Stream<List<UserChecklist>> userChecklistsStream(String pid) {
+    if (!_isAuthenticated) return Stream.value([]);
     return _userChecklistsCol(pid)
         .orderBy('createdAt', descending: true)
         .limit(50)
@@ -213,6 +222,7 @@ class FirestoreService {
   }
 
   Stream<List<String>> favoriteArticlesStream() {
+    if (!_isAuthenticated) return Stream.value([]);
     return _userDoc
         .snapshots()
         .map((snap) {
@@ -227,6 +237,7 @@ class FirestoreService {
 
   /// Stream de los últimos 20 chats, ordenados por última actividad.
   Stream<List<Map<String, dynamic>>> chatsStream() {
+    if (!_isAuthenticated) return Stream.value([]);
     return _chatsCol
         .orderBy('updatedAt', descending: true)
         .limit(20)

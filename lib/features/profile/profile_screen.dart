@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/gradient_header.dart';
 import '../../core/providers/providers.dart';
+import '../../core/services/notification_service.dart';
 import '../../models/app_user.dart';
 import '../../models/patient.dart';
 
@@ -584,6 +585,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
+              // Cancelar todas las notificaciones programadas antes de cerrar sesión
+              await NotificationService().cancelAllReminders();
+              // Limpiar selección de paciente para evitar datos entre usuarios
+              ref.read(selectedPatientIdProvider.notifier).select(null);
               await FirebaseAuth.instance.signOut();
               if (mounted) context.go('/welcome');
             },
