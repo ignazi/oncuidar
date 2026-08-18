@@ -30,6 +30,8 @@ class DailyRecord {
   });
 
   Map<String, dynamic> toMap() => {
+        // Llave foránea no cifrada: permite conservar las consultas por ID.
+        'paciente_id': patientId,
         'date': date,
         'createdAt': createdAt,
         'recordType': recordType,
@@ -43,7 +45,7 @@ class DailyRecord {
   factory DailyRecord.fromMap(String id, Map<String, dynamic> map) =>
       DailyRecord(
         id: id,
-        patientId: map['patientId'] as String? ?? '',
+        patientId: map['paciente_id'] as String? ?? map['patientId'] as String? ?? '',
         date: _parseDateTime(map['date']),
         createdAt: _parseDateTime(map['createdAt']),
         recordType: map['recordType'] as String? ?? 'programado',

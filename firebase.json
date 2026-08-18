@@ -21,5 +21,6 @@
   },
   "firestore": {
     "rules": "firestore.rules"
-  }
+  },
+  "functions": { "source": "functions", "region": "southamerica-west1" }
 }

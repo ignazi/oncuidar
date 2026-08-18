@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/models/alert_level.dart';
 import 'package:oncuidar/models/app_user.dart';
 import 'package:oncuidar/models/daily_record.dart';
+import 'package:oncuidar/models/patient.dart';
 import 'package:oncuidar/core/services/firestore_service.dart';
 
 void main() {
@@ -171,6 +172,51 @@ void main() {
           .get();
 
       expect(doc.data()?['recordType'], 'extra');
+    });
+
+    test('stores notes encrypted and keeps paciente_id queryable', () async {
+      const pid = 'patient-1';
+      await service.saveDailyRecord(
+        pid,
+        DailyRecord(
+          id: 'encrypted-record',
+          patientId: pid,
+          date: DateTime(2024, 7, 1),
+          createdAt: DateTime(2024, 7, 1),
+          recordType: 'extra',
+          symptoms: [],
+          generalNotes: 'Texto sensible del registro',
+          alertLevel: AlertLevel.normal,
+        ),
+      );
+
+      final doc = await fakeFirestore
+          .collection('users').doc(testUid).collection('patients').doc(pid)
+          .collection('dailyRecords').doc('encrypted-record').get();
+      final data = doc.data()!;
+      expect(data['paciente_id'], pid);
+      expect(data.containsKey('generalNotes'), isFalse);
+      expect(data['contenido_del_registro_cifrado'], isNot('Texto sensible del registro'));
+    });
+  });
+
+  group('addPatient', () {
+    test('stores name and diagnosis encrypted', () async {
+      await service.addPatient(Patient(
+        id: 'not-used-by-add',
+        caregiverId: testUid,
+        fullName: 'Lucas García',
+        diagnosis: 'Leucemia',
+        createdAt: DateTime(2024, 7, 1),
+      ));
+
+      final patients = await fakeFirestore
+          .collection('users').doc(testUid).collection('patients').get();
+      final data = patients.docs.single.data();
+      expect(data.containsKey('fullName'), isFalse);
+      expect(data.containsKey('diagnosis'), isFalse);
+      expect(data['nombre_cifrado'], isNot('Lucas García'));
+      expect(data['diagnostico_cifrado'], isNot('Leucemia'));
     });
   });
 

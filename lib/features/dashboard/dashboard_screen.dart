@@ -86,6 +86,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
             ),
             data: (user) {
+              if (patient == null) {
+                return _buildNoPatientDashboard(user?.displayName ?? '');
+              }
               final patientName = patient?.fullName ?? '';
               final caregiverName = user?.displayName ?? '';
 
@@ -140,6 +143,61 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
       ),
     ),
+    );
+  }
+
+  Widget _buildNoPatientDashboard(String caregiverName) {
+    return Scaffold(
+      backgroundColor: AppColors.cream,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const GradientHeader(),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.child_care_outlined,
+                        size: 64,
+                        color: AppColors.goldPrimary,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Aún no tienes pacientes',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.nunito(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${caregiverName.isEmpty ? 'Comienza' : caregiverName}, agrega un paciente para crear registros y recordatorios.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      FilledButton.icon(
+                        onPressed: () => context.go('/profile'),
+                        icon: const Icon(Icons.person_add_alt_1),
+                        label: const Text('Agregar paciente'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

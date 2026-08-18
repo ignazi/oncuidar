@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/firestore_service.dart';
+import '../services/client_encryption_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/metadata_cache_service.dart';
 import '../services/auto_download_service.dart';
@@ -22,8 +23,22 @@ const _kSelectedPatientKey = 'selected_patient_id';
 
 // ── Service ──
 
+final encryptionServiceProvider = Provider<ClientEncryptionService>((ref) {
+  return ClientEncryptionService();
+});
+
+class EncryptionUnlockNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void setUnlocked(bool value) => state = value;
+}
+
+final encryptionUnlockedProvider =
+    NotifierProvider<EncryptionUnlockNotifier, bool>(EncryptionUnlockNotifier.new);
+
 final firestoreServiceProvider = Provider<FirestoreService>((ref) {
-  return FirestoreService();
+  return FirestoreService(encryption: ref.watch(encryptionServiceProvider));
 });
 
 // ── Auth ──

@@ -64,319 +64,8 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
       DateTime(d.year, d.month, d.day, t.hour, t.minute);
 
   // ─────────────────────────────────────
-  //  TYPE CHIP (fixed — receives isSelected + onTap)
-  // ─────────────────────────────────────
-  Widget _buildTypeChip({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.goldPrimary : AppColors.goldLight,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.nunito(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: isSelected ? Colors.white : const Color(0xFF7A6030),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────
-  //  DAY CHIP
-  // ─────────────────────────────────────
-  Widget _buildDayChip({
-    required String day,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.goldPrimary : AppColors.goldLight,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          _formatDay(day),
-          style: GoogleFonts.nunito(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: isSelected ? Colors.white : const Color(0xFF7A6030),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────
-  //  TIME PICKER — Bottom sheet con scroll wheels
-  //  Más amigable que el reloj de Material para
-  //  cuidadores en contexto de estrés.
-  // ─────────────────────────────────────
-  Widget _buildTimePicker({
-    required BuildContext ctx,
-    required TimeOfDay selectedTime,
-    required ValueChanged<TimeOfDay> onPicked,
-  }) {
-    return GestureDetector(
-      onTap: () => _openTimePickerSheet(ctx, selectedTime, onPicked),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.inputBg,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppColors.goldPrimary.withValues(alpha: 0.25),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.access_time, size: 18, color: AppColors.textSecondary),
-            const SizedBox(width: 10),
-            Text(
-              _formatTimeOfDay(selectedTime, ctx),
-              style: GoogleFonts.nunito(
-                fontSize: 14,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const Spacer(),
-            Icon(Icons.keyboard_arrow_down, size: 18, color: AppColors.textSecondary),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Formatea la hora según el locale del dispositivo (12h/24h)
-  String _formatTimeOfDay(TimeOfDay t, BuildContext ctx) {
-    return MaterialLocalizations.of(ctx).formatTimeOfDay(t);
-  }
-
-  /// Bottom sheet con 3 wheels: hora, minuto, AM/PM (solo en modo 12h)
-  void _openTimePickerSheet(
-      BuildContext ctx, TimeOfDay current, ValueChanged<TimeOfDay> onPicked) {
-    final use24h = MediaQuery.of(ctx).alwaysUse24HourFormat;
-
-    final hourLabels = use24h
-        ? List.generate(24, (i) => i.toString().padLeft(2, '0'))
-        : List.generate(12, (i) => i == 0 ? '12' : i.toString().padLeft(2, '0'));
-    final minuteLabels =
-        List.generate(60, (i) => i.toString().padLeft(2, '0'));
-    final amPmLabels = ['AM', 'PM'];
-
-    int hourIndex;
-    if (use24h) {
-      hourIndex = current.hour;
-    } else {
-      int h12 = current.hour % 12;
-      hourIndex = h12;
-    }
-    int minuteIndex = current.minute;
-    int amPmIndex = current.hour < 12 ? 0 : 1;
-
-    showModalBottomSheet(
-      context: ctx,
-      backgroundColor: Colors.transparent,
-      builder: (sheetCtx) {
-        return StatefulBuilder(
-          builder: (sheetCtx, setSheetState) {
-            return Container(
-              height: 300,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 12),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Elegir la hora',
-                          style: GoogleFonts.nunito(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            int finalHour;
-                            if (use24h) {
-                              finalHour = hourIndex;
-                            } else {
-                              finalHour = hourIndex == 0 ? 12 : hourIndex;
-                              if (amPmIndex == 1) {
-                                if (finalHour != 12) finalHour += 12;
-                              } else {
-                                if (finalHour == 12) finalHour = 0;
-                              }
-                            }
-                            final picked = TimeOfDay(hour: finalHour, minute: minuteIndex);
-                            Navigator.pop(sheetCtx);
-                            onPicked(picked);
-                          },
-                          child: Text(
-                            'Listo',
-                            style: GoogleFonts.nunito(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.goldPrimary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _buildWheel(
-                              labels: hourLabels,
-                              selectedIndex: hourIndex,
-                              onChanged: (i) => setSheetState(() => hourIndex = i),
-                            ),
-                          ),
-                          Text(
-                            ':',
-                            style: GoogleFonts.nunito(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          Expanded(
-                            child: _buildWheel(
-                              labels: minuteLabels,
-                              selectedIndex: minuteIndex,
-                              onChanged: (i) => setSheetState(() => minuteIndex = i),
-                            ),
-                          ),
-                          if (!use24h) ...[
-                            const SizedBox(width: 8),
-                            SizedBox(
-                              width: 60,
-                              child: _buildWheel(
-                                labels: amPmLabels,
-                                selectedIndex: amPmIndex,
-                                onChanged: (i) => setSheetState(() => amPmIndex = i),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  /// Widget de scroll wheel individual
-  Widget _buildWheel({
-    required List<String> labels,
-    required int selectedIndex,
-    required ValueChanged<int> onChanged,
-  }) {
-    return ListWheelScrollView.useDelegate(
-      controller: FixedExtentScrollController(initialItem: selectedIndex),
-      itemExtent: 40,
-      physics: const FixedExtentScrollPhysics(),
-      diameterRatio: 1.5,
-      perspective: 0.003,
-      onSelectedItemChanged: (i) => onChanged(i),
-      childDelegate: ListWheelChildBuilderDelegate(
-        childCount: labels.length,
-        builder: (context, index) {
-          final isSelected = index == selectedIndex;
-          return Center(
-            child: Text(
-              labels[index],
-              style: GoogleFonts.nunito(
-                fontSize: isSelected ? 20 : 16,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                color: isSelected
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary.withValues(alpha: 0.5),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────
-  //  STYLED TEXT FIELD
-  // ─────────────────────────────────────
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    int maxLines = 1,
-  }) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      style: GoogleFonts.nunito(fontSize: 15, color: AppColors.textPrimary),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: GoogleFonts.nunito(fontSize: 15, color: AppColors.textHint),
-        filled: true,
-        fillColor: AppColors.inputBg,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              BorderSide(color: AppColors.goldPrimary.withValues(alpha: 0.25)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              BorderSide(color: AppColors.goldPrimary.withValues(alpha: 0.25)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              const BorderSide(color: AppColors.goldPrimary, width: 1.5),
-        ),
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────
   //  SECTION LABEL
-  // ─────────────────────────────────────
+  //  ─────────────────────────────────────
   Widget _buildSectionLabel(String text) {
     return Text(
       text,
@@ -407,219 +96,8 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
   }
 
   // ─────────────────────────────────────
-  //  DIALOG CONTENT BUILDER (shared create/edit)
-  // ─────────────────────────────────────
-  Widget _buildDialogBody({
-    required TextEditingController titleCtrl,
-    required TextEditingController? descCtrl,
-    required String selectedType,
-    required ValueChanged<String> onTypeChanged,
-    required StateSetter setDialogState,
-    required TimeOfDay selectedTime,
-    required ValueChanged<TimeOfDay> onTimeChanged,
-    required List<String> selectedDays,
-    required BuildContext dialogContext,
-    String countdownText = '', // si no se pasa, no se muestra
-  }) {
-    final allDays = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTextField(controller: titleCtrl, hintText: 'Título del recordatorio'),
-          if (descCtrl != null) ...[
-            const SizedBox(height: 12),
-            _buildTextField(
-                controller: descCtrl,
-                hintText: 'Descripción (opcional)',
-                maxLines: 2),
-          ],
-          const SizedBox(height: 20),
-          _buildSectionLabel('Tipo'),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildTypeChip(
-                label: 'Medicamento',
-                isSelected: selectedType == 'medicamento',
-                onTap: () => onTypeChanged('medicamento'),
-              ),
-              _buildTypeChip(
-                label: 'Medición',
-                isSelected: selectedType == 'medicion',
-                onTap: () => onTypeChanged('medicion'),
-              ),
-              _buildTypeChip(
-                label: 'Cita médica',
-                isSelected: selectedType == 'cita',
-                onTap: () => onTypeChanged('cita'),
-              ),
-              _buildTypeChip(
-                label: 'Otro',
-                isSelected: selectedType == 'otro',
-                onTap: () => onTypeChanged('otro'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildSectionLabel('Hora'),
-          const SizedBox(height: 8),
-          _buildTimePicker(
-            ctx: dialogContext,
-            selectedTime: selectedTime,
-            onPicked: onTimeChanged,
-          ),
-          if (countdownText.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.goldLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: AppColors.goldPrimary.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.alarm,
-                        size: 18, color: AppColors.goldDark),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Suena en $countdownText',
-                      style: GoogleFonts.nunito(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.goldDark,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 20),
-          _buildSectionLabel('Días de repetición'),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: allDays.map((day) {
-              return _buildDayChip(
-                day: day,
-                isSelected: selectedDays.contains(day),
-                onTap: () => setDialogState(() {
-                  if (selectedDays.contains(day)) {
-                    selectedDays.remove(day);
-                  } else {
-                    selectedDays.add(day);
-                  }
-                }),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────
-  //  DIALOG ACTION BUTTONS (shared)
-  // ─────────────────────────────────────
-  Widget _buildDialogActions({
-    required BuildContext ctx,
-    required VoidCallback onCancel,
-    required VoidCallback onSave,
-    String saveLabel = 'Guardar',
-    IconData saveIcon = Icons.check_rounded,
-    Color saveColor = AppColors.goldPrimary,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: Row(
-        children: [
-          // ── Cancelar ──
-          Expanded(
-            child: GestureDetector(
-              onTap: onCancel,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                decoration: BoxDecoration(
-                  color: AppColors.goldLight,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.close_rounded,
-                        size: 17, color: AppColors.textSecondary),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Cancelar',
-                      style: GoogleFonts.nunito(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // ── Guardar ──
-          Expanded(
-            child: GestureDetector(
-              onTap: onSave,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [saveColor, saveColor.withValues(alpha: 0.85)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: saveColor.withValues(alpha: 0.35),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(saveIcon, size: 17, color: Colors.white),
-                    const SizedBox(width: 6),
-                    Text(
-                      saveLabel,
-                      style: GoogleFonts.nunito(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────
   //  DELETE DIALOG ACTION BUTTONS
-  // ─────────────────────────────────────
+  //  ─────────────────────────────────────
   Widget _buildDeleteDialogActions({
     required VoidCallback onCancel,
     required VoidCallback onDelete,
@@ -758,233 +236,129 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
   //  CREATE DIALOG
   // ─────────────────────────────────────
   Future<void> _showCreateDialog({String initialType = 'medicamento'}) async {
-    final titleCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
-    String selectedType = initialType;
-    TimeOfDay selectedTime = TimeOfDay.now();
-    List<String> selectedDays = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
-    String countdownText = '';
-    Timer? countdownTimer;
-
-    final saved = await showDialog<bool>(
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          // Iniciar countdown en vivo al abrir el diálogo
-          if (countdownTimer == null) {
-            countdownText =
-                _formatCountdown(_buildDateTime(DateTime.now(), selectedTime));
-            countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-              setDialogState(() {
-                countdownText = _formatCountdown(
-                    _buildDateTime(DateTime.now(), selectedTime));
-              });
-            });
-          }
-
-          return _buildDialogFrame(
-            icon: Icons.add_rounded,
-            title: 'Nuevo recordatorio',
-            body: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: _buildDialogBody(
-                titleCtrl: titleCtrl,
-                descCtrl: descCtrl,
-                selectedType: selectedType,
-                onTypeChanged: (v) => setDialogState(() => selectedType = v),
-                setDialogState: setDialogState,
-                selectedTime: selectedTime,
-                onTimeChanged: (t) => setDialogState(() {
-                  selectedTime = t;
-                  countdownText = _formatCountdown(
-                      _buildDateTime(DateTime.now(), t));
-                }),
-                selectedDays: selectedDays,
-                dialogContext: ctx,
-                countdownText: countdownText,
-              ),
-            ),
-            actions: Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _buildDialogActions(
-                ctx: ctx,
-                onCancel: () => Navigator.pop(ctx, false),
-                onSave: () {
-                  if (titleCtrl.text.trim().isNotEmpty) Navigator.pop(ctx, true);
-                },
-              ),
-            ),
-          );
-        },
+      builder: (ctx) => _ReminderDialogBody(
+        initialType: initialType,
+        baseDateTime: DateTime.now(),
       ),
     );
 
-    countdownTimer?.cancel();
+    if (result == null) return;
+    final title = result['title'] as String;
+    final description = result['description'] as String?;
+    final selectedType = result['type'] as String;
+    final selectedTime = result['time'] as TimeOfDay;
+    final selectedDays = result['days'] as List<String>;
 
-    if (saved == true && titleCtrl.text.trim().isNotEmpty) {
-      final dt = _buildDateTime(DateTime.now(), selectedTime);
-      final patient = ref.read(currentPatientProvider).value;
-      if (patient == null) return;
+    final dt = _buildDateTime(DateTime.now(), selectedTime);
+    final patient = ref.read(currentPatientProvider).value;
+    if (patient == null) return;
 
-      final reminder = Reminder(
-        id: '',
-        patientId: patient.id,
-        type: selectedType,
-        title: titleCtrl.text.trim(),
-        description:
-            descCtrl.text.isNotEmpty ? descCtrl.text.trim() : null,
-        dateTime: dt,
-        repeatDays: selectedDays,
-        isActive: true,
-        createdAt: DateTime.now(),
-      );
+    final reminder = Reminder(
+      id: '',
+      patientId: patient.id,
+      type: selectedType,
+      title: title,
+      description: description,
+      dateTime: dt,
+      repeatDays: selectedDays,
+      isActive: true,
+      createdAt: DateTime.now(),
+    );
 
-      try {
-        final docId = await ref
-            .read(firestoreServiceProvider)
-            .addReminder(patient.id, reminder);
+    try {
+      final docId = await ref
+          .read(firestoreServiceProvider)
+          .addReminder(patient.id, reminder);
 
-        if (patient.notificationsEnabled) {
-          await NotificationService().scheduleReminder(
-            id: NotificationService.safeId(docId),
-            title: '${patient.fullName}: ${_getTypeLabel(reminder.type)}',
-            body: '${reminder.title}${reminder.description != null ? ' · ${reminder.description}' : ''}',
-            scheduledTime: dt,
-            repeatDays: selectedDays,
-            payload: patient.id,
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Error al guardar recordatorio'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+      if (patient.notificationsEnabled) {
+        await NotificationService().scheduleReminder(
+          id: NotificationService.safeId(docId),
+          title: '${patient.fullName}: ${_getTypeLabel(reminder.type)}',
+          body: '${reminder.title}${reminder.description != null ? ' · ${reminder.description}' : ''}',
+          scheduledTime: dt,
+          repeatDays: selectedDays,
+          payload: patient.id,
+        );
+      }
+    } catch (e, st) {
+      debugPrint('ERROR saving reminder: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
-
-    titleCtrl.dispose();
-    descCtrl.dispose();
   }
 
   // ─────────────────────────────────────
   //  EDIT DIALOG
   // ─────────────────────────────────────
   Future<void> _showEditDialog(Reminder reminder) async {
-    final titleCtrl = TextEditingController(text: reminder.title);
-    final descCtrl = TextEditingController(text: reminder.description ?? '');
-    String selectedType = reminder.type;
-    TimeOfDay selectedTime =
-        TimeOfDay(hour: reminder.dateTime.hour, minute: reminder.dateTime.minute);
-    List<String> selectedDays = List<String>.from(reminder.repeatDays ?? []);
-    String countdownText = '';
-    Timer? countdownTimer;
-
-    final confirmed = await showDialog<bool>(
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          // Iniciar countdown en vivo al abrir el diálogo
-          if (countdownTimer == null) {
-            countdownText = _formatCountdown(
-                _buildDateTime(reminder.dateTime, selectedTime));
-            countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-              setDialogState(() {
-                countdownText = _formatCountdown(
-                    _buildDateTime(reminder.dateTime, selectedTime));
-              });
-            });
-          }
-
-          return _buildDialogFrame(
-            icon: Icons.edit_rounded,
-            title: 'Editar recordatorio',
-            body: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: _buildDialogBody(
-                titleCtrl: titleCtrl,
-                descCtrl: descCtrl,
-                selectedType: selectedType,
-                onTypeChanged: (v) => setDialogState(() => selectedType = v),
-                setDialogState: setDialogState,
-                selectedTime: selectedTime,
-                onTimeChanged: (t) => setDialogState(() {
-                  selectedTime = t;
-                  countdownText = _formatCountdown(
-                      _buildDateTime(reminder.dateTime, t));
-                }),
-                selectedDays: selectedDays,
-                dialogContext: ctx,
-                countdownText: countdownText,
-              ),
-            ),
-            actions: Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _buildDialogActions(
-                ctx: ctx,
-                onCancel: () => Navigator.pop(ctx, false),
-                onSave: () {
-                  if (titleCtrl.text.trim().isNotEmpty) Navigator.pop(ctx, true);
-                },
-                saveLabel: 'Actualizar',
-                saveIcon: Icons.save_rounded,
-              ),
-            ),
-          );
-        },
+      builder: (ctx) => _ReminderDialogBody(
+        initialTitle: reminder.title,
+        initialDescription: reminder.description ?? '',
+        initialType: reminder.type,
+        initialTime: TimeOfDay(
+            hour: reminder.dateTime.hour, minute: reminder.dateTime.minute),
+        initialDays: List<String>.from(reminder.repeatDays ?? []),
+        isEditing: true,
+        baseDateTime: reminder.dateTime,
       ),
     );
 
-    countdownTimer?.cancel();
+    if (result == null) return;
 
-    if (confirmed == true) {
-      final patient = ref.read(currentPatientProvider).value;
-      if (patient == null) return;
+    final patient = ref.read(currentPatientProvider).value;
+    if (patient == null) return;
 
-      final newDt = _buildDateTime(reminder.dateTime, selectedTime);
+    final title = result['title'] as String;
+    final description = result['description'] as String?;
+    final selectedType = result['type'] as String;
+    final selectedTime = result['time'] as TimeOfDay;
+    final selectedDays = result['days'] as List<String>;
+    final newDt = _buildDateTime(reminder.dateTime, selectedTime);
 
-      try {
-        await ref.read(firestoreServiceProvider).updateReminder(
-              patient.id,
-              reminder.id,
-              {
-                'title': titleCtrl.text.trim(),
-                'description':
-                    descCtrl.text.isNotEmpty ? descCtrl.text.trim() : null,
-                'type': selectedType,
-                'dateTime': newDt.toIso8601String(),
-                'repeatDays': selectedDays,
-              },
-            );
-
-        await NotificationService().cancelReminder(NotificationService.safeId(reminder.id));
-        if (reminder.isActive && patient.notificationsEnabled) {
-          await NotificationService().scheduleReminder(
-            id: NotificationService.safeId(reminder.id),
-            title: '${patient.fullName}: ${_getTypeLabel(selectedType)}',
-            body: '${titleCtrl.text.trim()}${descCtrl.text.isNotEmpty ? ' · ${descCtrl.text.trim()}' : ''}',
-            scheduledTime: newDt,
-            repeatDays: selectedDays,
-            payload: patient.id,
+    try {
+      await ref.read(firestoreServiceProvider).updateReminder(
+            patient.id,
+            reminder.id,
+            {
+              'title': title,
+              'description': description,
+              'type': selectedType,
+              'dateTime': newDt.toIso8601String(),
+              'repeatDays': selectedDays,
+            },
           );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Error al guardar recordatorio'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+
+      await NotificationService().cancelReminder(NotificationService.safeId(reminder.id));
+      if (reminder.isActive && patient.notificationsEnabled) {
+        await NotificationService().scheduleReminder(
+          id: NotificationService.safeId(reminder.id),
+          title: '${patient.fullName}: ${_getTypeLabel(selectedType)}',
+          body: '${title}${description != null ? ' · $description' : ''}',
+          scheduledTime: newDt,
+          repeatDays: selectedDays,
+          payload: patient.id,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error al guardar recordatorio'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
-
-    titleCtrl.dispose();
-    descCtrl.dispose();
   }
 
   // ─────────────────────────────────────
@@ -1622,6 +996,584 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────
+//  REMINDER DIALOG BODY (StatefulWidget)
+//  Owns TextEditingControllers + Timer lifecycle.
+//  On save, pops with Map<String, dynamic> containing the values.
+//  Controllers are disposed in dispose() AFTER the route exit
+//  animation finishes — preventing "used after disposed" crashes.
+// ─────────────────────────────────────
+class _ReminderDialogBody extends StatefulWidget {
+  final String initialTitle;
+  final String initialDescription;
+  final String initialType;
+  final TimeOfDay initialTime;
+  final List<String> initialDays;
+  final bool isEditing;
+  final DateTime baseDateTime;
+
+  const _ReminderDialogBody({
+    this.initialTitle = '',
+    this.initialDescription = '',
+    this.initialType = 'medicamento',
+    this.initialTime = const TimeOfDay(hour: 8, minute: 0),
+    this.initialDays = const ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'],
+    this.isEditing = false,
+    required this.baseDateTime,
+  });
+
+  @override
+  State<_ReminderDialogBody> createState() => _ReminderDialogBodyState();
+}
+
+class _ReminderDialogBodyState extends State<_ReminderDialogBody> {
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _descCtrl;
+  late String _selectedType;
+  late TimeOfDay _selectedTime;
+  late List<String> _selectedDays;
+  String _countdownText = '';
+  Timer? _countdownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleCtrl = TextEditingController(text: widget.initialTitle);
+    _descCtrl = TextEditingController(text: widget.initialDescription);
+    _selectedType = widget.initialType;
+    _selectedTime = widget.initialTime;
+    _selectedDays = List<String>.from(widget.initialDays);
+    _startCountdown();
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    _titleCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  void _startCountdown() {
+    final base = widget.isEditing ? widget.baseDateTime : DateTime.now();
+    _countdownText = _formatCountdown(_buildDateTime(base, _selectedTime));
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          _countdownText = _formatCountdown(_buildDateTime(base, _selectedTime));
+        });
+      }
+    });
+  }
+
+  DateTime _buildDateTime(DateTime d, TimeOfDay t) =>
+      DateTime(d.year, d.month, d.day, t.hour, t.minute);
+
+  String _formatCountdown(DateTime target) {
+    final now = DateTime.now();
+    var adjusted = target;
+    if (adjusted.isBefore(now)) {
+      adjusted = adjusted.add(const Duration(days: 1));
+    }
+    final diff = adjusted.difference(now);
+    if (diff.isNegative) return '0h 00min';
+    final hours = diff.inHours;
+    final minutes = diff.inMinutes.remainder(60);
+    return '${hours}h ${minutes.toString().padLeft(2, '0')}min';
+  }
+
+  String _formatDay(String day) => switch (day) {
+        'lun' => 'Lun',
+        'mar' => 'Mar',
+        'mie' => 'Mié',
+        'jue' => 'Jue',
+        'vie' => 'Vie',
+        'sab' => 'Sáb',
+        'dom' => 'Dom',
+        _ => day,
+      };
+
+  void _save() {
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty) return;
+    Navigator.pop(context, <String, dynamic>{
+      'title': title,
+      'description': _descCtrl.text.trim().isNotEmpty ? _descCtrl.text.trim() : null,
+      'type': _selectedType,
+      'time': _selectedTime,
+      'days': _selectedDays,
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      backgroundColor: Colors.white,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Title bar ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AppColors.goldLight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    widget.isEditing ? Icons.edit_rounded : Icons.add_rounded,
+                    color: AppColors.goldPrimary,
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    widget.isEditing ? 'Editar recordatorio' : 'Nuevo recordatorio',
+                    style: GoogleFonts.nunito(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF2C1A00),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Body ──
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTextField(controller: _titleCtrl, hintText: 'Título del recordatorio'),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: _descCtrl,
+                    hintText: 'Descripción (opcional)',
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 20),
+                  _sectionLabel('Tipo'),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _typeChip('Medicamento', _selectedType == 'medicamento', () => setState(() => _selectedType = 'medicamento')),
+                      _typeChip('Medición', _selectedType == 'medicion', () => setState(() => _selectedType = 'medicion')),
+                      _typeChip('Cita médica', _selectedType == 'cita', () => setState(() => _selectedType = 'cita')),
+                      _typeChip('Otro', _selectedType == 'otro', () => setState(() => _selectedType = 'otro')),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  _sectionLabel('Hora'),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: _openTimePicker,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBg,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.goldPrimary.withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time, size: 18, color: AppColors.textSecondary),
+                          const SizedBox(width: 10),
+                          Text(
+                            MaterialLocalizations.of(context).formatTimeOfDay(_selectedTime),
+                            style: GoogleFonts.nunito(fontSize: 14, color: AppColors.textPrimary),
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.keyboard_arrow_down, size: 18, color: AppColors.textSecondary),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_countdownText.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.goldLight,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.goldPrimary.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.alarm, size: 18, color: AppColors.goldDark),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Suena en $_countdownText',
+                              style: GoogleFonts.nunito(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.goldDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  _sectionLabel('Días de repetición'),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'].map((day) {
+                      final sel = _selectedDays.contains(day);
+                      return GestureDetector(
+                        onTap: () => setState(() {
+                          if (sel) {
+                            _selectedDays.remove(day);
+                          } else {
+                            _selectedDays.add(day);
+                          }
+                        }),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: sel ? AppColors.goldPrimary : AppColors.goldLight,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _formatDay(day),
+                            style: GoogleFonts.nunito(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: sel ? Colors.white : const Color(0xFF7A6030),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Actions ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      decoration: BoxDecoration(
+                        color: AppColors.goldLight,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.close_rounded, size: 17, color: AppColors.textSecondary),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Cancelar',
+                            style: GoogleFonts.nunito(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _save,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.goldPrimary, AppColors.goldPrimary.withValues(alpha: 0.85)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.goldPrimary.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(widget.isEditing ? Icons.save_rounded : Icons.check_rounded, size: 17, color: Colors.white),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.isEditing ? 'Actualizar' : 'Guardar',
+                            style: GoogleFonts.nunito(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Sub-widgets ──
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      style: GoogleFonts.nunito(fontSize: 15, color: AppColors.textPrimary),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: GoogleFonts.nunito(fontSize: 15, color: AppColors.textHint),
+        filled: true,
+        fillColor: AppColors.inputBg,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.goldPrimary.withValues(alpha: 0.25)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.goldPrimary.withValues(alpha: 0.25)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.goldPrimary, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.nunito(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: AppColors.textTertiary,
+        letterSpacing: 0.3,
+      ),
+    );
+  }
+
+  Widget _typeChip(String label, bool isSelected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.goldPrimary : AppColors.goldLight,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.nunito(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: isSelected ? Colors.white : const Color(0xFF7A6030),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openTimePicker() {
+    final use24h = MediaQuery.of(context).alwaysUse24HourFormat;
+    final hourLabels = use24h
+        ? List.generate(24, (i) => i.toString().padLeft(2, '0'))
+        : List.generate(12, (i) => i == 0 ? '12' : i.toString().padLeft(2, '0'));
+    final minuteLabels = List.generate(60, (i) => i.toString().padLeft(2, '0'));
+    final amPmLabels = ['AM', 'PM'];
+
+    int hourIndex = use24h ? _selectedTime.hour : _selectedTime.hour % 12;
+    int minuteIndex = _selectedTime.minute;
+    int amPmIndex = _selectedTime.hour < 12 ? 0 : 1;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (sheetCtx, setSheetState) {
+            return Container(
+              height: 300,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Elegir la hora',
+                          style: GoogleFonts.nunito(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            int finalHour;
+                            if (use24h) {
+                              finalHour = hourIndex;
+                            } else {
+                              finalHour = hourIndex == 0 ? 12 : hourIndex;
+                              if (amPmIndex == 1) {
+                                if (finalHour != 12) finalHour += 12;
+                              } else {
+                                if (finalHour == 12) finalHour = 0;
+                              }
+                            }
+                            final picked = TimeOfDay(hour: finalHour, minute: minuteIndex);
+                            Navigator.pop(sheetCtx);
+                            setState(() => _selectedTime = picked);
+                          },
+                          child: Text(
+                            'Listo',
+                            style: GoogleFonts.nunito(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.goldPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildWheel(
+                              labels: hourLabels,
+                              selectedIndex: hourIndex,
+                              onChanged: (i) => setSheetState(() => hourIndex = i),
+                            ),
+                          ),
+                          Text(
+                            ':',
+                            style: GoogleFonts.nunito(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildWheel(
+                              labels: minuteLabels,
+                              selectedIndex: minuteIndex,
+                              onChanged: (i) => setSheetState(() => minuteIndex = i),
+                            ),
+                          ),
+                          if (!use24h) ...[
+                            const SizedBox(width: 8),
+                            SizedBox(
+                              width: 60,
+                              child: _buildWheel(
+                                labels: amPmLabels,
+                                selectedIndex: amPmIndex,
+                                onChanged: (i) => setSheetState(() => amPmIndex = i),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildWheel({
+    required List<String> labels,
+    required int selectedIndex,
+    required ValueChanged<int> onChanged,
+  }) {
+    return ListWheelScrollView.useDelegate(
+      controller: FixedExtentScrollController(initialItem: selectedIndex),
+      itemExtent: 36,
+      physics: const FixedExtentScrollPhysics(),
+      diameterRatio: 1.5,
+      onSelectedItemChanged: onChanged,
+      childDelegate: ListWheelChildBuilderDelegate(
+        childCount: labels.length,
+        builder: (context, index) {
+          final isSelected = index == selectedIndex;
+          return Center(
+            child: Text(
+              labels[index],
+              style: GoogleFonts.nunito(
+                fontSize: isSelected ? 20 : 16,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                color: isSelected
+                    ? AppColors.textPrimary
+                    : AppColors.textSecondary.withValues(alpha: 0.5),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

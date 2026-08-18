@@ -8,15 +8,26 @@ import '../../models/orientation_rule.dart';
 import '../../models/patient.dart';
 import '../../models/reminder.dart';
 import '../../models/user_checklist.dart';
+import 'client_encryption_service.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db;
   final FirebaseAuth? _auth;
   final String? _testUid;
+  final ClientEncryptionService _encryption;
 
-  FirestoreService({FirebaseFirestore? db, FirebaseAuth? auth, this._testUid})
-      : _db = db ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  FirestoreService({
+    FirebaseFirestore? db,
+    FirebaseAuth? auth,
+    String? testUid,
+    ClientEncryptionService? encryption,
+  })  : _testUid = testUid,
+        _db = db ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance,
+        _encryption = encryption ??
+            ClientEncryptionService(testKey: testUid != null
+                ? 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY='
+                : null);
 
   String get _uid {
     if (_testUid != null) return _testUid;
@@ -46,24 +57,75 @@ class FirestoreService {
     return _userDoc.set(data, SetOptions(merge: true));
   }
 
+  Future<bool> isEncryptionPasswordConfigured() async {
+    final user = await _userDoc.get();
+    return (user.data() as Map<String, dynamic>?)?['encryption_version'] == 2;
+  }
+
+  Future<void> markEncryptionPasswordConfigured() {
+    return _userDoc.set({
+      'encryption_version': 2,
+      'encryptionConfiguredAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  /// Comprueba la contraseña contra el primer dato cifrado disponible.
+  Future<void> verifyEncryptionPassword() async {
+    final patients = await _userDoc.collection('patients').get();
+    for (final patient in patients.docs) {
+      final data = patient.data();
+      final name = data['nombre_cifrado'] as String?;
+      final diagnosis = data['diagnostico_cifrado'] as String?;
+      if (name != null) {
+        await _encryption.decrypt(_uid, name);
+        return;
+      }
+      if (diagnosis != null) {
+        await _encryption.decrypt(_uid, diagnosis);
+        return;
+      }
+      final records =
+          await patient.reference.collection('dailyRecords').limit(1).get();
+      for (final record in records.docs) {
+        final notes =
+            record.data()['contenido_del_registro_cifrado'] as String?;
+        if (notes != null) {
+          await _encryption.decrypt(_uid, notes);
+          return;
+        }
+      }
+    }
+  }
+
   // ── Patients ──
 
   Stream<List<Patient>> patientsStream() {
     if (!_isAuthenticated) return Stream.value([]);
-    return _userDoc.collection('patients').snapshots().map(
-          (snap) => snap.docs
-              .map((d) => Patient.fromMap(d.id, d.data()))
-              .toList(),
+    return _userDoc.collection('patients').snapshots().asyncMap(
+          (snap) => Future.wait(
+            snap.docs.map((d) => _patientFromFirestore(d.id, d.data())),
+          ),
         );
   }
 
   Future<String> addPatient(Patient p) async {
-    final ref = await _userDoc.collection('patients').add(p.toMap());
+    final ref = _userDoc.collection('patients').doc();
+    await ref.set(
+      await _encryptPatientData(p.toMap()),
+      SetOptions(merge: true),
+    );
     return ref.id;
   }
 
-  Future<void> updatePatient(String pid, Map<String, dynamic> data) {
-    return _userDoc.collection('patients').doc(pid).set(data, SetOptions(merge: true));
+  Future<void> updatePatient(String pid, Map<String, dynamic> data) async {
+    await _userDoc
+        .collection('patients')
+        .doc(pid)
+        .set(await _encryptPatientData(data), SetOptions(merge: true));
+  }
+
+  Future<void> deletePatient(String pid) {
+    return _userDoc.collection('patients').doc(pid).delete();
   }
 
   // ── Daily Records ──
@@ -82,10 +144,15 @@ class FirestoreService {
         .orderBy('createdAt', descending: true)
         .limit(_dailyRecordsLimit)
         .snapshots()
-        .map(
-          (snap) => snap.docs
-              .map((d) => DailyRecord.fromMap(d.id, d.data() as Map<String, dynamic>))
-              .toList(),
+        .asyncMap(
+          (snap) => Future.wait(
+            snap.docs.map(
+              (d) => _dailyRecordFromFirestore(
+                d.id,
+                d.data() as Map<String, dynamic>,
+              ),
+            ),
+          ),
         );
   }
 
@@ -98,19 +165,280 @@ class FirestoreService {
         .startAfter([lastRecordDate])
         .limit(_dailyRecordsLimit)
         .get();
-    return snap.docs
-        .map((d) => DailyRecord.fromMap(d.id, d.data() as Map<String, dynamic>))
-        .toList();
+    return Future.wait(
+      snap.docs.map(
+        (d) => _dailyRecordFromFirestore(
+          d.id,
+          d.data() as Map<String, dynamic>,
+        ),
+      ),
+    );
   }
 
-  Future<void> saveDailyRecord(String pid, DailyRecord record) {
-    return _dailyRecordsCol(pid)
+  Future<void> saveDailyRecord(String pid, DailyRecord record) async {
+    if (record.patientId != pid) {
+      throw ArgumentError.value(record.patientId, 'record.patientId',
+          'Debe coincidir con el paciente de la ruta');
+    }
+    await _dailyRecordsCol(pid)
         .doc(record.id)
-        .set(record.toMap(), SetOptions(merge: true));
+        .set(await _encryptDailyRecordData(record), SetOptions(merge: true));
   }
 
   Future<void> deleteDailyRecord(String pid, String recordId) {
     return _dailyRecordsCol(pid).doc(recordId).delete();
+  }
+
+  // ── Cifrado y migración de datos sensibles ──
+
+  Future<Map<String, dynamic>> _encryptPatientData(
+    Map<String, dynamic> source,
+  ) async {
+    final data = Map<String, dynamic>.from(source);
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'fullName',
+      ciphertextField: 'nombre_cifrado',
+    );
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'diagnosis',
+      ciphertextField: 'diagnostico_cifrado',
+    );
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'healthCenterName',
+      ciphertextField: 'centro_salud_cifrado',
+    );
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'healthCenterAddress',
+      ciphertextField: 'direccion_centro_cifrado',
+    );
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'healthCenterPhone',
+      ciphertextField: 'telefono_centro_cifrado',
+    );
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'emergencyContactName',
+      ciphertextField: 'contacto_emergencia_nombre_cifrado',
+    );
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'emergencyContactPhone',
+      ciphertextField: 'contacto_emergencia_telefono_cifrado',
+    );
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'treatmentPhase',
+      ciphertextField: 'fase_tratamiento_cifrado',
+    );
+    if (data.containsKey('nombre_cifrado') ||
+        data.containsKey('diagnostico_cifrado')) {
+      data['encryption_version'] = 2;
+    }
+    return data;
+  }
+
+  Future<Map<String, dynamic>> _encryptDailyRecordData(DailyRecord record) async {
+    final data = record.toMap();
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'generalNotes',
+      ciphertextField: 'contenido_del_registro_cifrado',
+    );
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'alertMessage',
+      ciphertextField: 'mensaje_alerta_cifrado',
+    );
+    if (data.containsKey('symptoms')) {
+      final symptoms = List<Map<String, dynamic>>.from(
+        (data['symptoms'] as List).map((s) => Map<String, dynamic>.from(s as Map)),
+      );
+      await _encryptSymptomsNotes(symptoms);
+      data['symptoms'] = symptoms;
+    }
+    data['encryption_version'] = 2;
+    return data;
+  }
+
+  Future<void> _encryptSymptomsNotes(List<Map<String, dynamic>> symptoms) async {
+    for (final s in symptoms) {
+      final notes = s['notes'] as String?;
+      if (notes != null && notes.isNotEmpty) {
+        s['notes_cifrado'] = await _encryption.encrypt(_uid, notes);
+      }
+      s.remove('notes');
+    }
+  }
+
+  Future<void> _replaceWithCiphertext(
+    Map<String, dynamic> data, {
+    required String plaintextField,
+    required String ciphertextField,
+  }) async {
+    if (!data.containsKey(plaintextField)) return;
+    final plaintext = data[plaintextField] as String?;
+    data[plaintextField] = FieldValue.delete();
+    data[ciphertextField] = plaintext == null || plaintext.isEmpty
+        ? FieldValue.delete()
+        : await _encryption.encrypt(_uid, plaintext);
+  }
+
+  Future<Patient> _patientFromFirestore(
+    String id,
+    Map<String, dynamic> source,
+  ) async {
+    final data = Map<String, dynamic>.from(source);
+    data['fullName'] = await _decryptOrLegacy(data, 'nombre_cifrado', 'fullName');
+    data['diagnosis'] = await _decryptOrLegacy(data, 'diagnostico_cifrado', 'diagnosis');
+    data['healthCenterName'] = await _decryptOrLegacy(data, 'centro_salud_cifrado', 'healthCenterName');
+    data['healthCenterAddress'] = await _decryptOrLegacy(data, 'direccion_centro_cifrado', 'healthCenterAddress');
+    data['healthCenterPhone'] = await _decryptOrLegacy(data, 'telefono_centro_cifrado', 'healthCenterPhone');
+    data['emergencyContactName'] = await _decryptOrLegacy(data, 'contacto_emergencia_nombre_cifrado', 'emergencyContactName');
+    data['emergencyContactPhone'] = await _decryptOrLegacy(data, 'contacto_emergencia_telefono_cifrado', 'emergencyContactPhone');
+    data['treatmentPhase'] = await _decryptOrLegacy(data, 'fase_tratamiento_cifrado', 'treatmentPhase');
+    return Patient.fromMap(id, data);
+  }
+
+  Future<DailyRecord> _dailyRecordFromFirestore(
+    String id,
+    Map<String, dynamic> source,
+  ) async {
+    final data = Map<String, dynamic>.from(source);
+    data['generalNotes'] = await _decryptOrLegacy(
+      data,
+      'contenido_del_registro_cifrado',
+      'generalNotes',
+    );
+    data['alertMessage'] = await _decryptOrLegacy(
+      data,
+      'mensaje_alerta_cifrado',
+      'alertMessage',
+    );
+    if (data.containsKey('symptoms')) {
+      final symptoms = List<Map<String, dynamic>>.from(
+        (data['symptoms'] as List).map((s) => Map<String, dynamic>.from(s as Map)),
+      );
+      await _decryptSymptomsNotes(symptoms);
+      data['symptoms'] = symptoms;
+    }
+    return DailyRecord.fromMap(id, data);
+  }
+
+  Future<String?> _decryptOrLegacy(
+    Map<String, dynamic> data,
+    String ciphertextField,
+    String legacyField,
+  ) async {
+    final ciphertext = data[ciphertextField] as String?;
+    if (ciphertext != null && ciphertext.isNotEmpty) {
+      return _encryption.decrypt(_uid, ciphertext);
+    }
+    return data[legacyField] as String?;
+  }
+
+  Future<void> _decryptSymptomsNotes(List<Map<String, dynamic>> symptoms) async {
+    for (final s in symptoms) {
+      final encrypted = s['notes_cifrado'] as String?;
+      if (encrypted != null && encrypted.isNotEmpty) {
+        s['notes'] = await _encryption.decrypt(_uid, encrypted);
+      }
+      s.remove('notes_cifrado');
+    }
+  }
+
+  Future<void> _encryptReminderFields(Map<String, dynamic> data) async {
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'title',
+      ciphertextField: 'titulo_cifrado',
+    );
+    await _replaceWithCiphertext(
+      data,
+      plaintextField: 'description',
+      ciphertextField: 'descripcion_cifrado',
+    );
+  }
+
+  Future<void> _decryptReminderFields(Map<String, dynamic> data) async {
+    data['title'] = await _decryptOrLegacy(data, 'titulo_cifrado', 'title');
+    data['description'] = await _decryptOrLegacy(data, 'descripcion_cifrado', 'description');
+  }
+
+  /// Convierte datos existentes a AES-GCM. Es seguro ejecutarlo más de una vez.
+  Future<void> migrateLegacySensitiveData() async {
+    final patients = await _userDoc.collection('patients').get();
+    for (final patient in patients.docs) {
+      final legacyPatient = patient.data();
+      // Re-cifrar si quedan campos plaintext (nuevos campos incluidos)
+      if (legacyPatient.containsKey('fullName') ||
+          legacyPatient.containsKey('diagnosis') ||
+          legacyPatient.containsKey('healthCenterName') ||
+          legacyPatient.containsKey('healthCenterAddress') ||
+          legacyPatient.containsKey('healthCenterPhone') ||
+          legacyPatient.containsKey('emergencyContactName') ||
+          legacyPatient.containsKey('emergencyContactPhone') ||
+          legacyPatient.containsKey('treatmentPhase')) {
+        await patient.reference.set(
+          await _encryptPatientData(legacyPatient),
+          SetOptions(merge: true),
+        );
+      }
+      final records = await patient.reference.collection('dailyRecords').get();
+      for (final record in records.docs) {
+        final legacyRecord = record.data();
+        final data = Map<String, dynamic>.from(legacyRecord)
+          ..['paciente_id'] = patient.id;
+        var needsSave = false;
+        if (data.containsKey('generalNotes')) {
+          await _replaceWithCiphertext(
+            data,
+            plaintextField: 'generalNotes',
+            ciphertextField: 'contenido_del_registro_cifrado',
+          );
+          needsSave = true;
+        }
+        if (data.containsKey('alertMessage')) {
+          await _replaceWithCiphertext(
+            data,
+            plaintextField: 'alertMessage',
+            ciphertextField: 'mensaje_alerta_cifrado',
+          );
+          needsSave = true;
+        }
+        if (data.containsKey('symptoms')) {
+          final symptoms = List<Map<String, dynamic>>.from(
+            (data['symptoms'] as List).map((s) => Map<String, dynamic>.from(s as Map)),
+          );
+          final hasPlaintextNotes = symptoms.any(
+            (s) => s.containsKey('notes') && (s['notes'] as String?)?.isNotEmpty == true,
+          );
+          if (hasPlaintextNotes) {
+            await _encryptSymptomsNotes(symptoms);
+            data['symptoms'] = symptoms;
+            needsSave = true;
+          }
+        }
+        if (needsSave) {
+          data['encryption_version'] = 2;
+          await record.reference.set(data, SetOptions(merge: true));
+        }
+      }
+      // Migrar recordatorios del paciente
+      final reminders = await patient.reference.collection('reminders').get();
+      for (final reminder in reminders.docs) {
+        final remData = reminder.data();
+        if (remData.containsKey('title') || remData.containsKey('description')) {
+          final data = Map<String, dynamic>.from(remData);
+          await _encryptReminderFields(data);
+          await reminder.reference.set(data, SetOptions(merge: true));
+        }
+      }
+    }
   }
 
   // ── Reminders ──
@@ -120,19 +448,33 @@ class FirestoreService {
 
   Stream<List<Reminder>> remindersStream(String pid) {
     if (!_isAuthenticated) return Stream.value([]);
-    return _remindersCol(pid).snapshots().map(
-          (snap) => snap.docs
-              .map((d) => Reminder.fromMap(d.id, d.data() as Map<String, dynamic>))
-              .toList(),
+    return _remindersCol(pid).snapshots().asyncMap(
+          (snap) async {
+            final results = <Reminder>[];
+            for (final d in snap.docs) {
+              try {
+                final data = Map<String, dynamic>.from(d.data() as Map<String, dynamic>);
+                await _decryptReminderFields(data);
+                results.add(Reminder.fromMap(d.id, data));
+              } catch (_) {
+                // Skip docs that fail to decrypt — prevents entire batch failure
+              }
+            }
+            return results;
+          },
         );
   }
 
   Future<String> addReminder(String pid, Reminder r) async {
-    final ref = await _remindersCol(pid).add(r.toMap());
+    final ref = _remindersCol(pid).doc();
+    final data = r.toMap();
+    await _encryptReminderFields(data);
+    await ref.set(data, SetOptions(merge: true));
     return ref.id;
   }
 
-  Future<void> updateReminder(String pid, String rid, Map<String, dynamic> data) {
+  Future<void> updateReminder(String pid, String rid, Map<String, dynamic> data) async {
+    await _encryptReminderFields(data);
     return _remindersCol(pid).doc(rid).set(data, SetOptions(merge: true));
   }
 

@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/services/firestore_service.dart';
 import '../../core/widgets/gradient_header.dart';
 import '../../core/providers/providers.dart';
 import '../../models/orientation_rule.dart';
@@ -397,6 +396,9 @@ class _OrientationScreenState extends ConsumerState<OrientationScreen> {
   // ── Drawer de conversaciones ──
 
   void _showConversationsDrawer() {
+    // Usar datos cacheados en vez de Consumer interno para evitar
+    // que el rebuild del provider destruya el contexto de diálogos abiertos
+    final chats = _cachedConversations;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -405,8 +407,7 @@ class _OrientationScreenState extends ConsumerState<OrientationScreen> {
       ),
       builder: (ctx) => _ConversationsSheet(
         currentChatId: _currentChatId,
-        parentContext: context,
-        firestoreService: ref.read(firestoreServiceProvider),
+        chats: chats,
         onSelect: (chatId) {
           Navigator.pop(ctx);
           _switchToChat(chatId);
@@ -1034,48 +1035,22 @@ class _OrientationScreenState extends ConsumerState<OrientationScreen> {
 
 // ── Bottom Sheet de conversaciones ──
 
-class _ConversationsSheet extends StatefulWidget {
+class _ConversationsSheet extends StatelessWidget {
   final String? currentChatId;
+  final List<Map<String, dynamic>> chats;
   final void Function(String chatId) onSelect;
   final VoidCallback onNewChat;
   final void Function(String chatId) onDelete;
   final void Function(String chatId, String newTitle) onRename;
-  final BuildContext parentContext;
-  final FirestoreService firestoreService;
 
   const _ConversationsSheet({
     required this.currentChatId,
+    required this.chats,
     required this.onSelect,
     required this.onNewChat,
     required this.onDelete,
     required this.onRename,
-    required this.parentContext,
-    required this.firestoreService,
   });
-
-  @override
-  State<_ConversationsSheet> createState() => _ConversationsSheetState();
-}
-
-class _ConversationsSheetState extends State<_ConversationsSheet> {
-  List<Map<String, dynamic>> _chats = [];
-  StreamSubscription<List<Map<String, dynamic>>>? _sub;
-
-  @override
-  void initState() {
-    super.initState();
-    // Suscribirse al stream de Firestore para datos live
-    _sub = widget.firestoreService.chatsStream().listen(
-      (chats) { if (mounted) setState(() => _chats = chats); },
-      onError: (e) { debugPrint('Error in chats stream: $e'); },
-    );
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
   String _formatDate(dynamic timestamp) {
     if (timestamp == null) return '';
     if (timestamp is Timestamp) {
@@ -1090,116 +1065,26 @@ class _ConversationsSheetState extends State<_ConversationsSheet> {
     return '$timestamp';
   }
 
-  void _showRenameDialog(Map<String, dynamic> chat) {
+  void _showRenameDialog(BuildContext context, Map<String, dynamic> chat) {
     final chatId = chat['id'] as String;
     final currentTitle = chat['title'] as String? ?? 'Chat';
-    final controller = TextEditingController(text: currentTitle);
 
     showDialog<bool>(
-      context: widget.parentContext,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'Renombrar conversación',
-          style: GoogleFonts.nunito(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: GoogleFonts.nunito(
-            fontSize: 14,
-            color: AppColors.textPrimary,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Nuevo nombre...',
-            hintStyle: GoogleFonts.nunito(
-              fontSize: 14,
-              color: AppColors.textHint,
-            ),
-            filled: true,
-            fillColor: AppColors.inputBg,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: AppColors.goldMid.withValues(alpha: 0.3),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: AppColors.goldMid.withValues(alpha: 0.3),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: AppColors.goldPrimary,
-                width: 1.5,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 10,
-            ),
-          ),
-          onSubmitted: (_) {
-            final newTitle = controller.text.trim();
-            if (newTitle.isNotEmpty && newTitle != currentTitle) {
-              widget.onRename(chatId, newTitle);
-              Navigator.pop(ctx, true);
-            } else {
-              Navigator.pop(ctx, false);
-            }
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              'Cancelar',
-              style: GoogleFonts.nunito(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              final newTitle = controller.text.trim();
-              if (newTitle.isNotEmpty && newTitle != currentTitle) {
-                widget.onRename(chatId, newTitle);
-                Navigator.pop(ctx, true);
-              } else {
-                Navigator.pop(ctx, false);
-              }
-            },
-            child: Text(
-              'Guardar',
-              style: GoogleFonts.nunito(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.goldPrimary,
-              ),
-            ),
-          ),
-        ],
+      context: context,
+      builder: (ctx) => _RenameDialogBody(
+        chatId: chatId,
+        currentTitle: currentTitle,
+        onRename: onRename,
       ),
-    ).then((_) => controller.dispose());
+    );
   }
 
-  void _showDeleteConfirmation(Map<String, dynamic> chat) {
+  void _showDeleteConfirmation(BuildContext context, Map<String, dynamic> chat) {
     final chatId = chat['id'] as String;
     final title = chat['title'] as String? ?? 'Chat';
 
     showDialog<bool>(
-      context: widget.parentContext,
+      context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -1233,7 +1118,7 @@ class _ConversationsSheetState extends State<_ConversationsSheet> {
           ),
           TextButton(
             onPressed: () {
-              widget.onDelete(chatId);
+              onDelete(chatId);
               Navigator.pop(ctx, true);
             },
             child: Text(
@@ -1250,6 +1135,7 @@ class _ConversationsSheetState extends State<_ConversationsSheet> {
     );
   }
 
+  // ignore: annotate_overrides
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -1293,7 +1179,7 @@ class _ConversationsSheetState extends State<_ConversationsSheet> {
                 ),
                 const Spacer(),
                   Text(
-                    '${_chats.length}',
+                    '${chats.length}',
                     style: GoogleFonts.nunito(
                       fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -1305,7 +1191,7 @@ class _ConversationsSheetState extends State<_ConversationsSheet> {
             const SizedBox(height: 12),
             // List
             Expanded(
-              child: _chats.isEmpty
+              child: chats.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -1337,21 +1223,21 @@ class _ConversationsSheetState extends State<_ConversationsSheet> {
                     )
                   : ListView.separated(
                       controller: scrollController,
-                      itemCount: _chats.length,
+                      itemCount: chats.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 2),
                       itemBuilder: (ctx, i) {
-                        final chat = _chats[i];
+                        final chat = chats[i];
                         final chatId = chat['id'] as String;
                         final title = chat['title'] as String? ?? 'Chat';
                         final updatedAt = chat['updatedAt'];
-                        final isActive = chatId == widget.currentChatId;
+                        final isActive = chatId == currentChatId;
 
                         return Material(
                           color: Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(12),
-                            onTap: () => widget.onSelect(chatId),
+                            onTap: () => onSelect(chatId),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -1434,9 +1320,9 @@ class _ConversationsSheetState extends State<_ConversationsSheet> {
                                     constraints: const BoxConstraints(),
                                     onSelected: (value) {
                                       if (value == 'rename') {
-                                        _showRenameDialog(chat);
+                                        _showRenameDialog(context, chat);
                                       } else if (value == 'delete') {
-                                        _showDeleteConfirmation(chat);
+                                        _showDeleteConfirmation(context, chat);
                                       }
                                     },
                                     itemBuilder: (_) => [
@@ -1499,7 +1385,7 @@ class _ConversationsSheetState extends State<_ConversationsSheet> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: widget.onNewChat,
+                onPressed: onNewChat,
                 icon: const Icon(Icons.add, size: 18),
                 label: Text(
                   'Nuevo chat',
@@ -1550,5 +1436,130 @@ class _ChatMessage {
         text: map['text'] as String? ?? '',
         isUser: map['isUser'] as bool? ?? false,
         fechaHora: map['fechaHora'] as String?,
+      );
+}
+
+// ── StatefulWidget para el diálogo de renombrar ──
+// El controller vive dentro del widget y se dispone en dispose(),
+// NO en .then() del Future (que se ejecuta antes de que la
+// animación de salida termine → TextEditingController used after disposed).
+class _RenameDialogBody extends StatefulWidget {
+  final String chatId;
+  final String currentTitle;
+  final void Function(String chatId, String newTitle) onRename;
+
+  const _RenameDialogBody({
+    required this.chatId,
+    required this.currentTitle,
+    required this.onRename,
+  });
+
+  @override
+  State<_RenameDialogBody> createState() => _RenameDialogBodyState();
+}
+
+class _RenameDialogBodyState extends State<_RenameDialogBody> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.currentTitle);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final newTitle = _controller.text.trim();
+    if (newTitle.isNotEmpty && newTitle != widget.currentTitle) {
+      widget.onRename(widget.chatId, newTitle);
+      Navigator.pop(context, true);
+    } else {
+      Navigator.pop(context, false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Renombrar conversación',
+          style: GoogleFonts.nunito(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: TextField(
+          controller: _controller,
+          autofocus: true,
+          style: GoogleFonts.nunito(
+            fontSize: 14,
+            color: AppColors.textPrimary,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Nuevo nombre...',
+            hintStyle: GoogleFonts.nunito(
+              fontSize: 14,
+              color: AppColors.textHint,
+            ),
+            filled: true,
+            fillColor: AppColors.inputBg,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: AppColors.goldMid.withValues(alpha: 0.3),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(
+                color: AppColors.goldMid.withValues(alpha: 0.3),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: AppColors.goldPrimary,
+                width: 1.5,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 10,
+            ),
+          ),
+          onSubmitted: (_) => _submit(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.nunito(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: _submit,
+            child: Text(
+              'Guardar',
+              style: GoogleFonts.nunito(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.goldPrimary,
+              ),
+            ),
+          ),
+        ],
       );
 }
