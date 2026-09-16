@@ -20,6 +20,7 @@ const _fasesTratamiento = [
   'Remisión',
   'Cuidados paliativos',
   'No aplica',
+  'Otro',
 ];
 
 String? _validarObligatorio(String? v, String mensaje) =>
@@ -69,6 +70,10 @@ class _RegistroState extends ConsumerState<Registro> {
   final _centroTelefonoController = TextEditingController();
   final _urgenciaTelefonoController = TextEditingController();
 
+  // Controllers "Otro"
+  final _relacionOtroController = TextEditingController();
+  final _faseOtroController = TextEditingController();
+
   String? _relacion;
   String? _faseTratamiento;
   bool _ocultarContrasena = true;
@@ -92,6 +97,8 @@ class _RegistroState extends ConsumerState<Registro> {
     _centroDireccionController,
     _centroTelefonoController,
     _urgenciaTelefonoController,
+    _relacionOtroController,
+    _faseOtroController,
   ];
 
   @override
@@ -113,7 +120,9 @@ class _RegistroState extends ConsumerState<Registro> {
             nombre: _nombreController.text.trim(),
             correo: _correoController.text.trim(),
             telefono: _telefonoController.text.trim(),
-            relacion: _relacion,
+            relacion: _relacion == 'Otro'
+                ? _relacionOtroController.text.trim()
+                : _relacion,
             correoRespaldo: _correoRespaldoController.text.trim(),
             direccion: _direccionController.text.trim(),
             contrasena: _contrasenaController.text,
@@ -123,7 +132,9 @@ class _RegistroState extends ConsumerState<Registro> {
               rut: _rutController.text.trim(),
               age: int.tryParse(_edadController.text.trim()),
               diagnosis: _diagnosticoController.text.trim(),
-              tratamientoFase: _faseTratamiento,
+              tratamientoFase: _faseTratamiento == 'Otro'
+                  ? _faseOtroController.text.trim()
+                  : _faseTratamiento,
               contactoEmergenciaNombre: _contactoEmergenciaNombreController.text
                   .trim(),
               centroSaludNombre: _centroNombreController.text.trim(),
@@ -213,6 +224,7 @@ class _RegistroState extends ConsumerState<Registro> {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           initialValue: valor,
+          isExpanded: true,
           decoration: decoracionEntrada(
             textoAyuda: 'Seleccionar',
             icono: icono,
@@ -290,6 +302,15 @@ class _RegistroState extends ConsumerState<Registro> {
         alCambiar: (v) => setState(() => _relacion = v),
         mensajeValidacion: 'Selecciona una relación',
       ),
+      if (_relacion == 'Otro')
+        _campoEtiquetado(
+          etiqueta: 'Especifica la relación',
+          controlador: _relacionOtroController,
+          textoAyuda: 'Ej: Madrastra, Abuelo(a), Hermano(a)',
+          icono: Icons.edit_outlined,
+          accionTeclado: TextInputAction.next,
+          validador: (v) => _validarObligatorio(v, 'Especifica la relación'),
+        ),
       _campoEtiquetado(
         etiqueta: 'Teléfono',
         controlador: _telefonoController,
@@ -297,6 +318,7 @@ class _RegistroState extends ConsumerState<Registro> {
         icono: Icons.phone_outlined,
         tipoTeclado: TextInputType.phone,
         accionTeclado: TextInputAction.next,
+        validador: (v) => _validarObligatorio(v, 'Ingresa un teléfono'),
       ),
       _campoEtiquetado(
         etiqueta: 'Dirección',
@@ -304,6 +326,7 @@ class _RegistroState extends ConsumerState<Registro> {
         textoAyuda: 'Dirección del cuidador',
         icono: Icons.location_on_outlined,
         accionTeclado: TextInputAction.next,
+        validador: (v) => _validarObligatorio(v, 'Ingresa la dirección'),
       ),
       _campoEtiquetado(
         etiqueta: 'Correo electrónico',
@@ -321,7 +344,7 @@ class _RegistroState extends ConsumerState<Registro> {
         icono: Icons.lock_reset_outlined,
         tipoTeclado: TextInputType.emailAddress,
         accionTeclado: TextInputAction.next,
-        validador: (v) => _validarCorreo(v, opcional: true),
+        validador: _validarCorreo,
       ),
       _campoEtiquetado(
         etiqueta: 'Contraseña',
@@ -383,6 +406,12 @@ class _RegistroState extends ConsumerState<Registro> {
         icono: Icons.cake_outlined,
         tipoTeclado: TextInputType.number,
         accionTeclado: TextInputAction.next,
+        validador: (v) {
+          if (v == null || v.trim().isEmpty) return 'Ingresa la edad';
+          final edad = int.tryParse(v.trim());
+          if (edad == null || edad < 0 || edad > 120) return 'Edad no válida';
+          return null;
+        },
       ),
       _campoEtiquetado(
         etiqueta: 'Diagnóstico',
@@ -400,6 +429,15 @@ class _RegistroState extends ConsumerState<Registro> {
         alCambiar: (v) => setState(() => _faseTratamiento = v),
         mensajeValidacion: 'Selecciona la fase',
       ),
+      if (_faseTratamiento == 'Otro')
+        _campoEtiquetado(
+          etiqueta: 'Especifica la fase',
+          controlador: _faseOtroController,
+          textoAyuda: 'Ej: Terapia de mantención, Control',
+          icono: Icons.healing_outlined,
+          accionTeclado: TextInputAction.done,
+          validador: (v) => _validarObligatorio(v, 'Especifica la fase'),
+        ),
     ];
   }
 
@@ -411,13 +449,17 @@ class _RegistroState extends ConsumerState<Registro> {
         textoAyuda: 'Nombre del centro',
         icono: Icons.apartment_outlined,
         accionTeclado: TextInputAction.next,
+        validador: (v) =>
+            _validarObligatorio(v, 'Ingresa el nombre del centro'),
       ),
       _campoEtiquetado(
-        etiqueta: 'Dirección',
+        etiqueta: 'Dirección del centro',
         controlador: _centroDireccionController,
         textoAyuda: 'Dirección del centro',
         icono: Icons.location_on_outlined,
         accionTeclado: TextInputAction.next,
+        validador: (v) =>
+            _validarObligatorio(v, 'Ingresa la dirección del centro'),
       ),
       _campoEtiquetado(
         etiqueta: 'Tel. contacto del centro',
@@ -426,6 +468,8 @@ class _RegistroState extends ConsumerState<Registro> {
         icono: Icons.phone_outlined,
         tipoTeclado: TextInputType.phone,
         accionTeclado: TextInputAction.next,
+        validador: (v) =>
+            _validarObligatorio(v, 'Ingresa un teléfono del centro'),
       ),
       _campoEtiquetado(
         etiqueta: 'Contacto de emergencia',
@@ -433,6 +477,8 @@ class _RegistroState extends ConsumerState<Registro> {
         textoAyuda: 'Nombre de la persona',
         icono: Icons.contact_emergency_outlined,
         accionTeclado: TextInputAction.next,
+        validador: (v) =>
+            _validarObligatorio(v, 'Ingresa un nombre de contacto'),
       ),
       _campoEtiquetado(
         etiqueta: 'Tel. de urgencia',
@@ -441,6 +487,8 @@ class _RegistroState extends ConsumerState<Registro> {
         icono: Icons.emergency_outlined,
         tipoTeclado: TextInputType.phone,
         accionTeclado: TextInputAction.done,
+        validador: (v) =>
+            _validarObligatorio(v, 'Ingresa un teléfono de urgencia'),
       ),
     ];
   }
@@ -449,36 +497,54 @@ class _RegistroState extends ConsumerState<Registro> {
     return SizedBox(
       width: double.infinity,
       height: 54,
-      child: ElevatedButton(
-        onPressed: _cargando ? null : _guardar,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Paleta.doradoPrincipal,
-          foregroundColor: Colors.white,
-          elevation: 2,
-          shadowColor: Paleta.doradoPrincipal.withValues(alpha: 0.35),
-          shape: RoundedRectangleBorder(
+      child: Opacity(
+        opacity: _cargando ? 0.6 : 1,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
+            ),
             borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Paleta.doradoPrincipal.withValues(alpha: 0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          disabledBackgroundColor: Paleta.doradoPrincipal.withValues(
-            alpha: 0.5,
+          child: ElevatedButton(
+            onPressed: _cargando ? null : _guardar,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Colors.transparent,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: _cargando
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : Text(
+                    'Guardar y continuar',
+                    style: GoogleFonts.nunito(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
           ),
         ),
-        child: _cargando
-            ? const SizedBox(
-                height: 22,
-                width: 22,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Text(
-                'Guardar y continuar',
-                style: GoogleFonts.nunito(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
       ),
     );
   }
@@ -518,20 +584,16 @@ class _RegistroState extends ConsumerState<Registro> {
       },
       child: Scaffold(
         backgroundColor: Paleta.crema,
-        body: Column(
+        body: Stack(
           children: [
-            EncabezadoGradiente(
-              mostrarRetroceso: true,
-              titulo: 'Crear tu perfil',
-              subtitulo: 'Completa los datos para comenzar tu cuidado',
-              alto: 130,
-              alRetroceder: () => context.go('/bienvenida'),
-            ),
-            Expanded(
+
+            Positioned.fill(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 24,
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  MediaQuery.of(context).padding.top + 100 + 8,
+                  20,
+                  24,
                 ),
                 child: Form(
                   key: _formKey,
@@ -563,6 +625,19 @@ class _RegistroState extends ConsumerState<Registro> {
                     ],
                   ),
                 ),
+              ),
+            ),
+
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: EncabezadoGradiente(
+                titulo: 'Crear tu perfil',
+                subtitulo: 'Completa todos los datos',
+                logo: const AssetImage('assets/images/OnCuidar.png'),
+                tamanoTitulo: 20,
+                alto: 100,
               ),
             ),
           ],

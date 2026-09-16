@@ -12,6 +12,9 @@ class Paciente {
   final String? contactoEmergenciaTelefono;
   final DateTime createdAt;
 
+  /// Tope de registros "programados" permitidos por día.
+  final int maximoRegistrosDia;
+
   Paciente({
     required this.id,
     required this.fullName,
@@ -25,5 +28,6 @@ class Paciente {
     this.contactoEmergenciaNombre,
     this.contactoEmergenciaTelefono,
     required this.createdAt,
+    this.maximoRegistrosDia = 3,
   });
 }

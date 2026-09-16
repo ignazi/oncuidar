@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../../modelos/paciente.dart';
+import '../../modelos/registro_clinico.dart';
 import 'servicio_cifrado.dart';
 
 class ServicioBaseDatos {
@@ -154,8 +157,7 @@ class ServicioBaseDatos {
     return ref.id;
   }
 
-  /// Actualiza un paciente cifrando solo los campos editables presentes en
-  /// [datos]. Usa `set` con merge para conservar los campos fijos.
+  /// Actualiza un paciente cifrando solo los campos editables
   Future<void> actualizarPaciente(
     String idPaciente,
     Map<String, dynamic> datos,
@@ -222,6 +224,10 @@ class ServicioBaseDatos {
       valor: datos['contactoEmergenciaTelefono'],
       clave: 'contacto_emergencia_telefono_cifrado',
     );
+    // El tope diario de registros no es sensible: se guarda en claro.
+    if (datos['maximo_registros_dia'] is int) {
+      plano['maximo_registros_dia'] = datos['maximo_registros_dia'];
+    }
     if (plano.isEmpty) return;
     await _docUsuario
         .collection('patients')
@@ -229,20 +235,23 @@ class ServicioBaseDatos {
         .set(plano, SetOptions(merge: true));
   }
 
-  /// Borrado LÓGICO del paciente: escribe `archivado: true` (en claro).
-  /// Los datos se conservan pero deja de aparecer en las lecturas activas.
+  /// Borrado LÓGICO del paciente: escribe archivado
   Future<void> archivarPaciente(String idPaciente) async {
     await _docUsuario.collection('patients').doc(idPaciente).set({
       'archivado': true,
     }, SetOptions(merge: true));
   }
 
-  /// Restaura un paciente archivado: vuelve a `archivado: false` y reaparece
-  /// en las lecturas activas.
+  /// Restaura un paciente archivado
   Future<void> desarchivarPaciente(String idPaciente) async {
     await _docUsuario.collection('patients').doc(idPaciente).set({
       'archivado': false,
     }, SetOptions(merge: true));
+  }
+
+  /// Borrado FÍSICO (irreversible) del paciente y de todos sus datos.
+  Future<void> eliminarPaciente(String idPaciente) async {
+    await _docUsuario.collection('patients').doc(idPaciente).delete();
   }
 
   /// Stream en tiempo real de los pacientes archivados (`archivado == true`).
@@ -282,11 +291,123 @@ class ServicioBaseDatos {
         );
   }
 
-  // ── Cambio de correo ──
+  // ── Registro clínico ──
 
-  /// Re-autentica al usuario con su contraseña actual. Exigido por Firebase
-  /// antes de cualquier cambio sensible en la cuenta (correo principal o
-  /// respaldo) para no romper la sesión.
+  CollectionReference _registrosClinicos(String idPaciente) => _docUsuario
+      .collection('patients')
+      .doc(idPaciente)
+      .collection('clinicalRecords');
+
+  /// Guarda un registro clínico cifrando los campos sensibles.
+  Future<void> guardarRegistroClinico(
+    String idPaciente,
+    RegistroClinico registro,
+  ) async {
+    if (registro.pacienteId != idPaciente) {
+      throw ArgumentError(
+        'El registro pertenece a "${registro.pacienteId}", no a "$idPaciente"',
+      );
+    }
+    final signos = registro.signosVitales;
+    final datos = <String, dynamic>{
+      'paciente_id': registro.pacienteId,
+      'fecha': registro.fecha,
+      'creadoEn': registro.creadoEn,
+      'tipoRegistro': registro.tipoRegistro,
+      'nivelAlerta': registro.nivelAlerta.name,
+      if (signos != null)
+        'signos_vitales_cifrado': await _cifrado.cifrar(
+          _uid,
+          jsonEncode({
+            'temperature': signos.temperature,
+            'heartRate': signos.heartRate,
+            'oxygenSaturation': signos.oxygenSaturation,
+            'respiratoryRate': signos.respiratoryRate,
+          }),
+        )
+      else
+        'signos_vitales_cifrado': FieldValue.delete(),
+      'sintomas_cifrado': await _cifrado.cifrar(
+        _uid,
+        jsonEncode([
+          for (final sintoma in registro.sintomas)
+            {
+              'name': sintoma.name,
+              'intensity': sintoma.intensity,
+              if (sintoma.notes != null && sintoma.notes!.isNotEmpty)
+                'notes': sintoma.notes,
+            },
+        ]),
+      ),
+    };
+    await _reemplazarPorCifrado(
+      datos,
+      plano: registro.observaciones,
+      cifrado: 'contenido_registro_cifrado',
+    );
+    await _reemplazarPorCifrado(
+      datos,
+      plano: registro.mensajeAlerta,
+      cifrado: 'mensaje_alerta_cifrado',
+    );
+    datos['version_encriptacion'] = 3;
+    await _registrosClinicos(
+      idPaciente,
+    ).doc(registro.id).set(datos, SetOptions(merge: true));
+  }
+
+  /// Elimina un registro clínico del paciente.
+  Future<void> eliminarRegistroClinico(
+    String idPaciente,
+    String idRegistro,
+  ) async {
+    await _registrosClinicos(idPaciente).doc(idRegistro).delete();
+  }
+
+  Stream<List<RegistroClinico>> registrosClinicosEnTiempoReal(
+    String idPaciente,
+  ) {
+    if (!_tieneIdentidad()) return Stream.value(const []);
+    return _registrosClinicos(idPaciente)
+        .orderBy('creadoEn', descending: true)
+        .limit(50)
+        .snapshots()
+        .asyncMap(
+          (snap) => Future.wait(
+            snap.docs.map(
+              (d) => _descifrarRegistroClinico(
+                d.id,
+                d.data() as Map<String, dynamic>,
+              ),
+            ),
+          ),
+        );
+  }
+
+
+  Future<List<RegistroClinico>> cargarMasRegistrosClinicos(
+    String idPaciente,
+    DateTime ultimoCreadoEn,
+  ) async {
+    if (!_tieneIdentidad()) return const [];
+    final snap = await _registrosClinicos(idPaciente)
+        .orderBy('creadoEn', descending: true)
+        .startAfter([Timestamp.fromDate(ultimoCreadoEn)])
+        .limit(50)
+        .get();
+    final lista = <RegistroClinico>[];
+    for (final doc in snap.docs) {
+      lista.add(
+        await _descifrarRegistroClinico(
+          doc.id,
+          doc.data() as Map<String, dynamic>,
+        ),
+      );
+    }
+    return lista;
+  }
+
+  // ── Cambio de correo ──
   Future<void> _reautenticar(String contrasena) async {
     final usuario = _usuarioAutenticado;
     final email = usuario.email;
@@ -307,11 +428,6 @@ class ServicioBaseDatos {
     return usuario;
   }
 
-  /// Cambia el correo PRINCIPAL. Re-autentica con la contraseña actual y usa
-  /// `verifyBeforeUpdateEmail` (patrón de la canónica): el email de Auth solo
-  /// cambia cuando el usuario confirma el enlace enviado al nuevo correo.
-  /// Mientras tanto se registra el estado "verificación pendiente" y la app lo
-  /// muestra hasta que se confirma (o se limpia manualmente).
   Future<void> cambiarCorreoPrincipal({
     required String contrasena,
     required String nuevoCorreo,
@@ -326,13 +442,6 @@ class ServicioBaseDatos {
     }, SetOptions(merge: true));
   }
 
-  /// Cambia el correo de RESPALDO. Re-autentica con la contraseña actual,
-  /// guarda el nuevo correo cifrado (para mostrarlo en el perfil) y registra
-  /// su hash HMAC en el servidor vía la callable `registerRecoveryEmail`
-  /// (el cliente nunca escribe `correo_respaldo_hash` directamente).
-  /// Devuelve true si el servidor confirmó el registro; si la callable falla
-  /// (p. ej. no desplegada) el correo queda guardado localmente y se devuelve
-  /// false para que la app avise.
   Future<bool> cambiarCorreoRespaldo({
     required String contrasena,
     required String nuevoCorreo,
@@ -354,14 +463,11 @@ class ServicioBaseDatos {
         'pendiente_correo_solicitado_en': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (_) {
-      // Registro local correcto; el hash se confirmará al reintentar cuando
-      // la callable esté desplegada.
+      // Registro local correcto
     }
     return confirmadoServidor;
   }
 
-  /// Limpia el estado pendiente de cambio de correo (al confirmar el nuevo
-  /// correo o al cancelar la solicitud).
   Future<void> limpiarCambioCorreoPendiente() async {
     await _docUsuario.set({
       'pendiente_correo': FieldValue.delete(),
@@ -370,10 +476,6 @@ class ServicioBaseDatos {
     }, SetOptions(merge: true));
   }
 
-  /// Sincroniza el correo principal confirmado en Firestore, tras completarse
-  /// la verificación del cambio (el email de Auth ya es el nuevo). El correo
-  /// del doc es el identificador que usan las funciones del servidor
-  /// (p. ej. recoverByBackupEmail), por eso solo se escribe tras confirmar.
   Future<void> sincronizarCorreoPrincipal(String email) async {
     await _docUsuario.set({
       'email': email.trim().toLowerCase(),
@@ -483,6 +585,7 @@ class ServicioBaseDatos {
         'contacto_emergencia_telefono_cifrado',
       ),
       createdAt: (datos['creadoEn'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      maximoRegistrosDia: (datos['maximo_registros_dia'] as num?)?.toInt() ?? 3,
     );
   }
 
@@ -500,5 +603,123 @@ class ServicioBaseDatos {
       debugPrint('No se pudo descifrar $campo: $e\n$pila');
       return null;
     }
+  }
+
+  Future<SignosVitales?> _descifrarSignosVitales(
+    Map<String, dynamic> datos,
+  ) async {
+    final cifrado = datos['signos_vitales_cifrado'] as String?;
+    if (cifrado != null && cifrado.isNotEmpty) {
+      try {
+        final texto = await _cifrado.descifrar(_uid, cifrado);
+        final mapa = jsonDecode(texto) as Map<String, dynamic>;
+        return SignosVitales(
+          temperature: (mapa['temperature'] as num?)?.toDouble(),
+          heartRate: (mapa['heartRate'] as num?)?.toInt(),
+          oxygenSaturation: (mapa['oxygenSaturation'] as num?)?.toInt(),
+          respiratoryRate: (mapa['respiratoryRate'] as num?)?.toInt(),
+        );
+      } catch (e, pila) {
+        debugPrint('No se pudo descifrar signos_vitales_cifrado: $e\n$pila');
+      }
+    }
+    final signosMapa = datos['signosVitales'];
+    if (signosMapa is Map<String, dynamic>) {
+      return SignosVitales(
+        temperature: (signosMapa['temperature'] as num?)?.toDouble(),
+        heartRate: signosMapa['heartRate'] as int?,
+        oxygenSaturation: signosMapa['oxygenSaturation'] as int?,
+        respiratoryRate: signosMapa['respiratoryRate'] as int?,
+      );
+    }
+    return null;
+  }
+
+  Future<List<EntradaSintoma>> _descifrarSintomas(
+    Map<String, dynamic> datos,
+  ) async {
+    final cifrado = datos['sintomas_cifrado'] as String?;
+    if (cifrado != null && cifrado.isNotEmpty) {
+      try {
+        final texto = await _cifrado.descifrar(_uid, cifrado);
+        final lista = jsonDecode(texto) as List<dynamic>;
+        return [
+          for (final item in lista)
+            EntradaSintoma(
+              name: (item['name'] as String?) ?? '',
+              intensity: (item['intensity'] as num?)?.toInt() ?? 0,
+              notes: item['notes'] as String?,
+            ),
+        ];
+      } catch (e, pila) {
+        debugPrint('No se pudo descifrar sintomas_cifrado: $e\n$pila');
+      }
+    }
+    final sintomasRaw = datos['sintomas'];
+    if (sintomasRaw is List) {
+      final sintomas = <EntradaSintoma>[];
+      for (final item in sintomasRaw.cast<Map<String, dynamic>>()) {
+        final notesCifradas = item['notes_cifrado'] as String?;
+        final notas = (notesCifradas != null && notesCifradas.isNotEmpty)
+            ? await _descifrarCampo(item, 'notes_cifrado')
+            : item['notes'] as String?;
+        sintomas.add(
+          EntradaSintoma(
+            name: (item['name'] as String?) ?? '',
+            intensity: (item['intensity'] as num?)?.toInt() ?? 0,
+            notes: notas,
+          ),
+        );
+      }
+      return sintomas;
+    }
+    return const [];
+  }
+
+  Future<RegistroClinico> _descifrarRegistroClinico(
+    String id,
+    Map<String, dynamic> datos,
+  ) async {
+    final signos = await _descifrarSignosVitales(datos);
+    final sintomas = await _descifrarSintomas(datos);
+
+    final contenidoCifrado = datos['contenido_registro_cifrado'] as String?;
+    final observaciones =
+        (contenidoCifrado != null && contenidoCifrado.isNotEmpty)
+        ? await _descifrarCampo(datos, 'contenido_registro_cifrado')
+        : datos['observaciones'] as String?;
+
+    final nivelRaw = datos['nivelAlerta'] as String?;
+    final nivel = NivelAlerta.values.firstWhere(
+      (v) => v.name == nivelRaw,
+      orElse: () => NivelAlerta.normal,
+    );
+
+    return RegistroClinico(
+      id: id,
+      pacienteId: (datos['paciente_id'] as String?) ?? '',
+      fecha: _fechaTolerante(datos['fecha']),
+      creadoEn: _fechaTolerante(datos['creadoEn']),
+      tipoRegistro: (datos['tipoRegistro'] as String?) ?? 'programado',
+      signosVitales: signos,
+      sintomas: sintomas,
+      observaciones: observaciones,
+      nivelAlerta: nivel,
+      mensajeAlerta: await _descifrarCampo(datos, 'mensaje_alerta_cifrado'),
+    );
+  }
+
+  DateTime _fechaTolerante(Object? valor) {
+    if (valor is DateTime) return valor;
+    if (valor is Timestamp) return valor.toDate();
+    if (valor is String) return DateTime.tryParse(valor) ?? DateTime.now();
+    return DateTime.now();
+  }
+
+  bool _tieneIdentidad() {
+    if (_uidPrueba != null) return true;
+    final auth = _auth;
+    if (auth == null) return false;
+    return auth.currentUser != null;
   }
 }

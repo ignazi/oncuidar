@@ -17,10 +17,7 @@ class ServicioCifrado {
       await fijarClave(uid, _clavePrueba);
       return true;
     }
-    // El read de FlutterSecureStorage puede lanzar BadPaddingException si el
-    // bytecode cifrado en el keystore de Android quedó corrupto (p. ej. tras
-    // reinstalar la app y restaurar datos). Devolvemos false y dejamos que
-    // asegurarClave borre la copia y pida una clave nueva al servidor.
+
     String? valor;
     try {
       valor = await _almacen.read(key: 'oncuidar.data-key.$uid');
@@ -28,8 +25,6 @@ class ServicioCifrado {
       return false;
     }
     if (valor == null) return false;
-    // Validación: si la clave guardada está corrupta, se descarta para
-    // recrearla en el servidor (getOrCreateDataKey) en lugar de fallar.
     try {
       final bytes = base64.decode(valor);
       if (bytes.length != 32) return false;
@@ -40,14 +35,9 @@ class ServicioCifrado {
     return true;
   }
 
-  /// Asegura una clave para [uid]: la restaura del almacen si existe, o la
-  /// solicita al servidor (getOrCreateDataKey) y la persiste.
   Future<void> asegurarClave(String uid) async {
     final local = await restaurarClave(uid);
     if (local) return;
-    // Descarta cualquier copia local corrupta antes de pedir una nueva.
-    // Un delete puede fallar igual si el keystore está dañado; lo ignoramos y
-    // seguimos con getOrCreateDataKey (el write posterior sobrescribirá).
     try {
       await _almacen.delete(key: 'oncuidar.data-key.$uid');
     } catch (_) {}

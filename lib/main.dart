@@ -13,8 +13,7 @@ Future<void> main() async {
   await Firebase.initializeApp(options: FirebaseOpciones.actual);
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
-    // 50 MB: los datos cifrados son pequeños; un tope evita que la caché en
-    // disco crezca sin control con docs sensibles en el dispositivo.
+    // 50 MB: los datos cifrados son pequeños
     cacheSizeBytes: 52428800,
   );
   runApp(const ProviderScope(child: OncuidarApp()));

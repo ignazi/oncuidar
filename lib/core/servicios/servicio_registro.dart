@@ -86,8 +86,7 @@ class ServicioRegistro {
           'phone': datos.telefono,
           'relationship': datos.relacion,
           'address': datos.direccion,
-          // Cifrado para mostrarlo en el perfil; el hash del correo de respaldo
-          // lo calcula SOLO el servidor (HMAC) vía registerRecoveryEmail.
+          // Cifrado para mostrarlo en el perfil
           if (respaldo != null && respaldo.isNotEmpty)
             'correo_respaldo': respaldo,
           'createdAt': FieldValue.serverTimestamp(),

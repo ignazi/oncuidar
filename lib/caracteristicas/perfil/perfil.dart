@@ -29,25 +29,18 @@ class _PerfilState extends ConsumerState<Perfil> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Paleta.crema,
-      body: Column(
+      body: Stack(
         children: [
-          const EncabezadoGradiente(
-            titulo: 'Perfil',
-            subtitulo: 'Tu información y la gestión de tus pacientes',
-            alto: 130,
-          ),
-          Expanded(
+          Positioned.fill(
             child: Column(
               children: [
-                const SizedBox(height: 8),
-                // Banner a todo el ancho (como las tarjetas grandes): el tab
-                // activo queda dorado y el otro del color del fondo, sin caja
-                // redondeada, para que parezca flotando.
+                SizedBox(height: MediaQuery.of(context).padding.top + 100 + 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Container(
                     height: 58,
-                    color: Paleta.crema,
+                    // Transparente: el crema vive solo en el Scaffold.
+                    color: Colors.transparent,
                     child: SizedBox(
                       width: double.infinity,
                       child: SegmentedButton<_VistaPerfil>(
@@ -118,6 +111,19 @@ class _PerfilState extends ConsumerState<Perfil> {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: EncabezadoGradiente(
+              titulo: 'Perfiles',
+              subtitulo: 'Gestiona la información',
+              logo: AssetImage('assets/images/OnCuidar.png'),
+              tamanoTitulo: 20,
+              alto: 100,
             ),
           ),
         ],

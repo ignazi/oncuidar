@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../modelos/paciente.dart';
+import '../../modelos/registro_clinico.dart';
 import '../servicios/servicio_base_datos.dart';
 import '../servicios/servicio_cifrado.dart';
 import '../servicios/servicio_registro.dart';
@@ -51,14 +53,10 @@ final servicioRegistroProvider = Provider<ServicioRegistro>((ref) {
 
 const _clavePacienteSeleccionado = 'selected_patient_id';
 
-/// Lista de pacientes activos (no archivados) del cuidador autenticado, en
-/// tiempo real. Se excluyen los pacientes con `archivado == true`.
 final patientsListProvider = StreamProvider.autoDispose<List<Paciente>>((ref) {
   return ref.watch(servicioBaseDatosProvider).pacientesEnTiempoReal();
 });
 
-/// Lista de pacientes archivados (borrado lógico) del cuidador, en tiempo
-/// real. Solo los documentos con `archivado == true`.
 final archivedPatientsListProvider = StreamProvider.autoDispose<List<Paciente>>(
   (ref) {
     return ref
@@ -67,9 +65,6 @@ final archivedPatientsListProvider = StreamProvider.autoDispose<List<Paciente>>(
   },
 );
 
-/// ID del paciente seleccionado, persistido entre sesiones con
-/// SharedPreferences (key 'selected_patient_id'). Arranca en null y se
-/// restaura de forma asíncrona desde el prefs.
 class SelectedPatientNotifier extends Notifier<String?> {
   @override
   String? build() {
@@ -97,7 +92,7 @@ class SelectedPatientNotifier extends Notifier<String?> {
         await prefs.setString(_clavePacienteSeleccionado, idPaciente);
       }
     } catch (_) {
-      // El estado en memoria ya quedó actualizado; la persistencia es best-effort.
+      // El estado en memoria ya quedó actualizado, la persistencia es best-effort.
     }
   }
 }
@@ -107,8 +102,6 @@ final selectedPatientIdProvider =
       SelectedPatientNotifier.new,
     );
 
-/// Paciente activo: si no hay pacientes emite null; si la selección guardada
-/// sigue existiendo emite ese; si no, el primero de la lista.
 final currentPatientProvider = StreamProvider.autoDispose<Paciente?>((
   ref,
 ) async* {
@@ -130,3 +123,17 @@ final currentPatientProvider = StreamProvider.autoDispose<Paciente?>((
   }
   yield pacientes.first;
 });
+
+
+final registrosClinicosProvider =
+    StreamProvider.autoDispose<List<RegistroClinico>>((ref) {
+      final pacienteAsync = ref.watch(currentPatientProvider);
+      if (pacienteAsync is AsyncLoading) return Stream.empty();
+      final paciente = pacienteAsync.value;
+      if (paciente == null) return Stream.value(const []);
+      return ref
+          .watch(servicioBaseDatosProvider)
+          .registrosClinicosEnTiempoReal(paciente.id);
+    });
+
+final registroEnEdicionProvider = StateProvider<RegistroClinico?>((ref) => null);

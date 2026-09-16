@@ -15,8 +15,6 @@ class BotonPrincipal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // FittedBox + maxLines 1: etiquetas como "Archivados (1)" jamás se bajan
-    // de línea; se ajustan al ancho disponible.
     if (destacado) {
       return ElevatedButton(
         onPressed: alPulsar,
