@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../compartidos/widgets/encabezado_gradiente.dart';
 import '../../core/tema/paleta.dart';
@@ -64,6 +65,7 @@ class Proximamente extends StatelessWidget {
               logo: const AssetImage('assets/images/OnCuidar.png'),
               tamanoTitulo: 20,
               alto: 100,
+              alTocarLogo: () => context.go('/dashboard'),
             ),
           ),
         ],

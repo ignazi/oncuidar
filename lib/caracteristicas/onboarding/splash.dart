@@ -60,7 +60,16 @@ class _SplashState extends ConsumerState<Splash>
     );
     _controlador.forward();
     _asegurarClaveEnParalelo();
+    _sincronizarBibliotecaEnParalelo();
     _iniciar();
+  }
+
+  void _sincronizarBibliotecaEnParalelo() {
+    final usuario = ref.read(firebaseAuthProvider).currentUser;
+    if (usuario == null) return;
+    ref
+        .read(sincronizacionBibliotecaProvider.notifier)
+        .sincronizarAlIniciarSesion();
   }
 
   /// Desbloquea la clave de datos durante el splash si ya hay sesion, para que

@@ -1,4 +1,6 @@
 import 'package:go_router/go_router.dart';
+import '../../caracteristicas/biblioteca/biblioteca.dart';
+import '../../caracteristicas/biblioteca/pantalla_detalle.dart';
 import '../../caracteristicas/dashboard/dashboard.dart';
 import '../../caracteristicas/historial/historial.dart';
 import '../../caracteristicas/onboarding/bienvenida.dart';
@@ -36,12 +38,30 @@ GoRoute _rutaHistorial() {
   );
 }
 
-/// Ruta de "Próximamente" (Chat / Aprende), disponible desde cualquier pestaña.
+/// Ruta de "Próximamente" (Chat), disponible desde cualquier pestaña.
 GoRoute _rutaProximamente() {
   return GoRoute(
     path: '/proximamente',
     builder: (context, state) => Proximamente(
       titulo: state.uri.queryParameters['titulo'] ?? 'Próximamente',
+    ),
+  );
+}
+
+/// Ruta de Biblioteca educativa, disponible desde cualquier pestaña.
+GoRoute _rutaBiblioteca() {
+  return GoRoute(
+    path: '/biblioteca',
+    builder: (context, state) => const BibliotecaScreen(),
+  );
+}
+
+/// Detalle de un material educativo de la biblioteca.
+GoRoute _rutaBibliotecaDetalle() {
+  return GoRoute(
+    path: '/biblioteca/:id',
+    builder: (context, state) => PantallaDetalleMaterial(
+      id: state.pathParameters['id'] ?? '',
     ),
   );
 }
@@ -94,6 +114,8 @@ final router = GoRouter(
             _rutaRegistroClinico(),
             _rutaHistorial(),
             _rutaProximamente(),
+            _rutaBiblioteca(),
+            _rutaBibliotecaDetalle(),
           ],
         ),
         // Pestaña Perfil.
@@ -103,6 +125,8 @@ final router = GoRouter(
             _rutaRegistroClinico(),
             _rutaHistorial(),
             _rutaProximamente(),
+            _rutaBiblioteca(),
+            _rutaBibliotecaDetalle(),
           ],
         ),
       ],

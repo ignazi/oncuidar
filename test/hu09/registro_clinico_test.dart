@@ -80,9 +80,26 @@ Widget _pantalla(ServicioCifrado cifrado, ServicioBaseDatos base) {
     routes: [
       GoRoute(path: '/', builder: (c, s) => const RegistroClinicoScreen()),
       GoRoute(
+        path: '/registro-clinico',
+        builder: (c, s) => const RegistroClinicoScreen(),
+      ),
+      GoRoute(
         path: '/dashboard',
-        builder: (c, s) =>
-            const Scaffold(body: Center(child: Text('Dashboard'))),
+        builder: (context, s) => Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Dashboard'),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: () => context.push('/registro-clinico'),
+                  child: const Text('Reabrir registro'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     ],
   );
@@ -417,14 +434,27 @@ void main() {
         reason: 'una intensidad 0 seleccionada también se persiste',
       );
 
-      // Deja que la snackbar del primer guardado desaparezca antes de guardar
-      // de nuevo; si queda visible flota sobre el formulario y puede taparse.
+      // Tras guardar la pantalla sigue visible y el formulario queda listo
+      // para otro registro (modo nuevo), sin navegar a otra pantalla.
+      expect(
+        find.text('Registro clínico'),
+        findsOneWidget,
+        reason: 'la pantalla de registro debe seguir visible tras guardar',
+      );
+      expect(
+        find.text('Selecciona los síntomas…'),
+        findsOneWidget,
+        reason: 'el formulario queda limpio tras guardar',
+      );
+
+      // Deja que la snackbar del primer guardado desaparezca antes de seguir;
+      // si queda visible flota sobre la pantalla y puede taparse.
       await tester.pump(const Duration(seconds: 3));
       await tester.pumpAndSettle();
 
-      // El primer guardado resetea el formulario, así que hay que re-seleccionar
-      // "Dolor" (ahora desmarcado) y volver a cerrar para dejar la fila lista y
-      // subir su slider a 10 en el segundo guardado.
+      // Guardado optimista: tras guardar la pantalla se mantiene y el
+      // formulario ya viene limpio, así que solo rellenamos y guardamos de
+      // nuevo sobre la MISMA pantalla.
       await _seleccionarEnDropdown(tester, ['Dolor'], filtro: 'Escala');
       await _cerrarSelector(tester);
 
