@@ -1,10 +1,11 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../../modelos/checklist_usuario.dart';
+import '../../modelos/conversacion.dart';
 import '../../modelos/material_educativo.dart';
 import '../../modelos/paciente.dart';
 import '../../modelos/registro_clinico.dart';
@@ -33,7 +34,7 @@ class ServicioBaseDatos {
 
   DocumentReference get _docUsuario => _base.collection('users').doc(_uid);
 
-  // ── Cuidador ──
+  // â”€â”€ Cuidador â”€â”€
   /// Guarda al cuidador cifrando los datos personales.
   Future<void> crearCuidador(Map<String, dynamic> datos) async {
     final plano = <String, dynamic>{};
@@ -72,7 +73,7 @@ class ServicioBaseDatos {
   }
 
   /// Rollback tras un registro fallido: borra el doc del usuario (la cuenta de
-  /// Auth ya se eliminó en ServicioRegistro). Best-effort; si el doc no existe
+  /// Auth ya se eliminÃ³ en ServicioRegistro). Best-effort; si el doc no existe
   /// o la red falla, se ignora para no enmascarar el error original.
   Future<void> limpiarRegistro(String uid) async {
     try {
@@ -85,10 +86,10 @@ class ServicioBaseDatos {
   /// identificador de acceso.
   ///
   /// `correoRespaldo` es el correo de respaldo descifrado (solo existe si se
-  /// registró vía la app; los usuarios legacy que solo tienen `correo_respaldo_hash`
-  /// devolverán null porque un hash no se puede invertir).
-  /// `pendienteCorreo` expone el estado "verificación pendiente" de un cambio
-  /// de correo (principal o respaldo), o null si no hay ningún cambio pendiente.
+  /// registrÃ³ vÃ­a la app; los usuarios legacy que solo tienen `correo_respaldo_hash`
+  /// devolverÃ¡n null porque un hash no se puede invertir).
+  /// `pendienteCorreo` expone el estado "verificaciÃ³n pendiente" de un cambio
+  /// de correo (principal o respaldo), o null si no hay ningÃºn cambio pendiente.
   Future<Map<String, dynamic>> obtenerCuidador() async {
     final doc = await _docUsuario.get();
     return _mapearCuidador((doc.data() as Map<String, dynamic>?) ?? {});
@@ -130,7 +131,7 @@ class ServicioBaseDatos {
   }
 
   /// Actualiza los datos personales del cuidador cifrando solo los campos
-  /// no nulos. Un campo vacío (teléfono/parentesco) se borra; el nombre se
+  /// no nulos. Un campo vacÃ­o (telÃ©fono/parentesco) se borra; el nombre se
   /// trata igual que el resto para mantener el contrato simple.
   Future<void> actualizarCuidador({
     String? nombre,
@@ -171,7 +172,7 @@ class ServicioBaseDatos {
     await _docUsuario.set(plano, SetOptions(merge: true));
   }
 
-  // ── Paciente ──
+  // â”€â”€ Paciente â”€â”€
   Future<String> crearPaciente(Paciente paciente) async {
     final ref = _docUsuario.collection('patients').doc();
     await ref.set(await _cifrarPaciente(paciente), SetOptions(merge: true));
@@ -256,7 +257,7 @@ class ServicioBaseDatos {
         .set(plano, SetOptions(merge: true));
   }
 
-  /// Borrado LÓGICO del paciente: escribe archivado
+  /// Borrado LÃ“GICO del paciente: escribe archivado
   Future<void> archivarPaciente(String idPaciente) async {
     await _docUsuario.collection('patients').doc(idPaciente).set({
       'archivado': true,
@@ -270,7 +271,7 @@ class ServicioBaseDatos {
     }, SetOptions(merge: true));
   }
 
-  /// Borrado FÍSICO (irreversible) del paciente y de todos sus datos.
+  /// Borrado FÃSICO (irreversible) del paciente y de todos sus datos.
   Future<void> eliminarPaciente(String idPaciente) async {
     await _docUsuario.collection('patients').doc(idPaciente).delete();
   }
@@ -289,16 +290,6 @@ class ServicioBaseDatos {
         );
   }
 
-  Future<List<Paciente>> obtenerPacientes() async {
-    final snap = await _docUsuario.collection('patients').get();
-    final lista = <Paciente>[];
-    for (final doc in snap.docs) {
-      if (doc.data()['archivado'] == true) continue;
-      lista.add(await _descifrarPaciente(doc.id, doc.data()));
-    }
-    return lista;
-  }
-
   Stream<List<Paciente>> pacientesEnTiempoReal() {
     return _docUsuario
         .collection('patients')
@@ -312,14 +303,14 @@ class ServicioBaseDatos {
         );
   }
 
-  // ── Registro clínico ──
+  // â”€â”€ Registro clÃ­nico â”€â”€
 
   CollectionReference _registrosClinicos(String idPaciente) => _docUsuario
       .collection('patients')
       .doc(idPaciente)
       .collection('clinicalRecords');
 
-  /// Guarda un registro clínico cifrando los campos sensibles.
+  /// Guarda un registro clÃ­nico cifrando los campos sensibles.
   Future<void> guardarRegistroClinico(
     String idPaciente,
     RegistroClinico registro,
@@ -331,6 +322,7 @@ class ServicioBaseDatos {
     }
     final signos = registro.signosVitales;
     final datos = <String, dynamic>{
+      'id': registro.id,
       'paciente_id': registro.pacienteId,
       'fecha': registro.fecha,
       'creadoEn': registro.creadoEn,
@@ -377,7 +369,7 @@ class ServicioBaseDatos {
     ).doc(registro.id).set(datos, SetOptions(merge: true));
   }
 
-  /// Elimina un registro clínico del paciente.
+  /// Elimina un registro clÃ­nico del paciente.
   Future<void> eliminarRegistroClinico(
     String idPaciente,
     String idRegistro,
@@ -405,7 +397,6 @@ class ServicioBaseDatos {
         );
   }
 
-
   Future<List<RegistroClinico>> cargarMasRegistrosClinicos(
     String idPaciente,
     DateTime ultimoCreadoEn,
@@ -428,9 +419,10 @@ class ServicioBaseDatos {
     return lista;
   }
 
-  // ── Biblioteca educativa ──
+  // â”€â”€ Biblioteca educativa â”€â”€
 
-  CollectionReference _contenidoEducativo() => _base.collection('educationalContent');
+  CollectionReference _contenidoEducativo() =>
+      _base.collection('educationalContent');
 
   Stream<List<MaterialEducativo>> contenidoEducativoEnTiempoReal() {
     return _contenidoEducativo().snapshots().map(
@@ -444,7 +436,10 @@ class ServicioBaseDatos {
   Future<MaterialEducativo?> obtenerContenidoEducativo(String id) async {
     final doc = await _contenidoEducativo().doc(id).get();
     if (!doc.exists) return null;
-    return MaterialEducativo.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+    return MaterialEducativo.fromMap(
+      doc.id,
+      doc.data() as Map<String, dynamic>,
+    );
   }
 
   Stream<List<String>> idsFavoritosEnTiempoReal() {
@@ -456,23 +451,31 @@ class ServicioBaseDatos {
   }
 
   Future<void> alternarFavorito(String materialId) async {
-    Map<String, dynamic>? datos;
+    var favoritos = <String>[];
     try {
       final doc = await _docUsuario.get(const GetOptions(source: Source.cache));
-      datos = doc.data() as Map<String, dynamic>?;
+      final datos = doc.data() as Map<String, dynamic>?;
+      favoritos = List<String>.from(datos?['favoriteArticleIds'] ?? const []);
     } catch (_) {
-      rethrow;
+      try {
+        final doc = await _docUsuario.get();
+        final datos = doc.data() as Map<String, dynamic>?;
+        favoritos = List<String>.from(datos?['favoriteArticleIds'] ?? const []);
+      } catch (_) {
+        favoritos = const [];
+      }
     }
-    final favoritos = List<String>.from(datos?['favoriteArticleIds'] ?? const []);
     if (favoritos.contains(materialId)) {
       favoritos.remove(materialId);
     } else {
       favoritos.add(materialId);
     }
-    await _docUsuario.set({'favoriteArticleIds': favoritos}, SetOptions(merge: true));
+    await _docUsuario.set({
+      'favoriteArticleIds': favoritos,
+    }, SetOptions(merge: true));
   }
 
-  // ── Mis Checklists ──
+  // â”€â”€ Mis Checklists â”€â”€
 
   CollectionReference _checklistsUsuario(String idPaciente) => _docUsuario
       .collection('patients')
@@ -506,7 +509,11 @@ class ServicioBaseDatos {
       'indicesMarcados': <int>[],
       'creadoEn': DateTime.now(),
     };
-    await _reemplazarPorCifrado(datos, plano: titulo, cifrado: 'titulo_cifrado');
+    await _reemplazarPorCifrado(
+      datos,
+      plano: titulo,
+      cifrado: 'titulo_cifrado',
+    );
     datos['items_cifrado'] = await _cifrado.cifrar(_uid, jsonEncode(items));
     final ref = await _checklistsUsuario(idPaciente).add(datos);
     return ref.id;
@@ -580,7 +587,133 @@ class ServicioBaseDatos {
     return const [];
   }
 
-  // ── Cambio de correo ──
+  // â”€â”€ Conversaciones â”€â”€
+
+  CollectionReference _conversaciones() =>
+      _docUsuario.collection('conversations');
+
+  /// Stream en tiempo real de las conversaciones del chat del cuidador,
+  /// ordenadas por Ãºltima actividad y descifrando tÃ­tulo y mensajes.
+  Stream<List<Conversacion>> conversacionesEnTiempoReal() {
+    if (!_tieneIdentidad()) return Stream.value(const []);
+    return _conversaciones()
+        .orderBy('ultimaActividad', descending: true)
+        .limit(50)
+        .snapshots()
+        .asyncMap(
+          (snap) => Future.wait(
+            snap.docs.map(
+              (d) => _descifrarConversacion(
+                d.id,
+                d.data() as Map<String, dynamic>,
+              ),
+            ),
+          ),
+        );
+  }
+
+  /// Crea una conversaciÃ³n con tÃ­tulo y mensajes cifrados y devuelve su id.
+  Future<String> crearConversacion({
+    required String titulo,
+    required List<MensajeConversacion> mensajes,
+  }) async {
+    final datos = <String, dynamic>{
+      'mensajes_cifrado': await _cifrado.cifrar(
+        _uid,
+        jsonEncode([for (final mensaje in mensajes) mensaje.aMapa()]),
+      ),
+      'ultimaActividad': DateTime.now(),
+      'creadoEn': DateTime.now(),
+      'version_encriptacion': 3,
+    };
+    await _reemplazarPorCifrado(
+      datos,
+      plano: titulo,
+      cifrado: 'titulo_cifrado',
+    );
+    final ref = await _conversaciones().add(datos);
+    return ref.id;
+  }
+
+  /// Actualiza los mensajes (y el tÃ­tulo si se indica) de una conversaciÃ³n.
+  Future<void> actualizarConversacion(
+    String id, {
+    String? titulo,
+    required List<MensajeConversacion> mensajes,
+  }) async {
+    final datos = <String, dynamic>{
+      'mensajes_cifrado': await _cifrado.cifrar(
+        _uid,
+        jsonEncode([for (final mensaje in mensajes) mensaje.aMapa()]),
+      ),
+      'ultimaActividad': DateTime.now(),
+    };
+    if (titulo != null) {
+      await _reemplazarPorCifrado(
+        datos,
+        plano: titulo,
+        cifrado: 'titulo_cifrado',
+      );
+    }
+    await _conversaciones().doc(id).set(datos, SetOptions(merge: true));
+  }
+
+  /// Renombra una conversaciÃ³n sin tocar sus mensajes.
+  Future<void> renombrarConversacion(String id, String titulo) async {
+    final datos = <String, dynamic>{};
+    await _reemplazarPorCifrado(
+      datos,
+      plano: titulo,
+      cifrado: 'titulo_cifrado',
+    );
+    await _conversaciones().doc(id).set(datos, SetOptions(merge: true));
+  }
+
+  /// Elimina definitivamente una conversaciÃ³n.
+  Future<void> eliminarConversacion(String id) async {
+    await _conversaciones().doc(id).delete();
+  }
+
+  Future<Conversacion> _descifrarConversacion(
+    String id,
+    Map<String, dynamic> datos,
+  ) async {
+    return Conversacion(
+      id: id,
+      titulo: (await _descifrarCampo(datos, 'titulo_cifrado')) ?? '',
+      ultimaActividad: _fechaTolerante(datos['ultimaActividad']),
+      creadoEn: _fechaTolerante(datos['creadoEn']),
+      mensajes: await _descifrarMensajesConversacion(datos),
+    );
+  }
+
+  Future<List<MensajeConversacion>> _descifrarMensajesConversacion(
+    Map<String, dynamic> datos,
+  ) async {
+    final cifrado = datos['mensajes_cifrado'] as String?;
+    if (cifrado != null && cifrado.isNotEmpty) {
+      try {
+        final texto = await _cifrado.descifrar(_uid, cifrado);
+        final lista = jsonDecode(texto) as List<dynamic>;
+        return [
+          for (final item in lista.cast<Map<String, dynamic>>())
+            MensajeConversacion.desdeMapa(item),
+        ];
+      } catch (e, pila) {
+        debugPrint('No se pudo descifrar mensajes_cifrado: $e\n$pila');
+      }
+    }
+    final mensajesRaw = datos['mensajes'];
+    if (mensajesRaw is List) {
+      return [
+        for (final item in mensajesRaw.cast<Map<String, dynamic>>())
+          MensajeConversacion.desdeMapa(item),
+      ];
+    }
+    return const [];
+  }
+
+  // â”€â”€ Cambio de correo â”€â”€
   Future<void> _reautenticar(String contrasena) async {
     final usuario = _usuarioAutenticado;
     final email = usuario.email;
@@ -630,13 +763,14 @@ class ServicioBaseDatos {
     }, SetOptions(merge: true));
     var confirmadoServidor = false;
     try {
-      await FirebaseFunctions.instanceFor(
-        region: 'southamerica-west1',
-      ).httpsCallable('registerRecoveryEmail').call({'email': normalizado}).timeout(
+      await FirebaseFunctions.instanceFor(region: 'southamerica-west1')
+          .httpsCallable('registerRecoveryEmail')
+          .call({'email': normalizado})
+          .timeout(
             const Duration(seconds: 5),
             onTimeout: () => throw FirebaseFunctionsException(
               code: 'unavailable',
-              message: 'Sin conexión',
+              message: 'Sin conexiÃ³n',
             ),
           );
       confirmadoServidor = true;
@@ -665,7 +799,7 @@ class ServicioBaseDatos {
     }, SetOptions(merge: true));
   }
 
-  // ── Mapeo de campos sensibles ──
+  // â”€â”€ Mapeo de campos sensibles â”€â”€
   Future<Map<String, dynamic>> _cifrarPaciente(Paciente p) async {
     final data = <String, dynamic>{
       'notificaciones_activas': true,
@@ -782,7 +916,7 @@ class ServicioBaseDatos {
       return await _cifrado.descifrar(_uid, cifrado);
     } catch (e, pila) {
       // No romper la lista por un campo corrupto, pero NO tragar el error en
-      // silencio: dejamos rastro para diagnóstico.
+      // silencio: dejamos rastro para diagnÃ³stico.
       debugPrint('No se pudo descifrar $campo: $e\n$pila');
       return null;
     }

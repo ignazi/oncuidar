@@ -142,6 +142,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
                 accionDerecha: Tooltip(
                   message: 'Nuevo registro',
                   child: GestureDetector(
+                    key: const Key('botonNuevoRegistro'),
                     onTap: () => context.push('/registro-clinico'),
                     child: Container(
                       height: 36,
