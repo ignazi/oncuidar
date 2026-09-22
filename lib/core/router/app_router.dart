@@ -1,7 +1,9 @@
 import 'package:go_router/go_router.dart';
 import '../../caracteristicas/biblioteca/biblioteca.dart';
 import '../../caracteristicas/biblioteca/pantalla_detalle.dart';
+import '../../caracteristicas/chat/chat.dart';
 import '../../caracteristicas/dashboard/dashboard.dart';
+import '../../caracteristicas/faq/faq.dart';
 import '../../caracteristicas/historial/historial.dart';
 import '../../caracteristicas/onboarding/bienvenida.dart';
 import '../../caracteristicas/onboarding/iniciar_sesion.dart';
@@ -10,6 +12,7 @@ import '../../caracteristicas/onboarding/recuperar_acceso.dart';
 import '../../caracteristicas/onboarding/registro.dart';
 import '../../caracteristicas/onboarding/splash.dart';
 import '../../caracteristicas/perfil/perfil.dart';
+import '../../caracteristicas/recordatorios/recordatorios.dart';
 import '../../caracteristicas/registro_clinico/registro_clinico.dart';
 import '../../compartidos/widgets/navegacion_principal.dart';
 import '../../modelos/registro_clinico.dart';
@@ -38,13 +41,35 @@ GoRoute _rutaHistorial() {
   );
 }
 
-/// Ruta de "Próximamente" (Chat), disponible desde cualquier pestaña.
+/// Ruta de "Próximamente", usada solo para contenido bloqueado por semana
+/// de entrega (biblioteca).
 GoRoute _rutaProximamente() {
   return GoRoute(
     path: '/proximamente',
     builder: (context, state) => Proximamente(
       titulo: state.uri.queryParameters['titulo'] ?? 'Próximamente',
     ),
+  );
+}
+
+/// Ruta del Chat de orientación, disponible desde cualquier pestaña.
+GoRoute _rutaChat() {
+  return GoRoute(
+    path: '/chat',
+    builder: (context, state) => const ChatScreen(),
+  );
+}
+
+/// Ruta de Preguntas frecuentes, disponible desde cualquier pestaña.
+GoRoute _rutaFaq() {
+  return GoRoute(path: '/faq', builder: (context, state) => const FaqScreen());
+}
+
+/// Ruta de Recordatorios, disponible desde cualquier pestaña.
+GoRoute _rutaRecordatorios() {
+  return GoRoute(
+    path: '/recordatorios',
+    builder: (context, state) => const RecordatoriosScreen(),
   );
 }
 
@@ -60,9 +85,8 @@ GoRoute _rutaBiblioteca() {
 GoRoute _rutaBibliotecaDetalle() {
   return GoRoute(
     path: '/biblioteca/:id',
-    builder: (context, state) => PantallaDetalleMaterial(
-      id: state.pathParameters['id'] ?? '',
-    ),
+    builder: (context, state) =>
+        PantallaDetalleMaterial(id: state.pathParameters['id'] ?? ''),
   );
 }
 
@@ -100,7 +124,6 @@ final router = GoRouter(
       builder: (context, state, navigationShell) => NavegacionPrincipal(
         shell: navigationShell,
         ubicacion: state.uri.path,
-        tituloProximamente: state.uri.queryParameters['titulo'],
         child: navigationShell,
       ),
       branches: [
@@ -114,6 +137,9 @@ final router = GoRouter(
             _rutaRegistroClinico(),
             _rutaHistorial(),
             _rutaProximamente(),
+            _rutaChat(),
+            _rutaFaq(),
+            _rutaRecordatorios(),
             _rutaBiblioteca(),
             _rutaBibliotecaDetalle(),
           ],
@@ -121,10 +147,16 @@ final router = GoRouter(
         // Pestaña Perfil.
         StatefulShellBranch(
           routes: [
-            GoRoute(path: '/perfil', builder: (context, state) => const Perfil()),
+            GoRoute(
+              path: '/perfil',
+              builder: (context, state) => const Perfil(),
+            ),
             _rutaRegistroClinico(),
             _rutaHistorial(),
             _rutaProximamente(),
+            _rutaChat(),
+            _rutaFaq(),
+            _rutaRecordatorios(),
             _rutaBiblioteca(),
             _rutaBibliotecaDetalle(),
           ],

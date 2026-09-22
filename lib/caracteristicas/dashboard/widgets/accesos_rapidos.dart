@@ -13,7 +13,7 @@ class AccesosRapidos extends StatelessWidget {
       color: Paleta.doradoPrincipal,
       titulo: 'Orientación',
       subtitulo: 'Guía de cuidados',
-      ruta: _proximamente('Orientación'),
+      ruta: '/chat',
       degradado: true,
     ),
     _Acceso(
@@ -21,14 +21,14 @@ class AccesosRapidos extends StatelessWidget {
       color: const Color(0xFFF07830),
       titulo: 'Recordatorios',
       subtitulo: 'Programa avisos',
-      ruta: _proximamente('Recordatorios'),
+      ruta: '/recordatorios',
     ),
     _Acceso(
       icono: Icons.help_outline,
       color: const Color(0xFFE8A820),
       titulo: 'FAQ',
       subtitulo: 'Resuelve dudas',
-      ruta: _proximamente('Preguntas frecuentes'),
+      ruta: '/faq',
     ),
     _Acceso(
       icono: Icons.book_outlined,
@@ -190,9 +190,6 @@ class AccesosRapidos extends StatelessWidget {
       ),
     );
   }
-
-  static String _proximamente(String titulo) =>
-      '/proximamente?titulo=${Uri.encodeQueryComponent(titulo)}';
 }
 
 class _Acceso {

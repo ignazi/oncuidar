@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -8,8 +8,10 @@ import '../../modelos/checklist_usuario.dart';
 import '../../modelos/conversacion.dart';
 import '../../modelos/material_educativo.dart';
 import '../../modelos/paciente.dart';
+import '../../modelos/recordatorio.dart';
 import '../../modelos/registro_clinico.dart';
 import 'servicio_cifrado.dart';
+import 'servicio_notificaciones.dart';
 
 class ServicioBaseDatos {
   ServicioBaseDatos({
@@ -34,7 +36,7 @@ class ServicioBaseDatos {
 
   DocumentReference get _docUsuario => _base.collection('users').doc(_uid);
 
-  // â”€â”€ Cuidador â”€â”€
+  // ── Cuidador ──
   /// Guarda al cuidador cifrando los datos personales.
   Future<void> crearCuidador(Map<String, dynamic> datos) async {
     final plano = <String, dynamic>{};
@@ -73,7 +75,7 @@ class ServicioBaseDatos {
   }
 
   /// Rollback tras un registro fallido: borra el doc del usuario (la cuenta de
-  /// Auth ya se eliminÃ³ en ServicioRegistro). Best-effort; si el doc no existe
+  /// Auth ya se eliminó en ServicioRegistro). Best-effort; si el doc no existe
   /// o la red falla, se ignora para no enmascarar el error original.
   Future<void> limpiarRegistro(String uid) async {
     try {
@@ -86,10 +88,10 @@ class ServicioBaseDatos {
   /// identificador de acceso.
   ///
   /// `correoRespaldo` es el correo de respaldo descifrado (solo existe si se
-  /// registrÃ³ vÃ­a la app; los usuarios legacy que solo tienen `correo_respaldo_hash`
-  /// devolverÃ¡n null porque un hash no se puede invertir).
-  /// `pendienteCorreo` expone el estado "verificaciÃ³n pendiente" de un cambio
-  /// de correo (principal o respaldo), o null si no hay ningÃºn cambio pendiente.
+  /// registró vía la app; los usuarios legacy que solo tienen `correo_respaldo_hash`
+  /// devolverán null porque un hash no se puede invertir).
+  /// `pendienteCorreo` expone el estado "verificación pendiente" de un cambio
+  /// de correo (principal o respaldo), o null si no hay ningún cambio pendiente.
   Future<Map<String, dynamic>> obtenerCuidador() async {
     final doc = await _docUsuario.get();
     return _mapearCuidador((doc.data() as Map<String, dynamic>?) ?? {});
@@ -131,7 +133,7 @@ class ServicioBaseDatos {
   }
 
   /// Actualiza los datos personales del cuidador cifrando solo los campos
-  /// no nulos. Un campo vacÃ­o (telÃ©fono/parentesco) se borra; el nombre se
+  /// no nulos. Un campo vacío (teléfono/parentesco) se borra; el nombre se
   /// trata igual que el resto para mantener el contrato simple.
   Future<void> actualizarCuidador({
     String? nombre,
@@ -172,7 +174,7 @@ class ServicioBaseDatos {
     await _docUsuario.set(plano, SetOptions(merge: true));
   }
 
-  // â”€â”€ Paciente â”€â”€
+  // ── Paciente ──
   Future<String> crearPaciente(Paciente paciente) async {
     final ref = _docUsuario.collection('patients').doc();
     await ref.set(await _cifrarPaciente(paciente), SetOptions(merge: true));
@@ -257,7 +259,7 @@ class ServicioBaseDatos {
         .set(plano, SetOptions(merge: true));
   }
 
-  /// Borrado LÃ“GICO del paciente: escribe archivado
+  /// Borrado LÓGICO del paciente: escribe archivado
   Future<void> archivarPaciente(String idPaciente) async {
     await _docUsuario.collection('patients').doc(idPaciente).set({
       'archivado': true,
@@ -271,7 +273,7 @@ class ServicioBaseDatos {
     }, SetOptions(merge: true));
   }
 
-  /// Borrado FÃSICO (irreversible) del paciente y de todos sus datos.
+  /// Borrado FÍSICO (irreversible) del paciente y de todos sus datos.
   Future<void> eliminarPaciente(String idPaciente) async {
     await _docUsuario.collection('patients').doc(idPaciente).delete();
   }
@@ -303,14 +305,14 @@ class ServicioBaseDatos {
         );
   }
 
-  // â”€â”€ Registro clÃ­nico â”€â”€
+  // ── Registro clínico ──
 
   CollectionReference _registrosClinicos(String idPaciente) => _docUsuario
       .collection('patients')
       .doc(idPaciente)
       .collection('clinicalRecords');
 
-  /// Guarda un registro clÃ­nico cifrando los campos sensibles.
+  /// Guarda un registro clínico cifrando los campos sensibles.
   Future<void> guardarRegistroClinico(
     String idPaciente,
     RegistroClinico registro,
@@ -369,7 +371,7 @@ class ServicioBaseDatos {
     ).doc(registro.id).set(datos, SetOptions(merge: true));
   }
 
-  /// Elimina un registro clÃ­nico del paciente.
+  /// Elimina un registro clínico del paciente.
   Future<void> eliminarRegistroClinico(
     String idPaciente,
     String idRegistro,
@@ -419,7 +421,7 @@ class ServicioBaseDatos {
     return lista;
   }
 
-  // â”€â”€ Biblioteca educativa â”€â”€
+  // ── Biblioteca educativa ──
 
   CollectionReference _contenidoEducativo() =>
       _base.collection('educationalContent');
@@ -475,7 +477,7 @@ class ServicioBaseDatos {
     }, SetOptions(merge: true));
   }
 
-  // â”€â”€ Mis Checklists â”€â”€
+  // ── Mis Checklists ──
 
   CollectionReference _checklistsUsuario(String idPaciente) => _docUsuario
       .collection('patients')
@@ -587,13 +589,13 @@ class ServicioBaseDatos {
     return const [];
   }
 
-  // â”€â”€ Conversaciones â”€â”€
+  // ── Conversaciones ──
 
   CollectionReference _conversaciones() =>
       _docUsuario.collection('conversations');
 
   /// Stream en tiempo real de las conversaciones del chat del cuidador,
-  /// ordenadas por Ãºltima actividad y descifrando tÃ­tulo y mensajes.
+  /// ordenadas por última actividad y descifrando título y mensajes.
   Stream<List<Conversacion>> conversacionesEnTiempoReal() {
     if (!_tieneIdentidad()) return Stream.value(const []);
     return _conversaciones()
@@ -612,7 +614,7 @@ class ServicioBaseDatos {
         );
   }
 
-  /// Crea una conversaciÃ³n con tÃ­tulo y mensajes cifrados y devuelve su id.
+  /// Crea una conversación con título y mensajes cifrados y devuelve su id.
   Future<String> crearConversacion({
     required String titulo,
     required List<MensajeConversacion> mensajes,
@@ -635,7 +637,7 @@ class ServicioBaseDatos {
     return ref.id;
   }
 
-  /// Actualiza los mensajes (y el tÃ­tulo si se indica) de una conversaciÃ³n.
+  /// Actualiza los mensajes (y el título si se indica) de una conversación.
   Future<void> actualizarConversacion(
     String id, {
     String? titulo,
@@ -658,7 +660,7 @@ class ServicioBaseDatos {
     await _conversaciones().doc(id).set(datos, SetOptions(merge: true));
   }
 
-  /// Renombra una conversaciÃ³n sin tocar sus mensajes.
+  /// Renombra una conversación sin tocar sus mensajes.
   Future<void> renombrarConversacion(String id, String titulo) async {
     final datos = <String, dynamic>{};
     await _reemplazarPorCifrado(
@@ -669,7 +671,7 @@ class ServicioBaseDatos {
     await _conversaciones().doc(id).set(datos, SetOptions(merge: true));
   }
 
-  /// Elimina definitivamente una conversaciÃ³n.
+  /// Elimina definitivamente una conversación.
   Future<void> eliminarConversacion(String id) async {
     await _conversaciones().doc(id).delete();
   }
@@ -713,7 +715,284 @@ class ServicioBaseDatos {
     return const [];
   }
 
-  // â”€â”€ Cambio de correo â”€â”€
+  // ── Recordatorios ──
+
+  CollectionReference _recordatorios(String idPaciente) => _docUsuario
+      .collection('patients')
+      .doc(idPaciente)
+      .collection('recordatorios');
+
+  /// Stream en tiempo real de los recordatorios del paciente, descifrando
+  /// título y descripción.
+  Stream<List<Recordatorio>> recordatoriosEnTiempoReal(String idPaciente) {
+    if (!_tieneIdentidad()) return Stream.value(const []);
+    return _recordatorios(idPaciente)
+        .orderBy('creadoEn', descending: true)
+        .limit(100)
+        .snapshots()
+        .asyncMap(
+          (snap) => Future.wait(
+            snap.docs.map(
+              (d) => _descifrarRecordatorio(
+                d.id,
+                d.data() as Map<String, dynamic>,
+              ),
+            ),
+          ),
+        );
+  }
+
+  /// Crea un recordatorio cifrando título, descripción y el payload
+  /// programático (tipo, fechaHora, días, recurrencia, completado). Solo
+  /// quedan en claro identificadores y flags no sensibles (pacienteId,
+  /// activo, creadoEn).
+  Future<String> agregarRecordatorio(String idPaciente, Recordatorio r) async {
+    final datos = <String, dynamic>{
+      'pacienteId': r.pacienteId,
+      'activo': r.activo,
+      'creadoEn': r.creadoEn.toIso8601String(),
+      'version_encriptacion': 3,
+    };
+    datos['datos_cifrados'] = await _cifrarPayloadRecordatorio(r);
+    await _reemplazarPorCifrado(
+      datos,
+      plano: r.titulo,
+      cifrado: 'titulo_cifrado',
+    );
+    if (r.descripcion != null && r.descripcion!.isNotEmpty) {
+      await _reemplazarPorCifrado(
+        datos,
+        plano: r.descripcion,
+        cifrado: 'descripcion_cifrada',
+      );
+    }
+    final ref = await _recordatorios(idPaciente).add(datos);
+    return ref.id;
+  }
+
+  /// Actualiza los campos indicados re-cifrando título/descripción cuando
+  /// vienen. Una descripción vacía borra el campo. `recurrencia` vacía borra
+  /// la recurrencia mensual; `quitarCompletado` borra la marca de completado.
+  Future<void> actualizarRecordatorio(
+    String idPaciente,
+    String idRecordatorio, {
+    String? tipo,
+    String? titulo,
+    String? descripcion,
+    DateTime? fechaHora,
+    List<String>? diasRepeticion,
+    String? recurrencia,
+    DateTime? completadoEn,
+    bool? quitarCompletado,
+    bool? activo,
+  }) async {
+    final datos = <String, dynamic>{};
+    if (titulo != null) {
+      await _reemplazarPorCifrado(
+        datos,
+        plano: titulo,
+        cifrado: 'titulo_cifrado',
+      );
+    }
+    if (descripcion != null) {
+      if (descripcion.isEmpty) {
+        datos['descripcion_cifrada'] = FieldValue.delete();
+      } else {
+        await _reemplazarPorCifrado(
+          datos,
+          plano: descripcion,
+          cifrado: 'descripcion_cifrada',
+        );
+      }
+    }
+    final tocaPayload =
+        tipo != null ||
+        fechaHora != null ||
+        diasRepeticion != null ||
+        recurrencia != null ||
+        completadoEn != null ||
+        quitarCompletado == true;
+    if (tocaPayload) {
+      final sensibles = await _datosSensiblesActuales(
+        idPaciente,
+        idRecordatorio,
+      );
+      if (tipo != null) sensibles['tipo'] = tipo;
+      if (fechaHora != null) {
+        sensibles['fechaHora'] = fechaHora.toIso8601String();
+      }
+      if (diasRepeticion != null) {
+        sensibles['diasRepeticion'] = diasRepeticion;
+      }
+      if (recurrencia != null) {
+        if (recurrencia.isEmpty) {
+          sensibles.remove('recurrencia');
+        } else {
+          sensibles['recurrencia'] = recurrencia;
+        }
+      }
+      if (completadoEn != null) {
+        sensibles['completadoEn'] = completadoEn.toIso8601String();
+      }
+      if (quitarCompletado == true) {
+        sensibles.remove('completadoEn');
+      }
+      datos['datos_cifrados'] = await _cifrado.cifrar(
+        _uid,
+        jsonEncode(sensibles),
+      );
+      // Migración: un doc antiguo aún tenía estos campos en claro; al tocar
+      // el payload se descartan para dejar el blob como única fuente.
+      datos['tipo'] = FieldValue.delete();
+      datos['fechaHora'] = FieldValue.delete();
+      datos['diasRepeticion'] = FieldValue.delete();
+      datos['recurrencia'] = FieldValue.delete();
+      datos['completadoEn'] = FieldValue.delete();
+    }
+    if (activo != null) datos['activo'] = activo;
+    if (datos.isEmpty) return;
+    await _recordatorios(
+      idPaciente,
+    ).doc(idRecordatorio).set(datos, SetOptions(merge: true));
+  }
+
+  /// Elimina definitivamente un recordatorio.
+  Future<void> eliminarRecordatorio(
+    String idPaciente,
+    String idRecordatorio,
+  ) async {
+    await _recordatorios(idPaciente).doc(idRecordatorio).delete();
+  }
+
+  Future<Recordatorio> _descifrarRecordatorio(
+    String id,
+    Map<String, dynamic> datos,
+  ) async {
+    final sensibles = await _datosSensiblesRecordatorio(datos);
+    return Recordatorio(
+      id: id,
+      pacienteId: (datos['pacienteId'] as String?) ?? '',
+      tipo: (sensibles['tipo'] as String?) ?? 'otro',
+      titulo: (await _descifrarCampo(datos, 'titulo_cifrado')) ?? '',
+      descripcion: await _descifrarCampo(datos, 'descripcion_cifrada'),
+      fechaHora: _fechaTolerante(sensibles['fechaHora']),
+      diasRepeticion:
+          (sensibles['diasRepeticion'] as List<dynamic>?)
+              ?.map((d) => d.toString())
+              .toList() ??
+          const [],
+      activo: (datos['activo'] as bool?) ?? true,
+      recurrencia: sensibles['recurrencia'] as String?,
+      completadoEn: sensibles['completadoEn'] == null
+          ? null
+          : _fechaTolerante(sensibles['completadoEn']),
+      creadoEn: _fechaTolerante(datos['creadoEn']),
+    );
+  }
+
+  /// Cifra el payload programático del recordatorio (tipo, horario, recurrencia,
+  /// completado) en un único campo JSON cifrado.
+  Future<String> _cifrarPayloadRecordatorio(Recordatorio r) {
+    return _cifrado.cifrar(
+      _uid,
+      jsonEncode(<String, dynamic>{
+        'tipo': r.tipo,
+        'fechaHora': r.fechaHora.toIso8601String(),
+        'diasRepeticion': r.diasRepeticion,
+        if (r.recurrencia != null) 'recurrencia': r.recurrencia,
+        if (r.completadoEn != null)
+          'completadoEn': r.completadoEn!.toIso8601String(),
+      }),
+    );
+  }
+
+  /// Lee el payload programático: primero el blob cifrado `datos_cifrados`;
+  /// si el documento es anterior a su introducción, intenta los campos planos
+  /// legacy (`tipo`, `fechaHora`, `diasRepeticion`, `recurrencia`,
+  /// `completadoEn`).
+  Future<Map<String, dynamic>> _datosSensiblesRecordatorio(
+    Map<String, dynamic> datos,
+  ) async {
+    final cifrado = datos['datos_cifrados'] as String?;
+    if (cifrado != null && cifrado.isNotEmpty) {
+      try {
+        final texto = await _cifrado.descifrar(_uid, cifrado);
+        return (jsonDecode(texto) as Map<String, dynamic>);
+      } catch (e, pila) {
+        debugPrint('No se pudo descifrar datos_cifrados: $e\n$pila');
+        return <String, dynamic>{};
+      }
+    }
+    return <String, dynamic>{
+      if (datos['tipo'] != null) 'tipo': datos['tipo'],
+      if (datos['fechaHora'] != null) 'fechaHora': datos['fechaHora'],
+      if (datos['diasRepeticion'] != null)
+        'diasRepeticion': datos['diasRepeticion'],
+      if (datos['recurrencia'] != null) 'recurrencia': datos['recurrencia'],
+      if (datos['completadoEn'] != null) 'completadoEn': datos['completadoEn'],
+    };
+  }
+
+  Future<Map<String, dynamic>> _datosSensiblesActuales(
+    String idPaciente,
+    String idRecordatorio,
+  ) async {
+    final snap = await _recordatorios(idPaciente).doc(idRecordatorio).get();
+    final datos = snap.data();
+    if (datos == null) return <String, dynamic>{};
+    return _datosSensiblesRecordatorio(
+      datos is Map<String, dynamic>
+          ? datos
+          : Map<String, dynamic>.from(datos as Map),
+    );
+  }
+
+  // ── Reagendado tras iniciar sesión ──
+
+  String _etiquetaTipoRecordatorio(String tipo) => switch (tipo) {
+    'medicamento' => 'Medicamento',
+    'medicion' => 'Medición',
+    'cita' => 'Cita médica',
+    _ => 'Recordatorio',
+  };
+
+  /// Vuelve a programar las notificaciones locales de todos los recordatorios
+  /// activos y pendientes de todos los pacientes. Se invoca al iniciar sesión
+  /// (HU-18): las notificaciones programadas se pierden al cerrar sesión en el
+  /// mismo dispositivo. Cualquier fallo puntual se ignora; nunca lanza.
+  Future<void> reagendarNotificaciones(ServicioNotificaciones notif) async {
+    try {
+      if (!_tieneIdentidad()) return;
+      await notif.cancelarTodas();
+      final pacientes = await pacientesEnTiempoReal().first;
+      for (final paciente in pacientes) {
+        try {
+          final recordatorios = await recordatoriosEnTiempoReal(
+            paciente.id,
+          ).first;
+          for (final r in recordatorios) {
+            if (!r.activo || r.estaCompletado) continue;
+            await notif.programar(
+              id: ServicioNotificaciones.idSeguro(r.id),
+              titulo:
+                  '${paciente.fullName} · ${_etiquetaTipoRecordatorio(r.tipo)}',
+              cuerpo:
+                  '${r.titulo}${(r.descripcion != null && r.descripcion!.isNotEmpty) ? ' · ${r.descripcion}' : ''}',
+              fechaHora: r.fechaHora,
+              diasRepeticion: r.diasRepeticion,
+              mensual: r.esMensual,
+            );
+          }
+        } catch (_) {
+          // Un paciente con datos rotos no debe bloquear al resto.
+        }
+      }
+    } catch (_) {
+      // El reagendado nunca debe interferir con el flujo de inicio de sesión.
+    }
+  }
+
+  // ── Cambio de correo ──
   Future<void> _reautenticar(String contrasena) async {
     final usuario = _usuarioAutenticado;
     final email = usuario.email;
@@ -770,7 +1049,7 @@ class ServicioBaseDatos {
             const Duration(seconds: 5),
             onTimeout: () => throw FirebaseFunctionsException(
               code: 'unavailable',
-              message: 'Sin conexiÃ³n',
+              message: 'Sin conexión',
             ),
           );
       confirmadoServidor = true;
@@ -799,7 +1078,7 @@ class ServicioBaseDatos {
     }, SetOptions(merge: true));
   }
 
-  // â”€â”€ Mapeo de campos sensibles â”€â”€
+  // ── Mapeo de campos sensibles ──
   Future<Map<String, dynamic>> _cifrarPaciente(Paciente p) async {
     final data = <String, dynamic>{
       'notificaciones_activas': true,
@@ -916,7 +1195,7 @@ class ServicioBaseDatos {
       return await _cifrado.descifrar(_uid, cifrado);
     } catch (e, pila) {
       // No romper la lista por un campo corrupto, pero NO tragar el error en
-      // silencio: dejamos rastro para diagnÃ³stico.
+      // silencio: dejamos rastro para diagnóstico.
       debugPrint('No se pudo descifrar $campo: $e\n$pila');
       return null;
     }
