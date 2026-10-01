@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../compartidos/widgets/encabezado_gradiente.dart';
+import '../../core/proveedores/proveedores.dart';
 import '../../core/tema/paleta.dart';
 import '../../core/util/estilos.dart';
 import 'datos_faq.dart';
@@ -345,13 +347,20 @@ class _FaqScreenState extends State<FaqScreen> {
                         top: BorderSide(color: Paleta.bordeTarjeta),
                       ),
                     ),
-                    child: Text(
-                      pregunta.respuesta,
-                      style: GoogleFonts.nunito(
-                        fontSize: 13,
-                        color: Paleta.textoTerciario,
-                        height: 1.6,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          pregunta.respuesta,
+                          style: GoogleFonts.nunito(
+                            fontSize: 13,
+                            color: Paleta.textoTerciario,
+                            height: 1.6,
+                          ),
+                        ),
+                        if (pregunta.contenidoRelacionadoId != null)
+                          _EnlaceMaterialRelacionado(pregunta: pregunta),
+                      ],
                     ),
                   )
                 : const SizedBox(width: double.infinity),
@@ -383,6 +392,37 @@ class _FaqScreenState extends State<FaqScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Botón hacia el material afín; solo aparece si el id existe en el catálogo.
+class _EnlaceMaterialRelacionado extends ConsumerWidget {
+  const _EnlaceMaterialRelacionado({required this.pregunta});
+
+  final PreguntaBase pregunta;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final catalogo = ref.watch(contenidosEducativosProvider).value ?? const [];
+    final material = materialRelacionado(pregunta, catalogo);
+    if (material == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: TextButton.icon(
+        key: Key('verMaterial_${pregunta.id}'),
+        onPressed: () => context.push('/biblioteca/${material.id}'),
+        icon: const Icon(Icons.menu_book_rounded, size: 18),
+        label: const Text('Ver material relacionado'),
+        style: TextButton.styleFrom(
+          foregroundColor: Paleta.doradoOscuro,
+          padding: EdgeInsets.zero,
+          textStyle: GoogleFonts.nunito(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+          ),
         ),
       ),
     );

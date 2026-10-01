@@ -33,8 +33,7 @@ class _CacheFalso implements ServicioCacheContenido {
   }
 
   @override
-  Future<bool> archivoDescargado(String url) async =>
-      descargados.contains(url);
+  Future<bool> archivoDescargado(String url) async => descargados.contains(url);
 
   @override
   Future<void> eliminar(String url) async {
@@ -72,9 +71,7 @@ Widget _tarjeta(
 }) {
   return ProviderScope(
     overrides: [
-      servicioCacheContenidoProvider.overrideWithValue(
-        cache ?? _CacheFalso(),
-      ),
+      servicioCacheContenidoProvider.overrideWithValue(cache ?? _CacheFalso()),
     ],
     child: MaterialApp(
       home: Scaffold(
@@ -125,8 +122,33 @@ void main() {
 
     test('posiciones triviales no se guardan', () async {
       SharedPreferences.setMockInitialValues({});
-      await guardarAvanceVideo('/videos/b.mp4', const Duration(milliseconds: 900));
+      await guardarAvanceVideo(
+        '/videos/b.mp4',
+        const Duration(milliseconds: 900),
+      );
       expect(await leerAvanceVideo('/videos/b.mp4'), 0);
+    });
+
+    test('la pantalla retoma desde el avance guardado con su id', () async {
+      SharedPreferences.setMockInitialValues({});
+      await guardarAvanceVideo('video-1', const Duration(seconds: 30));
+      expect(
+        await posicionParaRetomar('video-1', const Duration(minutes: 5)),
+        const Duration(seconds: 30),
+      );
+      expect(
+        await posicionParaRetomar('video-2', const Duration(minutes: 5)),
+        isNull,
+      );
+    });
+
+    test('si quedó casi al final reinicia desde el principio', () async {
+      SharedPreferences.setMockInitialValues({});
+      await guardarAvanceVideo('video-1', const Duration(seconds: 299));
+      expect(
+        await posicionParaRetomar('video-1', const Duration(minutes: 5)),
+        isNull,
+      );
     });
 
     test('cada video mantiene su propio avance', () async {
@@ -138,10 +160,10 @@ void main() {
   });
 
   group('TarjetaMaterial', () {
-    testWidgets('un video muestra insignia y botón de reproducción', (tester) async {
-      await tester.pumpWidget(
-        _tarjeta(_material(id: 'v', category: 'Videos')),
-      );
+    testWidgets('un video muestra insignia y botón de reproducción', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_tarjeta(_material(id: 'v', category: 'Videos')));
 
       expect(find.text('Video'), findsOneWidget);
       expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
@@ -161,23 +183,26 @@ void main() {
       expect(find.byIcon(Icons.checklist_rounded), findsOneWidget);
     });
 
-    testWidgets('muestra el indicador de descarga solo cuando está descargado', (
+    testWidgets(
+      'muestra el indicador de descarga solo cuando está descargado',
+      (tester) async {
+        final material = _material(id: 'g', category: 'Guías');
+        await tester.pumpWidget(_tarjeta(material));
+        expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
+
+        final descargado = _material(
+          id: 'g',
+          category: 'Guías',
+          esDescargado: true,
+        );
+        await tester.pumpWidget(_tarjeta(descargado, descargado: true));
+        expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+      },
+    );
+
+    testWidgets('el favorito alterna el ícono y llama al callback', (
       tester,
     ) async {
-      final material = _material(id: 'g', category: 'Guías');
-      await tester.pumpWidget(_tarjeta(material));
-      expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
-
-      final descargado = _material(
-        id: 'g',
-        category: 'Guías',
-        esDescargado: true,
-      );
-      await tester.pumpWidget(_tarjeta(descargado, descargado: true));
-      expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
-    });
-
-    testWidgets('el favorito alterna el ícono y llama al callback', (tester) async {
       var vezAlternado = 0;
       await tester.pumpWidget(
         _tarjeta(
@@ -208,9 +233,7 @@ void main() {
         ),
       );
 
-      await tester.tap(
-        find.byKey(const Key('miniaturaTarjetaMaterial')),
-      );
+      await tester.tap(find.byKey(const Key('miniaturaTarjetaMaterial')));
       await tester.pump();
 
       expect(vezTocado, 1);
@@ -241,8 +264,7 @@ void main() {
             category: 'Videos',
             thumbnailUrl: 'https://localhost/miniatura.png',
           ),
-          cache: _CacheFalso()
-            ..fallar.add('https://localhost/miniatura.png'),
+          cache: _CacheFalso()..fallar.add('https://localhost/miniatura.png'),
         ),
       );
       await tester.pumpAndSettle();
@@ -257,11 +279,7 @@ void main() {
       final cache = _CacheFalso();
       await tester.pumpWidget(
         _tarjeta(
-          _material(
-            id: 'v',
-            category: 'Videos',
-            thumbnailUrl: _urlMiniatura,
-          ),
+          _material(id: 'v', category: 'Videos', thumbnailUrl: _urlMiniatura),
           cache: cache,
         ),
       );

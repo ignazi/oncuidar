@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,7 +11,9 @@ import '../../modelos/material_educativo.dart';
 import '../../modelos/paciente.dart';
 import '../../modelos/recordatorio.dart';
 import '../../modelos/registro_clinico.dart';
+import 'cola_escrituras.dart';
 import 'servicio_cifrado.dart';
+import 'servicio_conectividad.dart';
 import 'servicio_notificaciones.dart';
 
 class ServicioBaseDatos {
@@ -19,12 +22,18 @@ class ServicioBaseDatos {
     this._auth,
     this._uidPrueba,
     required this._cifrado,
+    this._cola,
+    this._conectividad,
+    this._limiteEscritura = const Duration(seconds: 8),
   }) : _base = base ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _base;
   final FirebaseAuth? _auth;
   final String? _uidPrueba;
   final ServicioCifrado _cifrado;
+  final ColaEscrituras? _cola;
+  final ServicioConectividad? _conectividad;
+  final Duration _limiteEscritura;
 
   String get _uid {
     if (_uidPrueba != null) return _uidPrueba;
@@ -35,6 +44,132 @@ class ServicioBaseDatos {
   }
 
   DocumentReference get _docUsuario => _base.collection('users').doc(_uid);
+
+  // ── Escritura con cola sin conexión ──
+
+  bool get _conCola => _cola != null && _conectividad != null;
+
+  /// Sin red y sin clave guardada en el dispositivo no se puede cifrar: falla explícito.
+  Future<void> verificarEscrituraDisponible() async {
+    if (!_conCola) return;
+    if (await _conectividad!.estaEnLinea()) return;
+    if (_cifrado.tieneClave(_uid)) return;
+    if (await _cifrado.restaurarClave(_uid)) return;
+    throw const ClaveNoDisponibleSinConexion();
+  }
+
+  /// Aplica una operación sobre el servidor; `fusionar` no revive un documento ya borrado.
+  Future<void> _aplicar(
+    DocumentReference ref,
+    Map<String, dynamic> datos,
+    OperacionPendiente operacion,
+  ) async {
+    switch (operacion) {
+      case OperacionPendiente.crear:
+        await ref.set(datos);
+      case OperacionPendiente.guardar:
+        await ref.set(datos, SetOptions(merge: true));
+      case OperacionPendiente.borrar:
+        await ref.delete();
+      case OperacionPendiente.fusionar:
+        // Conflictos: un borrado en el servidor gana sobre la actualización; update no crea documentos.
+        try {
+          await ref.update(datos);
+        } on FirebaseException catch (e) {
+          if (e.code != 'not-found') rethrow;
+        }
+    }
+  }
+
+  /// Sin red no se espera el acuse del servidor: la caché local ya refleja el cambio y Firestore lo envía al reconectar.
+  Future<void> _sinEsperarSinRed(Future<void> Function() operacion) async {
+    final enLinea = _conectividad == null || await _conectividad.estaEnLinea();
+    final pendiente = operacion();
+    if (enLinea) return pendiente;
+    unawaited(pendiente.catchError((_) {}));
+  }
+
+  /// Aplica la escritura en la caché local sin esperar al servidor, para que las listas la muestren de inmediato.
+  void _reflejarEnCache(
+    DocumentReference ref,
+    Map<String, dynamic> datos,
+    OperacionPendiente operacion,
+  ) {
+    unawaited(_aplicar(ref, datos, operacion).catchError((_) {}));
+  }
+
+  Future<void> _encolar(
+    DocumentReference ref,
+    Map<String, dynamic> datos,
+    OperacionPendiente operacion,
+    String idPaciente,
+  ) {
+    final ahora = DateTime.now();
+    return _cola!.encolar(
+      _uid,
+      EscrituraPendiente(
+        id: '${ahora.microsecondsSinceEpoch}_${ref.id}',
+        ruta: ref.path,
+        operacion: operacion,
+        datos: Map<String, dynamic>.from(CodecPayload.codificar(datos) as Map),
+        pacienteId: idPaciente,
+        encoladoEn: ahora.millisecondsSinceEpoch,
+      ),
+    );
+  }
+
+  /// Escribe en línea; sin red, o si la red no responde, deja el documento cifrado en la cola.
+  Future<void> _escribir(
+    DocumentReference ref,
+    Map<String, dynamic> datos, {
+    required OperacionPendiente operacion,
+    required String idPaciente,
+  }) async {
+    if (!_conCola) {
+      await _aplicar(ref, datos, operacion);
+      return;
+    }
+    // Con pendientes del mismo documento la nueva escritura va detrás: así no se pisa con valores viejos.
+    if (!await _conectividad!.estaEnLinea() ||
+        await _cola!.hayPendientesPara(_uid, ref.path)) {
+      await _encolar(ref, datos, operacion, idPaciente);
+      _reflejarEnCache(ref, datos, operacion);
+      return;
+    }
+    try {
+      await _aplicar(ref, datos, operacion).timeout(_limiteEscritura);
+    } on TimeoutException {
+      // Firestore conserva la suya en su cola nativa; repetirla desde aquí es idempotente.
+      await _encolar(ref, datos, operacion, idPaciente);
+    } on FirebaseException catch (e) {
+      if (e.code != 'unavailable' && e.code != 'deadline-exceeded') rethrow;
+      await _encolar(ref, datos, operacion, idPaciente);
+    }
+  }
+
+  /// Borra un documento; sin red, o con pendientes suyos, el borrado entra a la cola en orden.
+  Future<void> _borrar(DocumentReference ref, String idPaciente) => _escribir(
+    ref,
+    const {},
+    operacion: OperacionPendiente.borrar,
+    idPaciente: idPaciente,
+  );
+
+  /// Envía al servidor una escritura de la cola; el orquestador decide qué hacer si falla.
+  Future<void> aplicarEscrituraPendiente(EscrituraPendiente escritura) async {
+    final prefijo = 'users/$_uid/patients/${escritura.pacienteId}/';
+    if (!escritura.ruta.startsWith(prefijo)) {
+      throw ArgumentError(
+        'La escritura pendiente no corresponde al paciente indicado',
+      );
+    }
+    final ref = _base.doc(escritura.ruta);
+    final datos = Map<String, dynamic>.from(
+      CodecPayload.decodificar(escritura.datos) as Map,
+    );
+    // Sin tope un envío colgado dejaría el drenaje ocupado; el timeout lo reintenta como fallo transitorio.
+    await _aplicar(ref, datos, escritura.operacion).timeout(_limiteEscritura);
+  }
 
   // ── Cuidador ──
   /// Guarda al cuidador cifrando los datos personales.
@@ -122,6 +257,7 @@ class ServicioBaseDatos {
       'relacion': await _descifrarCampo(datos, 'relacion_cifrada'),
       'direccion': await _descifrarCampo(datos, 'direccion_cifrada'),
       'correoRespaldo': await _descifrarCampo(datos, 'correo_respaldo_cifrado'),
+      'respaldoPendienteServidor': datos['respaldo_pendiente_servidor'] == true,
       'pendienteCorreo': (correoPendiente == null || correoPendiente.isEmpty)
           ? null
           : {
@@ -171,13 +307,16 @@ class ServicioBaseDatos {
       );
     }
     if (plano.isEmpty) return;
-    await _docUsuario.set(plano, SetOptions(merge: true));
+    await _sinEsperarSinRed(
+      () => _docUsuario.set(plano, SetOptions(merge: true)),
+    );
   }
 
   // ── Paciente ──
   Future<String> crearPaciente(Paciente paciente) async {
     final ref = _docUsuario.collection('patients').doc();
-    await ref.set(await _cifrarPaciente(paciente), SetOptions(merge: true));
+    final datos = await _cifrarPaciente(paciente);
+    await _sinEsperarSinRed(() => ref.set(datos, SetOptions(merge: true)));
     return ref.id;
   }
 
@@ -259,23 +398,91 @@ class ServicioBaseDatos {
         .set(plano, SetOptions(merge: true));
   }
 
-  /// Borrado LÓGICO del paciente: escribe archivado
-  Future<void> archivarPaciente(String idPaciente) async {
-    await _docUsuario.collection('patients').doc(idPaciente).set({
-      'archivado': true,
-    }, SetOptions(merge: true));
+  /// Borrado LÓGICO del paciente: escribe archivado y apaga sus avisos locales.
+  Future<void> archivarPaciente(
+    String idPaciente, {
+    ServicioNotificaciones? notif,
+  }) async {
+    await _sinEsperarSinRed(
+      () => _docUsuario.collection('patients').doc(idPaciente).set({
+        'archivado': true,
+      }, SetOptions(merge: true)),
+    );
+    if (notif != null) await cancelarNotificacionesPaciente(idPaciente, notif);
   }
 
-  /// Restaura un paciente archivado
-  Future<void> desarchivarPaciente(String idPaciente) async {
-    await _docUsuario.collection('patients').doc(idPaciente).set({
-      'archivado': false,
-    }, SetOptions(merge: true));
+  /// Restaura un paciente archivado y vuelve a programar sus avisos.
+  Future<void> desarchivarPaciente(
+    String idPaciente, {
+    ServicioNotificaciones? notif,
+  }) async {
+    await _sinEsperarSinRed(
+      () => _docUsuario.collection('patients').doc(idPaciente).set({
+        'archivado': false,
+      }, SetOptions(merge: true)),
+    );
+    if (notif != null) await reagendarNotificaciones(notif);
   }
 
   /// Borrado FÍSICO (irreversible) del paciente y de todos sus datos.
-  Future<void> eliminarPaciente(String idPaciente) async {
-    await _docUsuario.collection('patients').doc(idPaciente).delete();
+  Future<void> eliminarPaciente(
+    String idPaciente, {
+    ServicioNotificaciones? notif,
+  }) async {
+    // Los avisos se cancelan antes de borrar: después ya no hay cómo listarlos.
+    if (notif != null) await cancelarNotificacionesPaciente(idPaciente, notif);
+    // Lo encolado del paciente se purga primero: si no, el drenaje recrearía documentos borrados.
+    if (_cola != null) await _cola.quitarDePaciente(_uid, idPaciente);
+    final docPaciente = _docUsuario.collection('patients').doc(idPaciente);
+    for (final sub in subcoleccionesPaciente) {
+      await _borrarColeccionEnLotes(docPaciente.collection(sub));
+    }
+    await _confirmarBorrado(docPaciente.delete());
+  }
+
+  /// Subcolecciones que cuelgan de un paciente y se borran con él.
+  static const subcoleccionesPaciente = [
+    'clinicalRecords',
+    'userChecklists',
+    'recordatorios',
+  ];
+
+  /// Borra una colección en lotes de 400 (el tope de Firestore es 500 por lote).
+  Future<void> _borrarColeccionEnLotes(CollectionReference coleccion) async {
+    while (true) {
+      final snap = await coleccion.limit(400).get();
+      if (snap.docs.isEmpty) return;
+      final lote = _base.batch();
+      for (final doc in snap.docs) {
+        lote.delete(doc.reference);
+      }
+      await _confirmarBorrado(lote.commit());
+      if (snap.docs.length < 400) return;
+    }
+  }
+
+  /// Sin red Firestore conserva el borrado en su cola nativa; no se espera el acuse indefinidamente.
+  Future<void> _confirmarBorrado(Future<void> operacion) async {
+    try {
+      await operacion.timeout(_limiteEscritura);
+    } on TimeoutException {
+      // El SDK lo enviará al volver la red.
+    }
+  }
+
+  /// Cancela los avisos locales de todos los recordatorios de un paciente.
+  Future<void> cancelarNotificacionesPaciente(
+    String idPaciente,
+    ServicioNotificaciones notif,
+  ) async {
+    try {
+      final snap = await _recordatorios(idPaciente).get();
+      for (final doc in snap.docs) {
+        await notif.cancelar(ServicioNotificaciones.idSeguro(doc.id));
+      }
+    } catch (_) {
+      // Sin datos locales ni red no hay nada que cancelar; nunca bloquea el archivado.
+    }
   }
 
   /// Stream en tiempo real de los pacientes archivados (`archivado == true`).
@@ -322,6 +529,7 @@ class ServicioBaseDatos {
         'El registro pertenece a "${registro.pacienteId}", no a "$idPaciente"',
       );
     }
+    await verificarEscrituraDisponible();
     final signos = registro.signosVitales;
     final datos = <String, dynamic>{
       'id': registro.id,
@@ -366,9 +574,12 @@ class ServicioBaseDatos {
       cifrado: 'mensaje_alerta_cifrado',
     );
     datos['version_encriptacion'] = 3;
-    await _registrosClinicos(
-      idPaciente,
-    ).doc(registro.id).set(datos, SetOptions(merge: true));
+    await _escribir(
+      _registrosClinicos(idPaciente).doc(registro.id),
+      datos,
+      operacion: OperacionPendiente.guardar,
+      idPaciente: idPaciente,
+    );
   }
 
   /// Elimina un registro clínico del paciente.
@@ -376,7 +587,7 @@ class ServicioBaseDatos {
     String idPaciente,
     String idRegistro,
   ) async {
-    await _registrosClinicos(idPaciente).doc(idRegistro).delete();
+    await _borrar(_registrosClinicos(idPaciente).doc(idRegistro), idPaciente);
   }
 
   Stream<List<RegistroClinico>> registrosClinicosEnTiempoReal(
@@ -417,6 +628,38 @@ class ServicioBaseDatos {
           doc.data() as Map<String, dynamic>,
         ),
       );
+    }
+    return lista;
+  }
+
+  /// Todos los registros del paciente con `fecha` en [desde, hasta), en orden ascendente.
+  Future<List<RegistroClinico>> registrosClinicosEnRango(
+    String idPaciente, {
+    DateTime? desde,
+    DateTime? hasta,
+  }) async {
+    if (!_tieneIdentidad()) return const [];
+    Query consulta = _registrosClinicos(idPaciente);
+    if (desde != null) {
+      consulta = consulta.where(
+        'fecha',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(desde),
+      );
+    }
+    if (hasta != null) {
+      consulta = consulta.where('fecha', isLessThan: Timestamp.fromDate(hasta));
+    }
+    final snap = await consulta.orderBy('fecha').get();
+    final lista = <RegistroClinico>[];
+    for (final doc in snap.docs) {
+      final registro = await _descifrarRegistroClinico(
+        doc.id,
+        doc.data() as Map<String, dynamic>,
+      );
+      // Defensa extra: descarta cualquier documento declarado de otro paciente.
+      if (registro.pacienteId.isEmpty || registro.pacienteId == idPaciente) {
+        lista.add(registro);
+      }
     }
     return lista;
   }
@@ -472,9 +715,11 @@ class ServicioBaseDatos {
     } else {
       favoritos.add(materialId);
     }
-    await _docUsuario.set({
-      'favoriteArticleIds': favoritos,
-    }, SetOptions(merge: true));
+    await _sinEsperarSinRed(
+      () => _docUsuario.set({
+        'favoriteArticleIds': favoritos,
+      }, SetOptions(merge: true)),
+    );
   }
 
   // ── Mis Checklists ──
@@ -507,7 +752,9 @@ class ServicioBaseDatos {
     required String titulo,
     required List<String> items,
   }) async {
+    await verificarEscrituraDisponible();
     final datos = <String, dynamic>{
+      'paciente_id': idPaciente,
       'indicesMarcados': <int>[],
       'creadoEn': DateTime.now(),
     };
@@ -517,7 +764,13 @@ class ServicioBaseDatos {
       cifrado: 'titulo_cifrado',
     );
     datos['items_cifrado'] = await _cifrado.cifrar(_uid, jsonEncode(items));
-    final ref = await _checklistsUsuario(idPaciente).add(datos);
+    final ref = _checklistsUsuario(idPaciente).doc();
+    await _escribir(
+      ref,
+      datos,
+      operacion: OperacionPendiente.crear,
+      idPaciente: idPaciente,
+    );
     return ref.id;
   }
 
@@ -527,8 +780,17 @@ class ServicioBaseDatos {
     String? titulo,
     List<String>? items,
     List<int>? indicesMarcados,
+    DateTime? completadaEn,
+    bool quitarCompletada = false,
   }) async {
+    if (titulo != null || items != null) await verificarEscrituraDisponible();
     final datos = <String, dynamic>{};
+    // La fecha de completada no es sensible: viaja en claro como indicesMarcados.
+    if (completadaEn != null) {
+      datos['completadaEn'] = completadaEn;
+    } else if (quitarCompletada) {
+      datos['completadaEn'] = FieldValue.delete();
+    }
     if (titulo != null) {
       await _reemplazarPorCifrado(
         datos,
@@ -543,29 +805,41 @@ class ServicioBaseDatos {
       datos['indicesMarcados'] = indicesMarcados;
     }
     if (datos.isEmpty) return;
-    await _checklistsUsuario(
-      idPaciente,
-    ).doc(idLista).set(datos, SetOptions(merge: true));
+    // El binding viaja en cada escritura: firestore.rules lo exige también al actualizar.
+    datos['paciente_id'] = idPaciente;
+    await _escribir(
+      _checklistsUsuario(idPaciente).doc(idLista),
+      datos,
+      operacion: OperacionPendiente.fusionar,
+      idPaciente: idPaciente,
+    );
   }
 
   Future<void> eliminarListaChecklist(String idPaciente, String idLista) async {
-    await _checklistsUsuario(idPaciente).doc(idLista).delete();
+    await _borrar(_checklistsUsuario(idPaciente).doc(idLista), idPaciente);
   }
 
   Future<ChecklistUsuario> _descifrarChecklistUsuario(
     String id,
     Map<String, dynamic> datos,
   ) async {
+    final items = await _descifrarItemsChecklist(datos);
     return ChecklistUsuario(
       id: id,
       titulo: (await _descifrarCampo(datos, 'titulo_cifrado')) ?? '',
-      items: await _descifrarItemsChecklist(datos),
-      indicesMarcados:
-          (datos['indicesMarcados'] as List<dynamic>?)
-              ?.map((e) => (e as num).toInt())
-              .toList() ??
-          const [],
+      items: items,
+      // Marcas fuera de rango (lista editada en otro equipo) no cuentan para el progreso.
+      indicesMarcados: filtrarMarcas(
+        (datos['indicesMarcados'] as List<dynamic>?)?.map(
+              (e) => (e as num).toInt(),
+            ) ??
+            const [],
+        items.length,
+      ),
       creadoEn: _fechaTolerante(datos['creadoEn']),
+      completadaEn: datos['completadaEn'] == null
+          ? null
+          : _fechaTolerante(datos['completadaEn']),
     );
   }
 
@@ -633,7 +907,8 @@ class ServicioBaseDatos {
       plano: titulo,
       cifrado: 'titulo_cifrado',
     );
-    final ref = await _conversaciones().add(datos);
+    final ref = _conversaciones().doc();
+    await _sinEsperarSinRed(() => ref.set(datos));
     return ref.id;
   }
 
@@ -657,7 +932,9 @@ class ServicioBaseDatos {
         cifrado: 'titulo_cifrado',
       );
     }
-    await _conversaciones().doc(id).set(datos, SetOptions(merge: true));
+    await _sinEsperarSinRed(
+      () => _conversaciones().doc(id).set(datos, SetOptions(merge: true)),
+    );
   }
 
   /// Renombra una conversación sin tocar sus mensajes.
@@ -668,12 +945,14 @@ class ServicioBaseDatos {
       plano: titulo,
       cifrado: 'titulo_cifrado',
     );
-    await _conversaciones().doc(id).set(datos, SetOptions(merge: true));
+    await _sinEsperarSinRed(
+      () => _conversaciones().doc(id).set(datos, SetOptions(merge: true)),
+    );
   }
 
   /// Elimina definitivamente una conversación.
   Future<void> eliminarConversacion(String id) async {
-    await _conversaciones().doc(id).delete();
+    await _sinEsperarSinRed(() => _conversaciones().doc(id).delete());
   }
 
   Future<Conversacion> _descifrarConversacion(
@@ -743,10 +1022,16 @@ class ServicioBaseDatos {
   }
 
   /// Crea un recordatorio cifrando título, descripción y el payload
-  /// programático (tipo, fechaHora, días, recurrencia, completado). Solo
+  /// programático (tipo, fechaHora, días y recurrencia). Solo
   /// quedan en claro identificadores y flags no sensibles (pacienteId,
   /// activo, creadoEn).
   Future<String> agregarRecordatorio(String idPaciente, Recordatorio r) async {
+    if (r.pacienteId != idPaciente) {
+      throw ArgumentError(
+        'El recordatorio pertenece a "${r.pacienteId}", no a "$idPaciente"',
+      );
+    }
+    await verificarEscrituraDisponible();
     final datos = <String, dynamic>{
       'pacienteId': r.pacienteId,
       'activo': r.activo,
@@ -766,13 +1051,19 @@ class ServicioBaseDatos {
         cifrado: 'descripcion_cifrada',
       );
     }
-    final ref = await _recordatorios(idPaciente).add(datos);
+    final ref = _recordatorios(idPaciente).doc();
+    await _escribir(
+      ref,
+      datos,
+      operacion: OperacionPendiente.crear,
+      idPaciente: idPaciente,
+    );
     return ref.id;
   }
 
   /// Actualiza los campos indicados re-cifrando título/descripción cuando
   /// vienen. Una descripción vacía borra el campo. `recurrencia` vacía borra
-  /// la recurrencia mensual; `quitarCompletado` borra la marca de completado.
+  /// la recurrencia mensual.
   Future<void> actualizarRecordatorio(
     String idPaciente,
     String idRecordatorio, {
@@ -782,10 +1073,18 @@ class ServicioBaseDatos {
     DateTime? fechaHora,
     List<String>? diasRepeticion,
     String? recurrencia,
-    DateTime? completadoEn,
-    bool? quitarCompletado,
+    String? asignadoA,
     bool? activo,
   }) async {
+    final cifraAlgo =
+        titulo != null ||
+        descripcion != null ||
+        tipo != null ||
+        fechaHora != null ||
+        diasRepeticion != null ||
+        recurrencia != null ||
+        asignadoA != null;
+    if (cifraAlgo) await verificarEscrituraDisponible();
     final datos = <String, dynamic>{};
     if (titulo != null) {
       await _reemplazarPorCifrado(
@@ -810,8 +1109,7 @@ class ServicioBaseDatos {
         fechaHora != null ||
         diasRepeticion != null ||
         recurrencia != null ||
-        completadoEn != null ||
-        quitarCompletado == true;
+        asignadoA != null;
     if (tocaPayload) {
       final sensibles = await _datosSensiblesActuales(
         idPaciente,
@@ -831,12 +1129,9 @@ class ServicioBaseDatos {
           sensibles['recurrencia'] = recurrencia;
         }
       }
-      if (completadoEn != null) {
-        sensibles['completadoEn'] = completadoEn.toIso8601String();
-      }
-      if (quitarCompletado == true) {
-        sensibles.remove('completadoEn');
-      }
+      if (asignadoA != null) sensibles['asignadoA'] = asignadoA;
+      // Un recordatorio guardado con una versión antigua pudo traer esta marca: se descarta.
+      sensibles.remove('completadoEn');
       datos['datos_cifrados'] = await _cifrado.cifrar(
         _uid,
         jsonEncode(sensibles),
@@ -851,9 +1146,14 @@ class ServicioBaseDatos {
     }
     if (activo != null) datos['activo'] = activo;
     if (datos.isEmpty) return;
-    await _recordatorios(
-      idPaciente,
-    ).doc(idRecordatorio).set(datos, SetOptions(merge: true));
+    // El binding viaja en cada escritura: firestore.rules lo exige también al actualizar.
+    datos['pacienteId'] = idPaciente;
+    await _escribir(
+      _recordatorios(idPaciente).doc(idRecordatorio),
+      datos,
+      operacion: OperacionPendiente.fusionar,
+      idPaciente: idPaciente,
+    );
   }
 
   /// Elimina definitivamente un recordatorio.
@@ -861,7 +1161,7 @@ class ServicioBaseDatos {
     String idPaciente,
     String idRecordatorio,
   ) async {
-    await _recordatorios(idPaciente).doc(idRecordatorio).delete();
+    await _borrar(_recordatorios(idPaciente).doc(idRecordatorio), idPaciente);
   }
 
   Future<Recordatorio> _descifrarRecordatorio(
@@ -883,15 +1183,14 @@ class ServicioBaseDatos {
           const [],
       activo: (datos['activo'] as bool?) ?? true,
       recurrencia: sensibles['recurrencia'] as String?,
-      completadoEn: sensibles['completadoEn'] == null
-          ? null
-          : _fechaTolerante(sensibles['completadoEn']),
+      asignadoA:
+          (sensibles['asignadoA'] as String?) ?? Recordatorio.asignadoAPaciente,
       creadoEn: _fechaTolerante(datos['creadoEn']),
     );
   }
 
-  /// Cifra el payload programático del recordatorio (tipo, horario, recurrencia,
-  /// completado) en un único campo JSON cifrado.
+  /// Cifra el payload programático del recordatorio (tipo, horario, recurrencia
+  /// y asignación) en un único campo JSON cifrado.
   Future<String> _cifrarPayloadRecordatorio(Recordatorio r) {
     return _cifrado.cifrar(
       _uid,
@@ -900,25 +1199,26 @@ class ServicioBaseDatos {
         'fechaHora': r.fechaHora.toIso8601String(),
         'diasRepeticion': r.diasRepeticion,
         if (r.recurrencia != null) 'recurrencia': r.recurrencia,
-        if (r.completadoEn != null)
-          'completadoEn': r.completadoEn!.toIso8601String(),
+        'asignadoA': r.asignadoA,
       }),
     );
   }
 
   /// Lee el payload programático: primero el blob cifrado `datos_cifrados`;
   /// si el documento es anterior a su introducción, intenta los campos planos
-  /// legacy (`tipo`, `fechaHora`, `diasRepeticion`, `recurrencia`,
-  /// `completadoEn`).
+  /// legacy (`tipo`, `fechaHora`, `diasRepeticion`, `recurrencia`).
   Future<Map<String, dynamic>> _datosSensiblesRecordatorio(
-    Map<String, dynamic> datos,
-  ) async {
+    Map<String, dynamic> datos, {
+    bool estricto = false,
+  }) async {
     final cifrado = datos['datos_cifrados'] as String?;
     if (cifrado != null && cifrado.isNotEmpty) {
       try {
         final texto = await _cifrado.descifrar(_uid, cifrado);
         return (jsonDecode(texto) as Map<String, dynamic>);
       } catch (e, pila) {
+        // Devolver un mapa vacío aquí borraría el payload al re-cifrarlo.
+        if (estricto) rethrow;
         debugPrint('No se pudo descifrar datos_cifrados: $e\n$pila');
         return <String, dynamic>{};
       }
@@ -929,7 +1229,6 @@ class ServicioBaseDatos {
       if (datos['diasRepeticion'] != null)
         'diasRepeticion': datos['diasRepeticion'],
       if (datos['recurrencia'] != null) 'recurrencia': datos['recurrencia'],
-      if (datos['completadoEn'] != null) 'completadoEn': datos['completadoEn'],
     };
   }
 
@@ -937,6 +1236,9 @@ class ServicioBaseDatos {
     String idPaciente,
     String idRecordatorio,
   ) async {
+    // Sin red el documento puede existir solo en la cola: esa es la fuente de verdad.
+    final local = await _payloadEncolado(idPaciente, idRecordatorio);
+    if (local != null) return local;
     final snap = await _recordatorios(idPaciente).doc(idRecordatorio).get();
     final datos = snap.data();
     if (datos == null) return <String, dynamic>{};
@@ -944,7 +1246,30 @@ class ServicioBaseDatos {
       datos is Map<String, dynamic>
           ? datos
           : Map<String, dynamic>.from(datos as Map),
+      estricto: true,
     );
+  }
+
+  /// Devuelve el payload cifrado más reciente de un recordatorio encolado, o null.
+  Future<Map<String, dynamic>?> _payloadEncolado(
+    String idPaciente,
+    String idRecordatorio,
+  ) async {
+    final cola = _cola;
+    if (cola == null) return null;
+    final ruta = _recordatorios(idPaciente).doc(idRecordatorio).path;
+    final pendientes = await cola.pendientes(_uid);
+    final propias = <EscrituraPendiente>[
+      for (final e in pendientes)
+        if (e.ruta == ruta) e,
+    ]..sort((a, b) => a.encoladoEn.compareTo(b.encoladoEn));
+    for (final e in propias.reversed) {
+      final cifrado = e.datos['datos_cifrados'];
+      if (cifrado is! String || cifrado.isEmpty) continue;
+      final texto = await _cifrado.descifrar(_uid, cifrado);
+      return jsonDecode(texto) as Map<String, dynamic>;
+    }
+    return null;
   }
 
   // ── Reagendado tras iniciar sesión ──
@@ -965,19 +1290,25 @@ class ServicioBaseDatos {
       if (!_tieneIdentidad()) return;
       await notif.cancelarTodas();
       final pacientes = await pacientesEnTiempoReal().first;
+      final ahora = DateTime.now();
       for (final paciente in pacientes) {
         try {
           final recordatorios = await recordatoriosEnTiempoReal(
             paciente.id,
           ).first;
           for (final r in recordatorios) {
-            if (!r.activo || r.estaCompletado) continue;
+            if (!r.activo) continue;
+            // Sin clave (sin red) el título queda vacío: no hay aviso que programar.
+            if (r.titulo.isEmpty) continue;
+            // Una sola vez y ya vencido: reprogramarlo lo dispararía mañana.
+            if (!r.esRecurrente && r.fechaHora.isBefore(ahora)) continue;
             await notif.programar(
               id: ServicioNotificaciones.idSeguro(r.id),
-              titulo:
-                  '${paciente.fullName} · ${_etiquetaTipoRecordatorio(r.tipo)}',
-              cuerpo:
-                  '${r.titulo}${(r.descripcion != null && r.descripcion!.isNotEmpty) ? ' · ${r.descripcion}' : ''}',
+              titulo: r.tituloAviso(
+                paciente.fullName,
+                _etiquetaTipoRecordatorio(r.tipo),
+              ),
+              cuerpo: r.cuerpoAviso,
               fechaHora: r.fechaHora,
               diasRepeticion: r.diasRepeticion,
               mensual: r.esMensual,
@@ -1037,14 +1368,20 @@ class ServicioBaseDatos {
   }) async {
     await _reautenticar(contrasena);
     final normalizado = nuevoCorreo.trim().toLowerCase();
+    // La marca queda hasta que el servidor registre el correo; así se reintenta al volver al perfil.
     await _docUsuario.set({
       'correo_respaldo_cifrado': await _cifrado.cifrar(_uid, normalizado),
+      'respaldo_pendiente_servidor': true,
     }, SetOptions(merge: true));
-    var confirmadoServidor = false;
-    try {
-      await FirebaseFunctions.instanceFor(region: 'southamerica-west1')
+    return _registrarRespaldoEnServidor(normalizado);
+  }
+
+  /// Registra el hash del respaldo vía Cloud Function; reemplazable en pruebas.
+  @visibleForTesting
+  Future<void> Function(String correo) registrarCorreoRespaldoServidor =
+      (correo) => FirebaseFunctions.instanceFor(region: 'southamerica-west1')
           .httpsCallable('registerRecoveryEmail')
-          .call({'email': normalizado})
+          .call({'email': correo})
           .timeout(
             const Duration(seconds: 5),
             onTimeout: () => throw FirebaseFunctionsException(
@@ -1052,16 +1389,29 @@ class ServicioBaseDatos {
               message: 'Sin conexión',
             ),
           );
-      confirmadoServidor = true;
-      await _docUsuario.set({
-        'pendiente_correo': normalizado,
-        'pendiente_correo_tipo': 'respaldo',
-        'pendiente_correo_solicitado_en': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    } catch (_) {
-      // Registro local correcto
+
+  /// Devuelve true si el servidor confirmó; si falla deja la marca pendiente.
+  Future<bool> _registrarRespaldoEnServidor(String correo) async {
+    try {
+      await registrarCorreoRespaldoServidor(correo);
+    } catch (e) {
+      debugPrint('Registro del correo de respaldo pendiente: $e');
+      return false;
     }
-    return confirmadoServidor;
+    await _docUsuario.set({
+      'respaldo_pendiente_servidor': FieldValue.delete(),
+    }, SetOptions(merge: true));
+    return true;
+  }
+
+  /// Reintenta registrar en el servidor un respaldo que quedó pendiente; true si ya no queda pendiente.
+  Future<bool> reintentarRegistroRespaldo() async {
+    final datos =
+        ((await _docUsuario.get()).data() as Map<String, dynamic>?) ?? {};
+    if (datos['respaldo_pendiente_servidor'] != true) return true;
+    final correo = await _descifrarCampo(datos, 'correo_respaldo_cifrado');
+    if (correo == null || correo.isEmpty) return false;
+    return _registrarRespaldoEnServidor(correo);
   }
 
   Future<void> limpiarCambioCorreoPendiente() async {

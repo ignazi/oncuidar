@@ -7,6 +7,7 @@ class PreguntaBase {
     required this.pregunta,
     required this.respuesta,
     this.claves = const [],
+    this.contenidoRelacionadoId,
   });
 
   final String id;
@@ -16,4 +17,7 @@ class PreguntaBase {
 
   /// Palabras clave usadas para emparejar el texto libre del usuario.
   final List<String> claves;
+
+  /// Id del material afín en educationalContent; sin él no se ofrece enlace.
+  final String? contenidoRelacionadoId;
 }

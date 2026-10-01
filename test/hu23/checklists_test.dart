@@ -88,23 +88,19 @@ DocumentReference<Map<String, dynamic>> _docChecklist(
   FakeFirebaseFirestore firestore,
   String idPaciente,
   String idLista,
-) =>
-    firestore
-        .collection('users')
-        .doc(_uid)
-        .collection('patients')
-        .doc(idPaciente)
-        .collection('userChecklists')
-        .doc(idLista);
+) => firestore
+    .collection('users')
+    .doc(_uid)
+    .collection('patients')
+    .doc(idPaciente)
+    .collection('userChecklists')
+    .doc(idLista);
 
 Widget _pantalla(ServicioBaseDatos base, _CacheFalso cache) {
   final router = GoRouter(
     initialLocation: '/biblioteca',
     routes: [
-      GoRoute(
-        path: '/biblioteca',
-        builder: (c, s) => const BibliotecaScreen(),
-      ),
+      GoRoute(path: '/biblioteca', builder: (c, s) => const BibliotecaScreen()),
     ],
   );
   return ProviderScope(
@@ -131,9 +127,7 @@ Future<void> _montar(
   await tester.pumpAndSettle();
 }
 
-Future<void> _sembrarMaterial(
-  FakeFirebaseFirestore firestore,
-) async {
+Future<void> _sembrarMaterial(FakeFirebaseFirestore firestore) async {
   await firestore
       .collection('educationalContent')
       .doc(_guia().id)
@@ -156,17 +150,20 @@ void main() {
       (base, firestore, idPaciente) = await _baseConPaciente(cifrado);
     });
 
-    test('crear guarda el doc en userChecklists con indices vacíos y fecha', () async {
-      final id = await base.crearListaChecklist(
-        idPaciente,
-        titulo: 'Rutina diaria',
-        items: ['Preparar mochila', 'Llevar carnet'],
-      );
-      final doc = await _docChecklist(firestore, idPaciente, id).get();
-      expect(doc.exists, isTrue);
-      expect(doc.data()?['indicesMarcados'], isEmpty);
-      expect(doc.data()?['creadoEn'], isNotNull);
-    });
+    test(
+      'crear guarda el doc en userChecklists con indices vacíos y fecha',
+      () async {
+        final id = await base.crearListaChecklist(
+          idPaciente,
+          titulo: 'Rutina diaria',
+          items: ['Preparar mochila', 'Llevar carnet'],
+        );
+        final doc = await _docChecklist(firestore, idPaciente, id).get();
+        expect(doc.exists, isTrue);
+        expect(doc.data()?['indicesMarcados'], isEmpty);
+        expect(doc.data()?['creadoEn'], isNotNull);
+      },
+    );
 
     test('titulo e items se guardan cifrados y se descifran', () async {
       final id = await base.crearListaChecklist(
@@ -174,8 +171,11 @@ void main() {
         titulo: 'Rutina diaria',
         items: ['Preparar mochila', 'Llevar carnet'],
       );
-      final datos = (await _docChecklist(firestore, idPaciente, id).get())
-          .data()!;
+      final datos = (await _docChecklist(
+        firestore,
+        idPaciente,
+        id,
+      ).get()).data()!;
       expect(datos.containsKey('titulo'), isFalse);
       expect(datos.containsKey('items'), isFalse);
       expect(datos['titulo_cifrado'], isA<String>());
@@ -185,9 +185,11 @@ void main() {
         await cifrado.descifrar(_uid, datos['titulo_cifrado'] as String),
         'Rutina diaria',
       );
-      final items = jsonDecode(
-        await cifrado.descifrar(_uid, datos['items_cifrado'] as String),
-      ) as List<dynamic>;
+      final items =
+          jsonDecode(
+                await cifrado.descifrar(_uid, datos['items_cifrado'] as String),
+              )
+              as List<dynamic>;
       expect(items, ['Preparar mochila', 'Llevar carnet']);
     });
 
@@ -197,13 +199,12 @@ void main() {
         titulo: 'Rutina diaria',
         items: ['Preparar mochila', 'Llevar carnet'],
       );
-      await base.actualizarListaChecklist(
+      await base.actualizarListaChecklist(idPaciente, id, indicesMarcados: [1]);
+      final datos = (await _docChecklist(
+        firestore,
         idPaciente,
         id,
-        indicesMarcados: [1],
-      );
-      final datos = (await _docChecklist(firestore, idPaciente, id).get())
-          .data()!;
+      ).get()).data()!;
       expect(datos['indicesMarcados'], [1]);
     });
 
@@ -224,9 +225,7 @@ void main() {
         titulo: 'Rutina diaria',
         items: ['Preparar mochila', 'Llevar carnet'],
       );
-      final listas = await base
-          .listasChecklistTiempoReal(idPaciente)
-          .first;
+      final listas = await base.listasChecklistTiempoReal(idPaciente).first;
       expect(listas, hasLength(1));
       expect(listas.single.titulo, 'Rutina diaria');
       expect(listas.single.items, ['Preparar mochila', 'Llevar carnet']);
@@ -246,11 +245,7 @@ void main() {
         titulo: 'Rutina diaria',
         items: ['Preparar mochila', 'Llevar carnet'],
       );
-      await base.actualizarListaChecklist(
-        idPaciente,
-        id,
-        indicesMarcados: [0],
-      );
+      await base.actualizarListaChecklist(idPaciente, id, indicesMarcados: [0]);
 
       await _montar(tester, base, _CacheFalso());
 
@@ -273,18 +268,12 @@ void main() {
 
       expect(find.text('Nuevo checklist'), findsOneWidget);
 
-      await tester.enterText(
-        find.byType(TextFormField).at(0),
-        'Rutina diaria',
-      );
+      await tester.enterText(find.byType(TextFormField).at(0), 'Rutina diaria');
       await tester.enterText(
         find.byType(TextFormField).at(1),
         'Preparar mochila',
       );
-      await tester.enterText(
-        find.byType(TextFormField).at(2),
-        'Llevar carnet',
-      );
+      await tester.enterText(find.byType(TextFormField).at(2), 'Llevar carnet');
       await tester.tap(find.byKey(const Key('guardarChecklist')));
       await tester.pumpAndSettle();
 
@@ -292,12 +281,12 @@ void main() {
       expect(find.text('0/2'), findsOneWidget);
 
       final docs = await (firestore
-              .collection('users')
-              .doc(_uid)
-              .collection('patients')
-              .doc(idPaciente)
-              .collection('userChecklists')
-              .get());
+          .collection('users')
+          .doc(_uid)
+          .collection('patients')
+          .doc(idPaciente)
+          .collection('userChecklists')
+          .get());
       expect(docs.docs, hasLength(1));
       expect(docs.docs.single.data()['indicesMarcados'], isEmpty);
       expect(docs.docs.single.data()['titulo_cifrado'], isA<String>());

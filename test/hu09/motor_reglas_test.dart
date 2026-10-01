@@ -96,7 +96,10 @@ void main() {
         const [],
       );
       expect(resultado.nivel, NivelAlerta.alerta);
-      expect(resultado.mensajes, contains('Frecuencia cardíaca alta (110 lpm)'));
+      expect(
+        resultado.mensajes,
+        contains('Frecuencia cardíaca alta (110 lpm)'),
+      );
     });
 
     test('FC bajo 50 lpm es alerta (bradicardia)', () {
@@ -154,7 +157,10 @@ void main() {
         const [],
       );
       expect(resultado.nivel, NivelAlerta.alerta);
-      expect(resultado.mensajes, contains('Frecuencia respiratoria baja (10 rpm)'));
+      expect(
+        resultado.mensajes,
+        contains('Frecuencia respiratoria baja (10 rpm)'),
+      );
     });
 
     test('FR bajo 8 rpm es crítica (bradipnea severa)', () {
@@ -313,10 +319,7 @@ void main() {
         _sintoma('Dolor', 5),
       ]);
       expect(resultado.nivel, NivelAlerta.normal);
-      expect(
-        resultado.mensajes,
-        contains('2 síntomas moderados registrados'),
-      );
+      expect(resultado.mensajes, contains('2 síntomas moderados registrados'));
     });
 
     test(

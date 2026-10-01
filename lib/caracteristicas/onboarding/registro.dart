@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/router/destino_aviso.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../compartidos/widgets/campos_formulario.dart';
 import '../../compartidos/widgets/encabezado_gradiente.dart';
@@ -157,7 +158,7 @@ class _RegistroState extends ConsumerState<Registro> {
               backgroundColor: Paleta.doradoPrincipal,
             ),
           );
-          context.go('/dashboard');
+          context.go(EstadoArranque.consumirDestino());
         }
         break;
       case RegistroFallido(:final mensaje):
@@ -586,7 +587,6 @@ class _RegistroState extends ConsumerState<Registro> {
         backgroundColor: Paleta.crema,
         body: Stack(
           children: [
-
             Positioned.fill(
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(

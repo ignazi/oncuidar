@@ -61,6 +61,12 @@ class _FakeNotificaciones implements ServicioNotificaciones {
 
   @override
   Future<void> cancelarTodas() async => canceladasTodas++;
+
+  @override
+  void Function(String? payload)? alTocar;
+
+  @override
+  Future<String?> consumirPayloadLanzamiento() async => null;
 }
 
 Future<(ServicioBaseDatos, FakeFirebaseFirestore)> _baseDatos() async {
@@ -215,7 +221,7 @@ void main() {
     });
 
     test(
-      'recurrencia mensual y completado se persisten y se descifran',
+      'la recurrencia mensual se persiste y se descifra',
       () async {
         final (base, firestore) = await _baseDatos();
         final idPaciente = await _sembrarPaciente(base);
@@ -238,26 +244,14 @@ void main() {
         expect(payload['recurrencia'], 'mensual');
         expect(datos!.containsKey('completadoEn'), isFalse);
 
-        await base.actualizarRecordatorio(
-          idPaciente,
-          id,
-          completadoEn: DateTime(2026, 9, 20, 9),
-        );
         var recordatorios = await base
             .recordatoriosEnTiempoReal(idPaciente)
             .first;
         expect(recordatorios.single.esMensual, isTrue);
-        expect(recordatorios.single.completadoEn, DateTime(2026, 9, 20, 9));
 
-        await base.actualizarRecordatorio(
-          idPaciente,
-          id,
-          recurrencia: '',
-          quitarCompletado: true,
-        );
+        await base.actualizarRecordatorio(idPaciente, id, recurrencia: '');
         recordatorios = await base.recordatoriosEnTiempoReal(idPaciente).first;
         expect(recordatorios.single.recurrencia, isNull);
-        expect(recordatorios.single.completadoEn, isNull);
       },
     );
 
@@ -308,21 +302,6 @@ void main() {
             creadoEn: fecha,
           ),
         );
-        // Completado: no.
-        await base.agregarRecordatorio(
-          idPaciente,
-          Recordatorio(
-            id: '',
-            pacienteId: idPaciente,
-            tipo: 'medicion',
-            titulo: 'Hecho',
-            fechaHora: fecha,
-            activo: true,
-            creadoEn: fecha,
-            completadoEn: DateTime(2026, 9, 20, 10),
-          ),
-        );
-
         final notif = _FakeNotificaciones();
         await base.reagendarNotificaciones(notif);
 
@@ -673,7 +652,8 @@ void main() {
         final (base, _) = await _baseDatos();
         final idPaciente = await _sembrarPaciente(base);
         final notif = _FakeNotificaciones();
-        final fecha = DateTime.now();
+        // Una sola vez y vigente: los vencidos ya no se reprograman.
+        final fecha = DateTime.now().add(const Duration(days: 2));
         final id = await base.agregarRecordatorio(
           idPaciente,
           Recordatorio(

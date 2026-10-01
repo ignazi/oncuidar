@@ -18,6 +18,7 @@ import '../../modelos/registro_clinico.dart';
 import 'exportadores/exportador_excel.dart';
 import 'exportadores/exportador_pdf.dart';
 import 'widgets/boton_cargar_mas.dart';
+import 'widgets/cabecera_registro.dart';
 import 'widgets/chip_estado.dart';
 import 'widgets/dialogo_rango_fechas.dart';
 import 'widgets/estado_vacio.dart';
@@ -33,6 +34,7 @@ class HistorialScreen extends ConsumerStatefulWidget {
 }
 
 class _HistorialScreenState extends ConsumerState<HistorialScreen> {
+  static const _tamanoPagina = 50;
   final List<RegistroClinico> _cargados = [];
   String? _estadoFiltro;
   DateTime? _fechaInicio;
@@ -94,7 +96,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
       if (!mounted) return;
       setState(() {
         _cargados.addAll(siguiente);
-        if (siguiente.length < 50) _noHayMas = true;
+        if (siguiente.length < _tamanoPagina) _noHayMas = true;
       });
     } catch (e) {
       if (!mounted) return;
@@ -236,7 +238,8 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _filaFiltros(filtrados),
+        // Exportar también cuando hay páginas sin cargar que podrían coincidir.
+        _filaFiltros(filtrados.isNotEmpty || _hayMas(base)),
         const SizedBox(height: 16),
         if (filtrados.isEmpty)
           EstadoVacio(
@@ -248,7 +251,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
                 ? null
                 : 'Crea el primer registro desde el botón de abajo.',
           )
-        else ...[
+        else
           for (final registro in filtrados)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -257,24 +260,32 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
                 etiqueta: _etiquetaRegistro(registro, visibles),
                 expandido: _expandidoId == registro.id,
                 onToggle: () => setState(() {
-                  _expandidoId =
-                      _expandidoId == registro.id ? null : registro.id;
+                  _expandidoId = _expandidoId == registro.id
+                      ? null
+                      : registro.id;
                 }),
                 onEditar: () => _editarRegistro(registro),
                 onEliminar: () => _eliminarRegistro(registro),
               ),
             ),
-          if (!_noHayMas && !_cargandoMas && visibles.length % 50 == 0)
-            BotonCargarMas(
-              cargando: _cargandoMas,
-              alPulsar: () => _cargarMas(visibles),
-            ),
-        ],
+        // Fuera del else: con filtros sin coincidencias aún se puede cargar más.
+        if (_hayMas(base))
+          BotonCargarMas(
+            cargando: _cargandoMas,
+            alPulsar: () => _cargarMas(visibles),
+          ),
       ],
     );
   }
 
-  Widget _filaFiltros(List<RegistroClinico> filtrados) {
+  // Hay más páginas si la primera vino llena o la última carga no fue parcial.
+  bool _hayMas(List<RegistroClinico> base) {
+    if (_noHayMas) return false;
+    if (_cargados.isEmpty) return base.length >= _tamanoPagina;
+    return true;
+  }
+
+  Widget _filaFiltros(bool exportable) {
     final hayRango = _fechaInicio != null || _fechaFin != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,8 +326,9 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
                         tooltip: 'Limpiar filtro de fecha',
                         onPressed: _limpiarRango,
                         style: IconButton.styleFrom(
-                          backgroundColor:
-                              Paleta.doradoClaro.withValues(alpha: 0.6),
+                          backgroundColor: Paleta.doradoClaro.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                         icon: const Icon(
                           Icons.close,
@@ -330,9 +342,9 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            _botonExportarPdf(filtrados.isNotEmpty),
+            _botonExportarPdf(exportable),
             const SizedBox(width: 8),
-            _botonExportarExcel(filtrados.isNotEmpty),
+            _botonExportarExcel(exportable),
           ],
         ),
       ],
@@ -380,9 +392,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
             height: 40,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              gradient: habilitado
-                  ? LinearGradient(colors: colores)
-                  : null,
+              gradient: habilitado ? LinearGradient(colors: colores) : null,
               color: habilitado ? null : const Color(0xFFEDE3D2),
               borderRadius: BorderRadius.circular(20),
             ),
@@ -392,9 +402,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
                 Icon(
                   icono,
                   size: 16,
-                  color: habilitado
-                      ? Colors.white
-                      : Paleta.textoSecundario,
+                  color: habilitado ? Colors.white : Paleta.textoSecundario,
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -402,9 +410,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
                   style: GoogleFonts.nunito(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: habilitado
-                        ? Colors.white
-                        : Paleta.textoSecundario,
+                    color: habilitado ? Colors.white : Paleta.textoSecundario,
                   ),
                 ),
               ],
@@ -432,7 +438,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     try {
       final paciente = ref.read(currentPatientProvider).value;
       final bytes = await generarPdfHistorial(
-        registros: _filtradosActuales(),
+        registros: await _registrosParaExportar(),
         paciente: paciente,
         nombreCuidador: await _nombreCuidador(),
         fechaInicio: _fechaInicio,
@@ -440,7 +446,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
         generadoEn: DateTime.now(),
       );
       if (!mounted) return;
-      await _abrirArchivo(bytes, 'pdf');
+      await _ofrecerArchivo(bytes, 'pdf');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -460,7 +466,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     try {
       final paciente = ref.read(currentPatientProvider).value;
       final bytes = generarExcelHistorial(
-        registros: _filtradosActuales(),
+        registros: await _registrosParaExportar(),
         paciente: paciente,
         nombreCuidador: await _nombreCuidador(),
         fechaInicio: _fechaInicio,
@@ -468,7 +474,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
         generadoEn: DateTime.now(),
       );
       if (!mounted) return;
-      await _abrirArchivo(bytes, 'xlsx');
+      await _ofrecerArchivo(bytes, 'xlsx');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -479,6 +485,78 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
       );
     } finally {
       if (mounted) setState(() => _exportando = false);
+    }
+  }
+
+  // Límites [desde, hasta) equivalentes al filtro de fecha activo.
+  (DateTime?, DateTime?) _limitesRango() {
+    DateTime inicioDia(DateTime f) => DateTime(f.year, f.month, f.day);
+    DateTime diaSiguiente(DateTime f) => DateTime(f.year, f.month, f.day + 1);
+    final inicio = _fechaInicio;
+    final fin = _fechaFin;
+    if (inicio == null && fin == null) return (null, null);
+    if (fin == null) return (inicioDia(inicio!), diaSiguiente(inicio));
+    return (inicio == null ? null : inicioDia(inicio), diaSiguiente(fin));
+  }
+
+  // Consulta todo el rango elegido, no solo las páginas ya cargadas.
+  Future<List<RegistroClinico>> _registrosParaExportar() async {
+    final paciente = ref.read(currentPatientProvider).value;
+    if (paciente == null) return _filtradosActuales();
+    final (desde, hasta) = _limitesRango();
+    try {
+      final todos = await ref
+          .read(servicioBaseDatosProvider)
+          .registrosClinicosEnRango(paciente.id, desde: desde, hasta: hasta);
+      return [
+        for (final r in todos)
+          if (_estadoFiltro == null || r.nivelAlerta.name == _estadoFiltro)
+            if (_coincideFecha(r.fecha)) r,
+      ];
+    } catch (_) {
+      return _filtradosActuales();
+    }
+  }
+
+  // Ofrece abrir o compartir el archivo generado con botones explícitos.
+  Future<void> _ofrecerArchivo(Uint8List bytes, String extension) async {
+    final accion = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Paleta.tarjeta,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (contexto) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('botonAbrirExportacion'),
+              leading: const Icon(
+                Icons.open_in_new_rounded,
+                color: Paleta.doradoOscuro,
+              ),
+              title: const Text('Abrir archivo'),
+              onTap: () => Navigator.of(contexto).pop('abrir'),
+            ),
+            ListTile(
+              key: const Key('botonCompartirExportacion'),
+              leading: const Icon(
+                Icons.share_rounded,
+                color: Paleta.doradoOscuro,
+              ),
+              title: const Text('Compartir'),
+              onTap: () => Navigator.of(contexto).pop('compartir'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || accion == null) return;
+    if (accion == 'compartir') {
+      await _compartirArchivo(bytes, extension);
+    } else {
+      await _abrirArchivo(bytes, extension);
     }
   }
 
@@ -612,14 +690,23 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     });
   }
 
-  void _editarRegistro(RegistroClinico registro) {
+  Future<void> _editarRegistro(RegistroClinico registro) async {
+    if (!esEditableHoy(registro)) return;
     ref.read(registroEnEdicionProvider.notifier).state = registro;
-    context.push('/registro-clinico');
+    await context.push('/registro-clinico');
+    if (!mounted) return;
+    // Una copia paginada quedaría desactualizada: se descarta para recargarla.
+    if (_cargados.any((r) => r.id == registro.id)) {
+      setState(() {
+        _cargados.clear();
+        _noHayMas = false;
+      });
+    }
   }
 
   Future<void> _eliminarRegistro(RegistroClinico registro) async {
     final paciente = ref.read(currentPatientProvider).value;
-    if (paciente == null) return;
+    if (paciente == null || !esEditableHoy(registro)) return;
     final confirmar = await mostrarDialogoConfirmacion(
       context,
       icono: Icons.delete_outline,
@@ -637,6 +724,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
           .read(servicioBaseDatosProvider)
           .eliminarRegistroClinico(paciente.id, registro.id);
       if (mounted) {
+        setState(() => _cargados.removeWhere((r) => r.id == registro.id));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Registro eliminado'),
@@ -660,19 +748,17 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     RegistroClinico registro,
     List<RegistroClinico> todos,
   ) {
-
     final tope =
         ref.read(currentPatientProvider).value?.maximoRegistrosDia ?? 3;
+    if (registro.tipoRegistro == 'extra') return 'Registro extra';
+    // La numeración n/tope solo considera los programados del mismo día.
     final delDia = [
       for (final r in todos)
-        if (mismoDia(r.fecha, registro.fecha)) r,
+        if (r.tipoRegistro == 'programado' && mismoDia(r.fecha, registro.fecha))
+          r,
     ]..sort((a, b) => a.creadoEn.compareTo(b.creadoEn));
     final posicion = delDia.indexWhere((r) => r.id == registro.id);
-    if (posicion == -1) {
-      return registro.tipoRegistro == 'extra'
-          ? 'Registro extra'
-          : 'Registro 1/$tope';
-    }
+    if (posicion == -1) return 'Registro 1/$tope';
     final numero = posicion + 1;
     return numero <= tope ? 'Registro $numero/$tope' : 'Registro extra';
   }

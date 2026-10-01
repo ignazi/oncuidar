@@ -207,18 +207,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   List<MensajeConversacion> get _mensajesAGuardar =>
       _mensajes.where((m) => m.texto != mensajeBienvenidaChat).toList();
 
-  /// Nombre con el que se persiste una conversación nueva: el nombre que dio
-  /// el usuario, la categoría de la primera coincidencia o 'Consulta'.
+  /// Nombre de una conversación nueva: el que dio el usuario o su primera pregunta recortada.
   String _nombrePorDefecto() {
     final titulo = ref.read(chatActivoProvider).titulo?.trim();
     if (titulo != null && titulo.isNotEmpty) {
       return titulo;
     }
-    final categoria = ref.read(chatActivoProvider).categoria?.trim();
-    if (categoria != null && categoria.isNotEmpty) {
-      return categoria;
-    }
-    return 'Consulta';
+    final primera = _mensajesAGuardar.where((m) => m.delUsuario).firstOrNull;
+    return tituloAutomaticoConversacion(primera?.texto ?? '');
   }
 
   /// Encola el guardado en serie para que dos escrituras nunca se pisen.
@@ -931,4 +927,18 @@ class _IndicadorEscribiendoState extends State<_IndicadorEscribiendo>
       ],
     );
   }
+}
+
+/// Largo máximo del título automático de una conversación.
+const largoMaximoTituloConversacion = 40;
+
+/// Recorta la primera pregunta del usuario para usarla como título; vacía cae a 'Consulta'.
+String tituloAutomaticoConversacion(String primeraPregunta) {
+  final limpio = primeraPregunta.trim().replaceAll(RegExp(r'\s+'), ' ');
+  if (limpio.isEmpty) return 'Consulta';
+  if (limpio.length <= largoMaximoTituloConversacion) return limpio;
+  final corte = limpio.substring(0, largoMaximoTituloConversacion);
+  final ultimoEspacio = corte.lastIndexOf(' ');
+  final base = ultimoEspacio > 15 ? corte.substring(0, ultimoEspacio) : corte;
+  return '${base.trimRight()}…';
 }

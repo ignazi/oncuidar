@@ -16,7 +16,8 @@ Future<void> mostrarDialogoEditarCuidador(
     required String telefono,
     required String relacion,
     required String direccion,
-  }) alGuardar,
+  })
+  alGuardar,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -26,10 +27,8 @@ Future<void> mostrarDialogoEditarCuidador(
     enableDrag: false,
     isDismissible: false,
     backgroundColor: Colors.transparent,
-    builder: (_) => _DialogoEditarCuidador(
-      cuidador: cuidador,
-      alGuardar: alGuardar,
-    ),
+    builder: (_) =>
+        _DialogoEditarCuidador(cuidador: cuidador, alGuardar: alGuardar),
   );
 }
 
@@ -45,7 +44,8 @@ class _DialogoEditarCuidador extends StatefulWidget {
     required String telefono,
     required String relacion,
     required String direccion,
-  }) alGuardar;
+  })
+  alGuardar;
 
   @override
   State<_DialogoEditarCuidador> createState() => _DialogoEditarCuidadorState();
@@ -94,14 +94,16 @@ class _DialogoEditarCuidadorState extends State<_DialogoEditarCuidador> {
     final direccion = _direccionController.text.trim();
     final alGuardar = widget.alGuardar;
     nav.pop();
-    unawaited(_guardarEnBackground(
-      messenger,
-      alGuardar,
-      nombre: nombre,
-      telefono: telefono,
-      relacion: relacion,
-      direccion: direccion,
-    ));
+    unawaited(
+      _guardarEnBackground(
+        messenger,
+        alGuardar,
+        nombre: nombre,
+        telefono: telefono,
+        relacion: relacion,
+        direccion: direccion,
+      ),
+    );
   }
 
   Future<void> _guardarEnBackground(
@@ -111,7 +113,8 @@ class _DialogoEditarCuidadorState extends State<_DialogoEditarCuidador> {
       required String telefono,
       required String relacion,
       required String direccion,
-    }) alGuardar, {
+    })
+    alGuardar, {
     required String nombre,
     required String telefono,
     required String relacion,
@@ -176,10 +179,7 @@ class _DialogoEditarCuidadorState extends State<_DialogoEditarCuidador> {
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            Paleta.doradoPrincipal,
-                            Paleta.doradoOscuro,
-                          ],
+                          colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -223,17 +223,13 @@ class _DialogoEditarCuidadorState extends State<_DialogoEditarCuidador> {
                       24 + MediaQuery.of(ctx).viewInsets.bottom,
                     ),
                     children: [
-                      TituloSeccion(
-                        Icons.person_outline,
-                        'Datos personales',
-                      ),
+                      TituloSeccion(Icons.person_outline, 'Datos personales'),
                       const SizedBox(height: 10),
                       CampoFormulario(
                         controlador: _nombreController,
                         textoAyuda: 'Nombre completo *',
                         icono: Icons.badge_outlined,
-                        validador: (v) =>
-                            (v == null || v.trim().isEmpty)
+                        validador: (v) => (v == null || v.trim().isEmpty)
                             ? 'Ingresa tu nombre'
                             : null,
                       ),
@@ -242,8 +238,7 @@ class _DialogoEditarCuidadorState extends State<_DialogoEditarCuidador> {
                         controlador: _relacionController,
                         textoAyuda: 'Parentesco (madre, padre, tía…) *',
                         icono: Icons.family_restroom_outlined,
-                        validador: (v) =>
-                            (v == null || v.trim().isEmpty)
+                        validador: (v) => (v == null || v.trim().isEmpty)
                             ? 'Ingresa el parentesco'
                             : null,
                       ),
@@ -254,8 +249,7 @@ class _DialogoEditarCuidadorState extends State<_DialogoEditarCuidador> {
                         icono: Icons.phone_outlined,
                         tipoTeclado: TextInputType.phone,
                         accionTeclado: TextInputAction.next,
-                        validador: (v) =>
-                            (v == null || v.trim().isEmpty)
+                        validador: (v) => (v == null || v.trim().isEmpty)
                             ? 'Ingresa el teléfono'
                             : null,
                       ),
@@ -265,8 +259,7 @@ class _DialogoEditarCuidadorState extends State<_DialogoEditarCuidador> {
                         textoAyuda: 'Dirección *',
                         icono: Icons.location_on_outlined,
                         accionTeclado: TextInputAction.done,
-                        validador: (v) =>
-                            (v == null || v.trim().isEmpty)
+                        validador: (v) => (v == null || v.trim().isEmpty)
                             ? 'Ingresa la dirección'
                             : null,
                       ),

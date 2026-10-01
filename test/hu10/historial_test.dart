@@ -83,8 +83,9 @@ Widget _pantalla(
       ),
       GoRoute(
         path: '/registro-clinico',
-        builder: (c, s) =>
-            const Scaffold(body: Center(child: Text('Registro clínico abierto'))),
+        builder: (c, s) => const Scaffold(
+          body: Center(child: Text('Registro clínico abierto')),
+        ),
       ),
     ],
   );
@@ -288,8 +289,7 @@ void main() {
     await tester.tap(find.text('Filtrar fecha'));
     await tester.pumpAndSettle();
 
-    final textoFecha =
-        '${_dd(ahora.day)}/${_dd(ahora.month)}/${ahora.year}';
+    final textoFecha = '${_dd(ahora.day)}/${_dd(ahora.month)}/${ahora.year}';
     await tester.enterText(
       find.byKey(const Key('campoFechaDesde')),
       textoFecha,
@@ -383,8 +383,11 @@ void main() {
     await base.actualizarPaciente(idPaciente, {'maximo_registros_dia': 4});
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Registro 4/4'), findsOneWidget);
-    expect(find.textContaining('· Registro extra'), findsNothing);
+    expect(find.textContaining('Registro 3/4'), findsOneWidget);
+    expect(find.textContaining('Registro 3/3'), findsNothing);
+    // Un registro guardado como extra no se cuenta como programado.
+    expect(find.textContaining('· Registro extra'), findsOneWidget);
+    expect(find.textContaining('Registro 4/4'), findsNothing);
   });
 
   testWidgets('sin registros muestra el estado vacío', (tester) async {

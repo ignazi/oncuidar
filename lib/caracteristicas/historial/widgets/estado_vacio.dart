@@ -4,12 +4,7 @@ import '../../../core/tema/paleta.dart';
 
 /// Estado vacío del historial: ícono grande, título y subtítulo opcional.
 class EstadoVacio extends StatelessWidget {
-  const EstadoVacio(
-    this.icono,
-    this.titulo, {
-    super.key,
-    this.subtitulo,
-  });
+  const EstadoVacio(this.icono, this.titulo, {super.key, this.subtitulo});
 
   final IconData icono;
   final String titulo;

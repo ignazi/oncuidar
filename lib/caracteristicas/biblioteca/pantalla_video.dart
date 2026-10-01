@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
+import '../../core/servicios/servicio_cache_contenido.dart';
 import '../../core/tema/paleta.dart';
 
 String formatearDuracion(Duration d) {
@@ -16,11 +17,30 @@ String formatearDuracion(Duration d) {
   return '$minutos:$segundos';
 }
 
+/// Posición desde la que retomar; null si no hay avance o quedaba casi al final.
+Future<Duration?> posicionParaRetomar(
+  String idContenido,
+  Duration duracion,
+) async {
+  final guardado = await leerAvanceVideo(idContenido);
+  if (guardado <= 0) return null;
+  if (guardado >= duracion.inMilliseconds - 2000) return null;
+  return Duration(milliseconds: guardado);
+}
+
 class PantallaVideo extends StatefulWidget {
-  const PantallaVideo({super.key, required this.archivo, required this.titulo});
+  const PantallaVideo({
+    super.key,
+    required this.archivo,
+    required this.titulo,
+    required this.idContenido,
+  });
 
   final File archivo;
   final String titulo;
+
+  /// Clave con la que se recuerda el último avance entre sesiones.
+  final String idContenido;
 
   @override
   State<PantallaVideo> createState() => _PantallaVideoState();
@@ -52,6 +72,7 @@ class _PantallaVideoState extends State<PantallaVideo> {
       }
       controlador.addListener(_alCambiarProgreso);
       setState(() => _inicializado = true);
+      await _restaurarPosicion(controlador);
       await controlador.play();
       _reiniciarTimerControles();
     } catch (e) {
@@ -72,6 +93,28 @@ class _PantallaVideoState extends State<PantallaVideo> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
+  /// Retoma donde quedó; si estaba casi al final, reinicia en vez de cortar el cierre.
+  Future<void> _restaurarPosicion(VideoPlayerController controlador) async {
+    try {
+      final retomar = await posicionParaRetomar(
+        widget.idContenido,
+        controlador.value.duration,
+      );
+      if (retomar != null) await controlador.seekTo(retomar);
+    } catch (_) {
+      // Sin preferencias disponibles el video igual arranca desde el inicio.
+    }
+  }
+
+  /// Guarda el avance actual; nunca propaga el fallo hacia la UI.
+  Future<void> _guardarPosicion() async {
+    final controlador = _controlador;
+    if (controlador == null || !_inicializado) return;
+    try {
+      await guardarAvanceVideo(widget.idContenido, controlador.value.position);
+    } catch (_) {}
+  }
+
   void _restaurarOrientacion() {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -83,6 +126,7 @@ class _PantallaVideoState extends State<PantallaVideo> {
   @override
   void dispose() {
     _timerControles?.cancel();
+    _guardarPosicion();
     final controlador = _controlador;
     if (controlador != null) {
       controlador.removeListener(_alCambiarProgreso);
@@ -104,6 +148,7 @@ class _PantallaVideoState extends State<PantallaVideo> {
     if (controlador == null || !_inicializado) return;
     if (controlador.value.isPlaying) {
       controlador.pause();
+      _guardarPosicion();
     } else {
       controlador.play();
     }
@@ -114,8 +159,8 @@ class _PantallaVideoState extends State<PantallaVideo> {
   void _retroceder() {
     final controlador = _controlador;
     if (controlador == null || !_inicializado) return;
-    final nuevaPosicion = controlador.value.position -
-        const Duration(seconds: 10);
+    final nuevaPosicion =
+        controlador.value.position - const Duration(seconds: 10);
     controlador.seekTo(
       nuevaPosicion < Duration.zero ? Duration.zero : nuevaPosicion,
     );
@@ -177,9 +222,7 @@ class _PantallaVideoState extends State<PantallaVideo> {
                 )
               else
                 const Center(
-                  child: CircularProgressIndicator(
-                    color: Paleta.doradoMedio,
-                  ),
+                  child: CircularProgressIndicator(color: Paleta.doradoMedio),
                 ),
               if (_mostrarControles && _inicializado && !_hayError)
                 _superposicionControles(),
@@ -293,10 +336,7 @@ class _PantallaVideoState extends State<PantallaVideo> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _botonSalto(
-                icono: Icons.replay_10_rounded,
-                alTocar: _retroceder,
-              ),
+              _botonSalto(icono: Icons.replay_10_rounded, alTocar: _retroceder),
               const SizedBox(width: 32),
               GestureDetector(
                 onTap: _alternarReproduccion,
@@ -328,10 +368,7 @@ class _PantallaVideoState extends State<PantallaVideo> {
                 ),
               ),
               const SizedBox(width: 32),
-              _botonSalto(
-                icono: Icons.forward_10_rounded,
-                alTocar: _avanzar,
-              ),
+              _botonSalto(icono: Icons.forward_10_rounded, alTocar: _avanzar),
             ],
           ),
           Padding(
@@ -379,10 +416,7 @@ class _PantallaVideoState extends State<PantallaVideo> {
     );
   }
 
-  Widget _botonSalto({
-    required IconData icono,
-    required VoidCallback alTocar,
-  }) {
+  Widget _botonSalto({required IconData icono, required VoidCallback alTocar}) {
     return GestureDetector(
       onTap: alTocar,
       child: Container(

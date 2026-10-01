@@ -5,10 +5,7 @@ import 'titulo_seccion.dart';
 
 /// Sección de signos vitales con los cuatro campos numéricos.
 class SeccionSignosVitales extends StatelessWidget {
-  const SeccionSignosVitales({
-    super.key,
-    required this.controladores,
-  });
+  const SeccionSignosVitales({super.key, required this.controladores});
 
   final List<TextEditingController> controladores;
 

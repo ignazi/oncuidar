@@ -2,15 +2,18 @@
 // búsqueda en vivo (insensible a tildes) y filtro por categoría.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/faq/faq.dart';
+import 'package:oncuidar/core/proveedores/proveedores.dart';
 
 const _preguntaFiebre =
     '¿Qué temperatura se considera fiebre y cuándo debo llamar al médico?';
 const _preguntaCateter =
     '¿Cómo debo cuidar el catéter y qué hago si se moja o se sale?';
-const _preguntaAlimentacion = '¿Qué alimentos debo evitar y qué agua es segura?';
+const _preguntaAlimentacion =
+    '¿Qué alimentos debo evitar y qué agua es segura?';
 
 Widget _pantalla() {
   final router = GoRouter(
@@ -24,7 +27,13 @@ Widget _pantalla() {
       ),
     ],
   );
-  return MaterialApp.router(routerConfig: router);
+  // Catálogo vacío: la FAQ no depende de Firestore para listar sus preguntas.
+  return ProviderScope(
+    overrides: [
+      contenidosEducativosProvider.overrideWith((ref) => Stream.value(const [])),
+    ],
+    child: MaterialApp.router(routerConfig: router),
+  );
 }
 
 Future<void> _montar(WidgetTester tester) async {
@@ -55,21 +64,22 @@ void main() {
     expect(find.textContaining('Se considera fiebre'), findsNothing);
   });
 
-  testWidgets('tocar una pregunta expande su respuesta y al tocar de nuevo la cierra', (
-    tester,
-  ) async {
-    await _montar(tester);
+  testWidgets(
+    'tocar una pregunta expande su respuesta y al tocar de nuevo la cierra',
+    (tester) async {
+      await _montar(tester);
 
-    await tester.tap(find.byKey(const Key('faq_fiebre')));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('faq_fiebre')));
+      await tester.pumpAndSettle();
 
-    expect(find.textContaining('Se considera fiebre'), findsOneWidget);
+      expect(find.textContaining('Se considera fiebre'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('faq_fiebre')));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('faq_fiebre')));
+      await tester.pumpAndSettle();
 
-    expect(find.textContaining('Se considera fiebre'), findsNothing);
-  });
+      expect(find.textContaining('Se considera fiebre'), findsNothing);
+    },
+  );
 
   testWidgets('solo una pregunta queda abierta a la vez', (tester) async {
     await _montar(tester);

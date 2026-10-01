@@ -1,0 +1,50 @@
+// Ayudas compartidas por las pruebas de offline-first.
+
+import 'dart:async';
+
+import 'package:oncuidar/core/servicios/cola_escrituras.dart';
+import 'package:oncuidar/core/servicios/servicio_conectividad.dart';
+
+/// Conectividad controlable: permite simular la caída y la vuelta de la red.
+class ConectividadFalsa extends ServicioConectividad {
+  ConectividadFalsa({bool enLinea = true}) : _estado = enLinea;
+
+  bool _estado;
+  final _controlador = StreamController<bool>.broadcast();
+
+  @override
+  Future<bool> estaEnLinea() async => _estado;
+
+  @override
+  Stream<bool> enLinea() => _controlador.stream;
+
+  void fijar(bool enLinea) {
+    _estado = enLinea;
+    _controlador.add(enLinea);
+  }
+}
+
+/// Espera a que se cumpla la condición o falla la prueba.
+Future<void> esperarHasta(Future<bool> Function() condicion) async {
+  for (var i = 0; i < 300; i++) {
+    if (await condicion()) return;
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  }
+  throw StateError('La condición no se cumplió a tiempo');
+}
+
+EscrituraPendiente escrituraDe({
+  String id = 'e1',
+  String ruta = 'users/u1/patients/p1/userChecklists/c1',
+  OperacionPendiente operacion = OperacionPendiente.crear,
+  Map<String, dynamic>? datos,
+  String pacienteId = 'p1',
+  int encoladoEn = 1,
+}) => EscrituraPendiente(
+  id: id,
+  ruta: ruta,
+  operacion: operacion,
+  datos: datos ?? {'paciente_id': pacienteId, 'titulo_cifrado': 'a.b.c'},
+  pacienteId: pacienteId,
+  encoladoEn: encoladoEn,
+);

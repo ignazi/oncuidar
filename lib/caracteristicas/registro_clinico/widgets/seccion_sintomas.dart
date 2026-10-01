@@ -81,9 +81,7 @@ class SeccionSintomas extends StatelessWidget {
                   style: GoogleFonts.nunito(
                     fontSize: 13,
                     fontWeight: vacio ? FontWeight.w400 : FontWeight.w800,
-                    color: vacio
-                        ? Paleta.textoSecundario
-                        : Paleta.doradoOscuro,
+                    color: vacio ? Paleta.textoSecundario : Paleta.doradoOscuro,
                   ),
                 ),
               ),
