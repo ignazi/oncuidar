@@ -9,6 +9,7 @@ import 'package:oncuidar/caracteristicas/recordatorios/datos/proveedores_recorda
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/proveedores_recordatorios.dart';
 import 'package:oncuidar/compartido/estilos.dart';
+import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -107,37 +108,17 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
         tamanoTitulo: 20,
         reservaDerecha: 64,
         alTocarLogo: () => context.go('/dashboard'),
-        accionDerecha: Tooltip(
-          message: _silenciadas
+        accionDerecha: BotonCircular(
+          clave: const Key('campanitaSilencio'),
+          tooltip: _silenciadas
               ? 'Activar notificaciones'
               : 'Silenciar notificaciones',
-          child: GestureDetector(
-            key: const Key('campanitaSilencio'),
-            onTap: _alternarSilencio,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Paleta.doradoOscuro.withValues(alpha: 0.25),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(
-                _silenciadas
-                    ? Icons.notifications_off
-                    : Icons.notifications_active,
-                color: _silenciadas
-                    ? Paleta.textoSecundario
-                    : Paleta.doradoOscuro,
-                size: 22,
-              ),
-            ),
+          alTocar: _alternarSilencio,
+          tamano: 44,
+          hijo: Icon(
+            _silenciadas ? Icons.notifications_off : Icons.notifications_active,
+            color: _silenciadas ? Paleta.textoSecundario : Paleta.doradoOscuro,
+            size: 22,
           ),
         ),
       ),

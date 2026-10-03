@@ -6,7 +6,7 @@ import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/catalogo_preguntas.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/pregunta_base.dart';
-import 'package:oncuidar/compartido/estilos.dart';
+import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
 /// Preguntas frecuentes con búsqueda en vivo y filtro por categoría.
@@ -127,66 +127,26 @@ class _FaqScreenState extends State<FaqScreen> {
   }
 
   Widget _botonBusqueda() {
-    return Tooltip(
-      message: _buscando ? 'Cerrar búsqueda' : 'Buscar una pregunta',
-      child: GestureDetector(
-        key: const Key('alternarBusquedaFaq'),
-        onTap: _alternarBusqueda,
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Paleta.doradoOscuro.withValues(alpha: 0.25),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Icon(
-            _buscando ? Icons.arrow_back : Icons.search,
-            color: Paleta.doradoOscuro,
-            size: 22,
-          ),
-        ),
+    return BotonCircular(
+      clave: const Key('alternarBusquedaFaq'),
+      tooltip: _buscando ? 'Cerrar búsqueda' : 'Buscar una pregunta',
+      alTocar: _alternarBusqueda,
+      hijo: Icon(
+        _buscando ? Icons.arrow_back : Icons.search,
+        color: Paleta.doradoOscuro,
+        size: 22,
       ),
     );
   }
 
   Widget _campoBusqueda() {
-    return TextField(
-      key: const Key('campoBusquedaFaq'),
-      controller: _controladorBusqueda,
-      autofocus: true,
-      onChanged: _actualizarBusqueda,
-      style: GoogleFonts.nunito(fontSize: 14, color: Paleta.textoPrincipal),
-      decoration:
-          entradaDorada(
-            hintText: 'Buscar pregunta…',
-            prefixIcon: const Icon(
-              Icons.search,
-              color: Paleta.textoSecundario,
-              size: 20,
-            ),
-          ).copyWith(
-            suffixIcon: _terminoBusqueda.isNotEmpty
-                ? GestureDetector(
-                    key: const Key('borrarBusquedaFaq'),
-                    onTap: () {
-                      _controladorBusqueda.clear();
-                      _actualizarBusqueda('');
-                    },
-                    child: const Icon(
-                      Icons.cancel_rounded,
-                      color: Paleta.textoSecundario,
-                      size: 18,
-                    ),
-                  )
-                : null,
-          ),
+    return CampoBusqueda(
+      claveCampo: const Key('campoBusquedaFaq'),
+      claveBorrar: const Key('borrarBusquedaFaq'),
+      controlador: _controladorBusqueda,
+      pista: 'Buscar pregunta…',
+      alCambiar: _actualizarBusqueda,
+      mostrarBorrar: _terminoBusqueda.isNotEmpty,
     );
   }
 

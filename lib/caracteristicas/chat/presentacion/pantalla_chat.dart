@@ -13,6 +13,7 @@ import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/hoja_conversa
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/catalogo_preguntas.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/pregunta_base.dart';
 import 'package:oncuidar/compartido/estilos.dart';
+import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
 /// Chat de orientación para cuidadores: responde dudas frecuentes con un
@@ -372,28 +373,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     required String tooltip,
     required VoidCallback alTocar,
   }) {
-    return Tooltip(
-      message: tooltip,
-      child: GestureDetector(
-        key: key,
-        onTap: alTocar,
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Paleta.doradoOscuro.withValues(alpha: 0.25),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Icon(icono, color: Paleta.doradoOscuro, size: 22),
-        ),
-      ),
+    return BotonCircular(
+      clave: key,
+      tooltip: tooltip,
+      alTocar: alTocar,
+      hijo: Icon(icono, color: Paleta.doradoOscuro, size: 22),
     );
   }
 

@@ -15,7 +15,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_bib
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/checklist_interactivo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
-import 'package:oncuidar/compartido/estilos.dart';
+import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
 class BibliotecaScreen extends ConsumerStatefulWidget {
@@ -253,128 +253,71 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
   }
 
   Widget _botonBusqueda() {
-    return Tooltip(
-      message: _buscando ? 'Cerrar búsqueda' : 'Buscar material',
-      child: GestureDetector(
-        key: const Key('alternarBusquedaBiblioteca'),
-        onTap: _alternarBusqueda,
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Paleta.doradoOscuro.withValues(alpha: 0.25),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Icon(
-            _buscando ? Icons.arrow_back : Icons.search,
-            color: Paleta.doradoOscuro,
-            size: 22,
-          ),
-        ),
+    return BotonCircular(
+      clave: const Key('alternarBusquedaBiblioteca'),
+      tooltip: _buscando ? 'Cerrar búsqueda' : 'Buscar material',
+      alTocar: _alternarBusqueda,
+      hijo: Icon(
+        _buscando ? Icons.arrow_back : Icons.search,
+        color: Paleta.doradoOscuro,
+        size: 22,
       ),
     );
   }
 
   Widget _botonFavoritos(int totalFavoritos) {
-    return Tooltip(
-      message: _soloFavoritos
+    return BotonCircular(
+      clave: const Key('alternarFavoritos'),
+      tooltip: _soloFavoritos
           ? 'Ver todos los materiales'
           : 'Ver materiales guardados',
-      child: GestureDetector(
-        key: const Key('alternarFavoritos'),
-        onTap: () => setState(() => _soloFavoritos = !_soloFavoritos),
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Paleta.doradoOscuro.withValues(alpha: 0.25),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
+      alTocar: () => setState(() => _soloFavoritos = !_soloFavoritos),
+      hijo: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(
+            Icons.bookmark,
+            color: _soloFavoritos
+                ? Paleta.doradoOscuro
+                : Paleta.textoSecundario,
+            size: 22,
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(
-                Icons.bookmark,
-                color: _soloFavoritos
-                    ? Paleta.doradoOscuro
-                    : Paleta.textoSecundario,
-                size: 22,
-              ),
-              if (totalFavoritos > 0 && !_soloFavoritos)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    width: 18,
-                    height: 18,
-                    decoration: const BoxDecoration(
-                      color: Paleta.doradoOscuro,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$totalFavoritos',
-                        style: GoogleFonts.nunito(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
+          if (totalFavoritos > 0 && !_soloFavoritos)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                width: 18,
+                height: 18,
+                decoration: const BoxDecoration(
+                  color: Paleta.doradoOscuro,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    '$totalFavoritos',
+                    style: GoogleFonts.nunito(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-            ],
-          ),
-        ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
   Widget _campoBusqueda() {
-    return TextField(
-      key: const Key('campoBusquedaBiblioteca'),
-      controller: _controladorBusqueda,
-      autofocus: true,
-      onChanged: (valor) => setState(() => _busqueda = valor),
-      style: GoogleFonts.nunito(fontSize: 14, color: Paleta.textoPrincipal),
-      decoration:
-          entradaDorada(
-            hintText: 'Buscar material...',
-            prefixIcon: const Icon(
-              Icons.search,
-              color: Paleta.textoSecundario,
-              size: 20,
-            ),
-          ).copyWith(
-            suffixIcon: _busqueda.isNotEmpty
-                ? GestureDetector(
-                    key: const Key('borrarBusquedaBiblioteca'),
-                    onTap: () {
-                      _controladorBusqueda.clear();
-                      setState(() => _busqueda = '');
-                    },
-                    child: const Icon(
-                      Icons.cancel_rounded,
-                      color: Paleta.textoSecundario,
-                      size: 18,
-                    ),
-                  )
-                : null,
-          ),
+    return CampoBusqueda(
+      claveCampo: const Key('campoBusquedaBiblioteca'),
+      claveBorrar: const Key('borrarBusquedaBiblioteca'),
+      controlador: _controladorBusqueda,
+      pista: 'Buscar material...',
+      alCambiar: (valor) => setState(() => _busqueda = valor),
+      mostrarBorrar: _busqueda.isNotEmpty,
     );
   }
 
