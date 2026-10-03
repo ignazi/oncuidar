@@ -62,8 +62,8 @@ Future<(BaseDatosSegura, FakeFirebaseFirestore, String)> _baseConPaciente(
   final idPaciente = await RepositorioPacientes(base).crearPaciente(
     Paciente(
       id: 'paciente',
-      fullName: 'Paciente Test',
-      createdAt: DateTime.now(),
+      nombreCompleto: 'Paciente Test',
+      creadoEn: DateTime.now(),
     ),
   );
   return (base, firestore, idPaciente);
@@ -203,12 +203,12 @@ void main() {
         creadoEn: ahora,
         tipoRegistro: 'programado',
         signosVitales: const SignosVitales(
-          temperature: 38.5,
-          heartRate: 110,
-          oxygenSaturation: 92,
-          respiratoryRate: 22,
+          temperatura: 38.5,
+          frecuenciaCardiaca: 110,
+          saturacionOxigeno: 92,
+          frecuenciaRespiratoria: 22,
         ),
-        sintomas: const [EntradaSintoma(name: 'Fiebre', intensity: 8)],
+        sintomas: const [EntradaSintoma(nombre: 'Fiebre', intensidad: 8)],
         observaciones: 'Paciente estable',
         nivelAlerta: NivelAlerta.alerta,
       ),
@@ -246,7 +246,7 @@ void main() {
         fecha: ahora,
         creadoEn: ahora,
         tipoRegistro: 'programado',
-        sintomas: const [EntradaSintoma(name: 'Fiebre', intensity: 0)],
+        sintomas: const [EntradaSintoma(nombre: 'Fiebre', intensidad: 0)],
       ),
     );
     await tester.pumpWidget(_pantalla(cifrado, base));

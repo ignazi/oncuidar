@@ -11,7 +11,7 @@ import 'package:pdf/widgets.dart' as pw;
 PdfColor _hex(String valor) => PdfColor.fromHex(valor);
 
 pw.Widget _encabezadoPagina(DateTime generadoEn, Paciente? paciente) {
-  final nombre = paciente?.fullName.trim();
+  final nombre = paciente?.nombreCompleto.trim();
   return pw.Container(
     width: double.infinity,
     padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -344,26 +344,26 @@ Future<Uint8List> generarPdfHistorial({
           contenido.add(
             _filaEtiquetaValor(
               'Nombre',
-              paciente.fullName,
+              paciente.nombreCompleto,
               estiloEtiqueta,
               estiloValor,
             ),
           );
-          if (paciente.age != null) {
+          if (paciente.edad != null) {
             contenido.add(
               _filaEtiquetaValor(
                 'Edad',
-                '${paciente.age} años',
+                '${paciente.edad} años',
                 estiloEtiqueta,
                 estiloValor,
               ),
             );
           }
-          if (paciente.diagnosis?.isNotEmpty == true) {
+          if (paciente.diagnostico?.isNotEmpty == true) {
             contenido.add(
               _filaEtiquetaValor(
                 'Diagnóstico',
-                paciente.diagnosis!,
+                paciente.diagnostico!,
                 estiloEtiqueta,
                 estiloValor,
               ),

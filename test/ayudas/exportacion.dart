@@ -59,10 +59,18 @@ baseConDosPacientes() async {
   });
   // El id lo genera Firestore, así que se usan los que devuelve.
   final activo = await RepositorioPacientes(base).crearPaciente(
-    Paciente(id: '', fullName: 'Paciente A', createdAt: DateTime(2026, 1, 1)),
+    Paciente(
+      id: '',
+      nombreCompleto: 'Paciente A',
+      creadoEn: DateTime(2026, 1, 1),
+    ),
   );
   final otro = await RepositorioPacientes(base).crearPaciente(
-    Paciente(id: '', fullName: 'Paciente B', createdAt: DateTime(2026, 1, 2)),
+    Paciente(
+      id: '',
+      nombreCompleto: 'Paciente B',
+      creadoEn: DateTime(2026, 1, 2),
+    ),
   );
   return (base, cifrado, activo, otro);
 }

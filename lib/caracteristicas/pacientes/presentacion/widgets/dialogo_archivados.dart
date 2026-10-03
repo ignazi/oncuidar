@@ -81,8 +81,8 @@ class _FilaArchivado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final inicial = paciente.fullName.isNotEmpty
-        ? paciente.fullName[0].toUpperCase()
+    final inicial = paciente.nombreCompleto.isNotEmpty
+        ? paciente.nombreCompleto[0].toUpperCase()
         : '?';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -112,9 +112,9 @@ class _FilaArchivado extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    paciente.fullName.isEmpty
+                    paciente.nombreCompleto.isEmpty
                         ? 'Sin nombre'
-                        : paciente.fullName,
+                        : paciente.nombreCompleto,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.nunito(
                       fontSize: 13.5,
@@ -122,10 +122,10 @@ class _FilaArchivado extends StatelessWidget {
                       color: Paleta.textoPrincipal,
                     ),
                   ),
-                  if (paciente.diagnosis != null &&
-                      paciente.diagnosis!.isNotEmpty)
+                  if (paciente.diagnostico != null &&
+                      paciente.diagnostico!.isNotEmpty)
                     Text(
-                      paciente.diagnosis!,
+                      paciente.diagnostico!,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.nunito(
                         fontSize: 12,
@@ -138,7 +138,7 @@ class _FilaArchivado extends StatelessWidget {
             const SizedBox(width: 8),
             IconButton(
               onPressed: () => alDesarchivar(paciente),
-              tooltip: 'Restaurar ${paciente.fullName}',
+              tooltip: 'Restaurar ${paciente.nombreCompleto}',
               icon: const Icon(
                 Icons.unarchive_outlined,
                 color: Paleta.doradoOscuro,

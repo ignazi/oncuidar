@@ -257,22 +257,22 @@ class TarjetaSignosVitales extends StatelessWidget {
   // ── Valores formateados de cada signo ──
 
   String _temperatura(SignosVitales? signos) {
-    final valor = signos?.temperature;
+    final valor = signos?.temperatura;
     return valor != null ? '${valor.toStringAsFixed(1)} °C' : '-- °C';
   }
 
   String _frecuenciaCardiaca(SignosVitales? signos) {
-    final valor = signos?.heartRate;
+    final valor = signos?.frecuenciaCardiaca;
     return valor != null ? '$valor lpm' : '-- lpm';
   }
 
   String _saturacion(SignosVitales? signos) {
-    final valor = signos?.oxygenSaturation;
+    final valor = signos?.saturacionOxigeno;
     return valor != null ? '$valor %' : '-- %';
   }
 
   String _respiracion(SignosVitales? signos) {
-    final valor = signos?.respiratoryRate;
+    final valor = signos?.frecuenciaRespiratoria;
     return valor != null ? '$valor rpm' : '-- rpm';
   }
 }

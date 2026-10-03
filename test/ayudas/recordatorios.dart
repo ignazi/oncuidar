@@ -89,7 +89,7 @@ Future<String> crearPacienteRecordatorios(
   String nombre = 'Paciente Test',
 }) {
   return RepositorioPacientes(base).crearPaciente(
-    Paciente(id: 'auto', fullName: nombre, createdAt: DateTime.now()),
+    Paciente(id: 'auto', nombreCompleto: nombre, creadoEn: DateTime.now()),
   );
 }
 

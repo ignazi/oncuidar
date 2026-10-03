@@ -58,13 +58,13 @@ class SincronizacionEstado {
 const _tamanoLoteDescargas = 3;
 
 Iterable<String> _urlsDelMaterial(MaterialEducativo material) sync* {
-  final archivo = material.fileUrl;
+  final archivo = material.urlArchivo;
   if (archivo != null && archivo.isNotEmpty) yield archivo;
-  final imagen = material.imageUrl;
+  final imagen = material.urlImagen;
   if (imagen != null && imagen.isNotEmpty && !imagen.startsWith('assets/')) {
     yield imagen;
   }
-  final miniatura = material.thumbnailUrl;
+  final miniatura = material.urlMiniatura;
   if (miniatura != null &&
       miniatura.isNotEmpty &&
       !miniatura.startsWith('assets/')) {

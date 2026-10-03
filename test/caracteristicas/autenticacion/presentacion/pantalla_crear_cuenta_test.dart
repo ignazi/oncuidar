@@ -421,11 +421,11 @@ void main() {
           contrasena: 'secreto123',
           paciente: Paciente(
             id: 'auto',
-            fullName: 'Paciente Ana',
+            nombreCompleto: 'Paciente Ana',
             rut: '12.345.678-9',
-            diagnosis: 'Cancer de mama',
+            diagnostico: 'Cancer de mama',
             tratamientoFase: 'Tratamiento',
-            createdAt: DateTime.now(),
+            creadoEn: DateTime.now(),
           ),
         ),
       );
@@ -483,8 +483,8 @@ void main() {
           contrasena: 'secreto123',
           paciente: Paciente(
             id: 'auto',
-            fullName: 'Paciente Ana',
-            createdAt: DateTime.now(),
+            nombreCompleto: 'Paciente Ana',
+            creadoEn: DateTime.now(),
           ),
         ),
       );

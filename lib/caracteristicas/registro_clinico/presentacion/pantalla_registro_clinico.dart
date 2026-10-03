@@ -80,17 +80,18 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
       _tipoRegistro = registroInicial.tipoRegistro;
       final signos = registroInicial.signosVitales;
       if (signos != null) {
-        if (signos.temperature != null) {
-          _tempController.text = signos.temperature!.toStringAsFixed(1);
+        if (signos.temperatura != null) {
+          _tempController.text = signos.temperatura!.toStringAsFixed(1);
         }
-        if (signos.heartRate != null) {
-          _frecCardiacaController.text = signos.heartRate.toString();
+        if (signos.frecuenciaCardiaca != null) {
+          _frecCardiacaController.text = signos.frecuenciaCardiaca.toString();
         }
-        if (signos.oxygenSaturation != null) {
-          _o2Controller.text = signos.oxygenSaturation.toString();
+        if (signos.saturacionOxigeno != null) {
+          _o2Controller.text = signos.saturacionOxigeno.toString();
         }
-        if (signos.respiratoryRate != null) {
-          _frecRespiratoriaController.text = signos.respiratoryRate.toString();
+        if (signos.frecuenciaRespiratoria != null) {
+          _frecRespiratoriaController.text = signos.frecuenciaRespiratoria
+              .toString();
         }
       }
       if (registroInicial.observaciones != null) {
@@ -98,10 +99,10 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
       }
       _sintomas.addAll(registroInicial.sintomas);
       for (final sintoma in registroInicial.sintomas) {
-        _seleccionados.add(sintoma.name);
-        _intensidades[sintoma.name] = sintoma.intensity;
-        if (sintoma.name == 'Otro problema') {
-          final notas = sintoma.notes;
+        _seleccionados.add(sintoma.nombre);
+        _intensidades[sintoma.nombre] = sintoma.intensidad;
+        if (sintoma.nombre == 'Otro problema') {
+          final notas = sintoma.notas;
           if (notas != null && notas.isNotEmpty) {
             _otroProblemaController.text = notas;
             _otroTexto['Otro problema'] = notas;
@@ -142,10 +143,10 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
       return null;
     }
     return SignosVitales(
-      temperature: temperatura,
-      heartRate: frecuenciaCardiaca,
-      oxygenSaturation: o2,
-      respiratoryRate: frecuenciaRespiratoria,
+      temperatura: temperatura,
+      frecuenciaCardiaca: frecuenciaCardiaca,
+      saturacionOxigeno: o2,
+      frecuenciaRespiratoria: frecuenciaRespiratoria,
     );
   }
 
@@ -174,7 +175,7 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
       if (_seleccionados.contains(nombre)) {
         _seleccionados.remove(nombre);
         _intensidades.remove(nombre);
-        _sintomas.removeWhere((s) => s.name == nombre);
+        _sintomas.removeWhere((s) => s.nombre == nombre);
         if (nombre == 'Otro problema') {
           _otroProblemaController.clear();
           _otroTexto.remove(nombre);
@@ -193,8 +194,8 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
   }
 
   void _upsertEnSintomas(String nombre, int valor) {
-    final entrada = EntradaSintoma(name: nombre, intensity: valor);
-    final indice = _sintomas.indexWhere((s) => s.name == nombre);
+    final entrada = EntradaSintoma(nombre: nombre, intensidad: valor);
+    final indice = _sintomas.indexWhere((s) => s.nombre == nombre);
     if (indice != -1) {
       _sintomas[indice] = entrada;
     } else {
@@ -208,11 +209,11 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
     if (_seleccionados.contains('Otro problema') && texto.isNotEmpty) {
       _otroTexto['Otro problema'] = texto;
       final entrada = EntradaSintoma(
-        name: 'Otro problema',
-        intensity: intensidad,
-        notes: texto,
+        nombre: 'Otro problema',
+        intensidad: intensidad,
+        notas: texto,
       );
-      final indice = _sintomas.indexWhere((s) => s.name == 'Otro problema');
+      final indice = _sintomas.indexWhere((s) => s.nombre == 'Otro problema');
       if (indice != -1) {
         _sintomas[indice] = entrada;
       } else {
@@ -220,7 +221,7 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
       }
     } else {
       _otroTexto.remove('Otro problema');
-      _sintomas.removeWhere((s) => s.name == 'Otro problema');
+      _sintomas.removeWhere((s) => s.nombre == 'Otro problema');
     }
   }
 

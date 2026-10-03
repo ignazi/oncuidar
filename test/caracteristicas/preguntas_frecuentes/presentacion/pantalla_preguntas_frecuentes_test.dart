@@ -169,11 +169,11 @@ void main() {
   group('Enlace al material relacionado (CA-14.3)', () {
     final video = MaterialEducativo(
       id: 'videos-como-medir-la-fiebre',
-      title: 'Cómo medir la fiebre',
-      category: 'Videos',
-      topic: 'Fiebre',
-      body: 'Video paso a paso.',
-      createdAt: DateTime.utc(2026, 1, 1),
+      titulo: 'Cómo medir la fiebre',
+      categoria: 'Videos',
+      tema: 'Fiebre',
+      cuerpo: 'Video paso a paso.',
+      creadoEn: DateTime.utc(2026, 1, 1),
     );
 
     testWidgets('si el material existe, la respuesta enlaza a él', (

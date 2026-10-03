@@ -15,15 +15,15 @@ import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clini
 
 Paciente _paciente() => Paciente(
   id: 'paciente-1',
-  fullName: 'Paciente Test',
-  age: 8,
-  diagnosis: 'Leucemia linfoblástica aguda',
+  nombreCompleto: 'Paciente Test',
+  edad: 8,
+  diagnostico: 'Leucemia linfoblástica aguda',
   tratamientoFase: 'Mantenimiento',
   centroSaludNombre: 'Hospital Pediátrico',
   centroSaludTelefono: '+56 2 2222 2222',
   contactoEmergenciaNombre: 'María Test',
   contactoEmergenciaTelefono: '+56 9 1111 1111',
-  createdAt: DateTime.now(),
+  creadoEn: DateTime.now(),
 );
 
 RegistroClinico _registroConSignos(String id) {
@@ -35,15 +35,15 @@ RegistroClinico _registroConSignos(String id) {
     creadoEn: ahora.subtract(const Duration(hours: 2)),
     tipoRegistro: 'programado',
     signosVitales: const SignosVitales(
-      temperature: 36.5,
-      heartRate: 72,
-      oxygenSaturation: 98,
-      respiratoryRate: 16,
+      temperatura: 36.5,
+      frecuenciaCardiaca: 72,
+      saturacionOxigeno: 98,
+      frecuenciaRespiratoria: 16,
     ),
     nivelAlerta: NivelAlerta.critico,
     sintomas: const [
-      EntradaSintoma(name: 'Dolor de cabeza', intensity: 7),
-      EntradaSintoma(name: 'Fiebre', intensity: 4),
+      EntradaSintoma(nombre: 'Dolor de cabeza', intensidad: 7),
+      EntradaSintoma(nombre: 'Fiebre', intensidad: 4),
     ],
     observaciones: 'Paciente estable durante el día',
   );

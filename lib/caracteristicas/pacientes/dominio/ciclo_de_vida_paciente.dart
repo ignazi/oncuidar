@@ -66,7 +66,7 @@ class CicloDeVidaPaciente {
             await notificaciones.programar(
               id: ServicioNotificaciones.idSeguro(r.id),
               titulo: r.tituloAviso(
-                paciente.fullName,
+                paciente.nombreCompleto,
                 etiquetaTipoRecordatorio(r.tipo),
               ),
               cuerpo: r.cuerpoAviso,

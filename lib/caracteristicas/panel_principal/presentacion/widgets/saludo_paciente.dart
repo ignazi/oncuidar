@@ -87,7 +87,7 @@ class SaludoPaciente extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      paciente.fullName,
+                      paciente.nombreCompleto,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.nunito(

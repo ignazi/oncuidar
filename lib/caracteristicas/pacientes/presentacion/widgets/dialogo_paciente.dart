@@ -57,13 +57,15 @@ class _DialogoPacienteState extends State<_DialogoPaciente> {
   void initState() {
     super.initState();
     final paciente = widget.paciente;
-    _nombreController = TextEditingController(text: paciente?.fullName ?? '');
+    _nombreController = TextEditingController(
+      text: paciente?.nombreCompleto ?? '',
+    );
     _rutController = TextEditingController(text: paciente?.rut ?? '');
     _edadController = TextEditingController(
-      text: paciente?.age?.toString() ?? '',
+      text: paciente?.edad?.toString() ?? '',
     );
     _diagnosticoController = TextEditingController(
-      text: paciente?.diagnosis ?? '',
+      text: paciente?.diagnostico ?? '',
     );
     _faseController = TextEditingController(
       text: paciente?.tratamientoFase ?? '',
@@ -157,10 +159,10 @@ class _DialogoPacienteState extends State<_DialogoPaciente> {
         await repositorio.crearPaciente(
           Paciente(
             id: '',
-            fullName: datos['fullName'] as String,
+            nombreCompleto: datos['fullName'] as String,
             rut: datos['rut'] as String?,
-            age: datos['age'] as int?,
-            diagnosis: datos['diagnosis'] as String?,
+            edad: datos['age'] as int?,
+            diagnostico: datos['diagnosis'] as String?,
             tratamientoFase: datos['tratamientoFase'] as String?,
             centroSaludNombre: datos['centroSaludNombre'] as String?,
             centroSaludDireccion: datos['centroSaludDireccion'] as String?,
@@ -169,7 +171,7 @@ class _DialogoPacienteState extends State<_DialogoPaciente> {
                 datos['contactoEmergenciaNombre'] as String?,
             contactoEmergenciaTelefono:
                 datos['contactoEmergenciaTelefono'] as String?,
-            createdAt: DateTime.now(),
+            creadoEn: DateTime.now(),
           ),
         );
       }

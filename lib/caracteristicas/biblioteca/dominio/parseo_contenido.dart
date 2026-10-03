@@ -5,9 +5,9 @@ class BloqueContenido {
   final String texto;
 }
 
-List<BloqueContenido> parsearCuerpo(String body) {
+List<BloqueContenido> parsearCuerpo(String cuerpo) {
   final bloques = <BloqueContenido>[];
-  for (final linea in body.split('\n')) {
+  for (final linea in cuerpo.split('\n')) {
     final texto = linea.trim();
     if (texto.isEmpty) continue;
     if (texto.startsWith('# ')) {
@@ -21,9 +21,9 @@ List<BloqueContenido> parsearCuerpo(String body) {
   return bloques;
 }
 
-List<String> parsearItemsChecklist(String body) {
+List<String> parsearItemsChecklist(String cuerpo) {
   final items = <String>[];
-  for (final linea in body.split('\n')) {
+  for (final linea in cuerpo.split('\n')) {
     final texto = linea.trim();
     if (texto.isEmpty) continue;
     if (texto.startsWith('- ')) items.add(texto.substring(2).trim());
@@ -31,9 +31,9 @@ List<String> parsearItemsChecklist(String body) {
   return items;
 }
 
-String textoInformativoChecklist(String body) {
+String textoInformativoChecklist(String cuerpo) {
   final lineas = <String>[];
-  for (final linea in body.split('\n')) {
+  for (final linea in cuerpo.split('\n')) {
     final texto = linea.trim();
     if (texto.isEmpty || texto.startsWith('- ')) continue;
     lineas.add(texto);

@@ -40,10 +40,10 @@ class RepositorioRegistrosClinicos {
         'signos_vitales_cifrado': await bd.cifrado.cifrar(
           bd.uid,
           jsonEncode({
-            'temperature': signos.temperature,
-            'heartRate': signos.heartRate,
-            'oxygenSaturation': signos.oxygenSaturation,
-            'respiratoryRate': signos.respiratoryRate,
+            'temperature': signos.temperatura,
+            'heartRate': signos.frecuenciaCardiaca,
+            'oxygenSaturation': signos.saturacionOxigeno,
+            'respiratoryRate': signos.frecuenciaRespiratoria,
           }),
         )
       else
@@ -53,10 +53,10 @@ class RepositorioRegistrosClinicos {
         jsonEncode([
           for (final sintoma in registro.sintomas)
             {
-              'name': sintoma.name,
-              'intensity': sintoma.intensity,
-              if (sintoma.notes != null && sintoma.notes!.isNotEmpty)
-                'notes': sintoma.notes,
+              'name': sintoma.nombre,
+              'intensity': sintoma.intensidad,
+              if (sintoma.notas != null && sintoma.notas!.isNotEmpty)
+                'notes': sintoma.notas,
             },
         ]),
       ),
@@ -171,10 +171,10 @@ class RepositorioRegistrosClinicos {
         final texto = await bd.cifrado.descifrar(bd.uid, cifrado);
         final mapa = jsonDecode(texto) as Map<String, dynamic>;
         return SignosVitales(
-          temperature: (mapa['temperature'] as num?)?.toDouble(),
-          heartRate: (mapa['heartRate'] as num?)?.toInt(),
-          oxygenSaturation: (mapa['oxygenSaturation'] as num?)?.toInt(),
-          respiratoryRate: (mapa['respiratoryRate'] as num?)?.toInt(),
+          temperatura: (mapa['temperature'] as num?)?.toDouble(),
+          frecuenciaCardiaca: (mapa['heartRate'] as num?)?.toInt(),
+          saturacionOxigeno: (mapa['oxygenSaturation'] as num?)?.toInt(),
+          frecuenciaRespiratoria: (mapa['respiratoryRate'] as num?)?.toInt(),
         );
       } catch (e, pila) {
         debugPrint('No se pudo descifrar signos_vitales_cifrado: $e\n$pila');
@@ -183,10 +183,10 @@ class RepositorioRegistrosClinicos {
     final signosMapa = datos['signosVitales'];
     if (signosMapa is Map<String, dynamic>) {
       return SignosVitales(
-        temperature: (signosMapa['temperature'] as num?)?.toDouble(),
-        heartRate: signosMapa['heartRate'] as int?,
-        oxygenSaturation: signosMapa['oxygenSaturation'] as int?,
-        respiratoryRate: signosMapa['respiratoryRate'] as int?,
+        temperatura: (signosMapa['temperature'] as num?)?.toDouble(),
+        frecuenciaCardiaca: signosMapa['heartRate'] as int?,
+        saturacionOxigeno: signosMapa['oxygenSaturation'] as int?,
+        frecuenciaRespiratoria: signosMapa['respiratoryRate'] as int?,
       );
     }
     return null;
@@ -203,9 +203,9 @@ class RepositorioRegistrosClinicos {
         return [
           for (final item in lista)
             EntradaSintoma(
-              name: (item['name'] as String?) ?? '',
-              intensity: (item['intensity'] as num?)?.toInt() ?? 0,
-              notes: item['notes'] as String?,
+              nombre: (item['name'] as String?) ?? '',
+              intensidad: (item['intensity'] as num?)?.toInt() ?? 0,
+              notas: item['notes'] as String?,
             ),
         ];
       } catch (e, pila) {
@@ -222,9 +222,9 @@ class RepositorioRegistrosClinicos {
             : item['notes'] as String?;
         sintomas.add(
           EntradaSintoma(
-            name: (item['name'] as String?) ?? '',
-            intensity: (item['intensity'] as num?)?.toInt() ?? 0,
-            notes: notas,
+            nombre: (item['name'] as String?) ?? '',
+            intensidad: (item['intensity'] as num?)?.toInt() ?? 0,
+            notas: notas,
           ),
         );
       }

@@ -11,39 +11,39 @@ class MiniSignos extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = <Widget>[];
-    if (signos?.temperature != null) {
+    if (signos?.temperatura != null) {
       tiles.add(
         _MiniTile(
           Icons.thermostat,
           const Color(0xFFF07830),
-          '${signos!.temperature!.toStringAsFixed(1)}°C',
+          '${signos!.temperatura!.toStringAsFixed(1)}°C',
         ),
       );
     }
-    if (signos?.heartRate != null) {
+    if (signos?.frecuenciaCardiaca != null) {
       tiles.add(
         _MiniTile(
           Icons.favorite,
           const Color(0xFFF43F5E),
-          '${signos!.heartRate} lpm',
+          '${signos!.frecuenciaCardiaca} lpm',
         ),
       );
     }
-    if (signos?.oxygenSaturation != null) {
+    if (signos?.saturacionOxigeno != null) {
       tiles.add(
         _MiniTile(
           Icons.air,
           const Color(0xFF4EC4D4),
-          '${signos!.oxygenSaturation}%',
+          '${signos!.saturacionOxigeno}%',
         ),
       );
     }
-    if (signos?.respiratoryRate != null) {
+    if (signos?.frecuenciaRespiratoria != null) {
       tiles.add(
         _MiniTile(
           Icons.monitor_heart_outlined,
           const Color(0xFFA78BFA),
-          '${signos!.respiratoryRate} rpm',
+          '${signos!.frecuenciaRespiratoria} rpm',
         ),
       );
     }

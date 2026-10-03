@@ -17,7 +17,7 @@ class MotorReglasClinicas {
     var nivel = NivelAlerta.normal;
     final mensajes = <String>[];
 
-    final temperatura = signos?.temperature;
+    final temperatura = signos?.temperatura;
     if (temperatura != null) {
       if (temperatura > 39.5) {
         nivel = NivelAlerta.critico;
@@ -34,7 +34,7 @@ class MotorReglasClinicas {
       }
     }
 
-    final fc = signos?.heartRate;
+    final fc = signos?.frecuenciaCardiaca;
     if (fc != null) {
       if (fc > 130) {
         nivel = NivelAlerta.critico;
@@ -51,7 +51,7 @@ class MotorReglasClinicas {
       }
     }
 
-    final o2 = signos?.oxygenSaturation;
+    final o2 = signos?.saturacionOxigeno;
     if (o2 != null) {
       if (o2 < 90) {
         nivel = NivelAlerta.critico;
@@ -62,7 +62,7 @@ class MotorReglasClinicas {
       }
     }
 
-    final fr = signos?.respiratoryRate;
+    final fr = signos?.frecuenciaRespiratoria;
     if (fr != null) {
       if (fr > 28) {
         nivel = NivelAlerta.critico;
@@ -79,16 +79,16 @@ class MotorReglasClinicas {
       }
     }
 
-    final activos = sintomas.where((s) => s.intensity >= 1).toList();
-    final insoportables = activos.where((s) => s.intensity == 10).length;
+    final activos = sintomas.where((s) => s.intensidad >= 1).toList();
+    final insoportables = activos.where((s) => s.intensidad == 10).length;
     final intensos = activos
-        .where((s) => s.intensity >= 7 && s.intensity <= 9)
+        .where((s) => s.intensidad >= 7 && s.intensidad <= 9)
         .length;
     final moderados = activos
-        .where((s) => s.intensity >= 4 && s.intensity <= 6)
+        .where((s) => s.intensidad >= 4 && s.intensidad <= 6)
         .length;
     final leves = activos
-        .where((s) => s.intensity >= 1 && s.intensity <= 3)
+        .where((s) => s.intensidad >= 1 && s.intensidad <= 3)
         .length;
     final total = activos.length;
 

@@ -85,7 +85,7 @@ class ControladorRecordatorios {
     );
     if (nuevoActivo) {
       await notificaciones.solicitarPermiso();
-      await programarAviso(paciente.fullName, r);
+      await programarAviso(paciente.nombreCompleto, r);
     } else {
       await notificaciones.cancelar(ServicioNotificaciones.idSeguro(r.id));
     }
@@ -121,7 +121,7 @@ class ControladorRecordatorios {
       final docId = await repositorio.agregarRecordatorio(paciente.id, r);
       await notificaciones.solicitarPermiso();
       await programarAviso(
-        paciente.fullName,
+        paciente.nombreCompleto,
         Recordatorio(
           id: docId,
           pacienteId: r.pacienteId,
@@ -164,7 +164,7 @@ class ControladorRecordatorios {
       ServicioNotificaciones.idSeguro(existente.id),
     );
     if (existente.activo) {
-      await programarAviso(paciente.fullName, actualizado);
+      await programarAviso(paciente.nombreCompleto, actualizado);
     }
   }
 

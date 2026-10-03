@@ -64,7 +64,7 @@ class TarjetaMaterial extends StatelessWidget {
   }
 
   Widget _miniatura() {
-    final thumbnail = material.thumbnailUrl;
+    final thumbnail = material.urlMiniatura;
     return SizedBox(
       height: 108,
       width: double.infinity,
@@ -100,7 +100,7 @@ class TarjetaMaterial extends StatelessWidget {
               ),
             ),
           Positioned(top: 8, left: 8, child: _insignia()),
-          if (descargado && material.fileUrl != null)
+          if (descargado && material.urlArchivo != null)
             Positioned(
               top: 8,
               right: 8,
@@ -149,7 +149,7 @@ class TarjetaMaterial extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        etiquetaCategoria(material.category),
+        etiquetaCategoria(material.categoria),
         style: GoogleFonts.nunito(
           fontSize: 10,
           fontWeight: FontWeight.w700,
@@ -164,7 +164,7 @@ class TarjetaMaterial extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          material.title,
+          material.titulo,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.nunito(
@@ -175,7 +175,7 @@ class TarjetaMaterial extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          material.topic.isNotEmpty ? material.topic : material.category,
+          material.tema.isNotEmpty ? material.tema : material.categoria,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.nunito(
@@ -205,7 +205,7 @@ class TarjetaMaterial extends StatelessWidget {
   }
 
   IconData _iconoCategoria() {
-    switch (material.category.toLowerCase()) {
+    switch (material.categoria.toLowerCase()) {
       case 'videos':
         return Icons.ondemand_video_rounded;
       case 'guías':

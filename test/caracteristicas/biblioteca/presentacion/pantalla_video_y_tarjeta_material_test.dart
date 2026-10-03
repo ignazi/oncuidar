@@ -43,22 +43,22 @@ class _CacheFalso implements ServicioCacheContenido {
 
 MaterialEducativo _material({
   required String id,
-  required String category,
+  required String categoria,
   bool esDescargado = false,
-  String? thumbnailUrl,
+  String? urlMiniatura,
 }) => MaterialEducativo(
   id: id,
-  title: 'Material de prueba',
-  category: category,
-  topic: 'Tema de prueba',
-  body: 'Cuerpo de prueba.',
-  fileUrl: esDescargado || category == 'Videos' || category == 'Guías'
+  titulo: 'Material de prueba',
+  categoria: categoria,
+  tema: 'Tema de prueba',
+  cuerpo: 'Cuerpo de prueba.',
+  urlArchivo: esDescargado || categoria == 'Videos' || categoria == 'Guías'
       ? 'https://firebasestorage.googleapis.com/v0/b/oncuidar-v1.firebasestorage.app/o/prueba?alt=media'
       : null,
-  fileType: esDescargado && category == 'Guías' ? 'pdf' : null,
-  fileSizeBytes: esDescargado ? 1500000 : null,
-  thumbnailUrl: thumbnailUrl,
-  createdAt: DateTime.utc(2026, 1, 1),
+  tipoArchivo: esDescargado && categoria == 'Guías' ? 'pdf' : null,
+  tamanoBytes: esDescargado ? 1500000 : null,
+  urlMiniatura: urlMiniatura,
+  creadoEn: DateTime.utc(2026, 1, 1),
 );
 
 Widget _tarjeta(
@@ -163,7 +163,9 @@ void main() {
     testWidgets('un video muestra insignia y botón de reproducción', (
       tester,
     ) async {
-      await tester.pumpWidget(_tarjeta(_material(id: 'v', category: 'Videos')));
+      await tester.pumpWidget(
+        _tarjeta(_material(id: 'v', categoria: 'Videos')),
+      );
 
       expect(find.text('Video'), findsOneWidget);
       expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
@@ -175,7 +177,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        _tarjeta(_material(id: 'c', category: 'Checklist')),
+        _tarjeta(_material(id: 'c', categoria: 'Checklist')),
       );
 
       expect(find.text('Checklist'), findsOneWidget);
@@ -186,13 +188,13 @@ void main() {
     testWidgets(
       'muestra el indicador de descarga solo cuando está descargado',
       (tester) async {
-        final material = _material(id: 'g', category: 'Guías');
+        final material = _material(id: 'g', categoria: 'Guías');
         await tester.pumpWidget(_tarjeta(material));
         expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
 
         final descargado = _material(
           id: 'g',
-          category: 'Guías',
+          categoria: 'Guías',
           esDescargado: true,
         );
         await tester.pumpWidget(_tarjeta(descargado, descargado: true));
@@ -206,7 +208,7 @@ void main() {
       var vezAlternado = 0;
       await tester.pumpWidget(
         _tarjeta(
-          _material(id: 'c', category: 'Checklist'),
+          _material(id: 'c', categoria: 'Checklist'),
           alAlternarFavorito: () => vezAlternado++,
         ),
       );
@@ -228,7 +230,7 @@ void main() {
       var vezTocado = 0;
       await tester.pumpWidget(
         _tarjeta(
-          _material(id: 'c', category: 'Checklist'),
+          _material(id: 'c', categoria: 'Checklist'),
           alTocar: () => vezTocado++,
         ),
       );
@@ -243,7 +245,7 @@ void main() {
       var vezTocado = 0;
       await tester.pumpWidget(
         _tarjeta(
-          _material(id: 'c', category: 'Checklist'),
+          _material(id: 'c', categoria: 'Checklist'),
           alTocar: () => vezTocado++,
         ),
       );
@@ -261,8 +263,8 @@ void main() {
         _tarjeta(
           _material(
             id: 'v',
-            category: 'Videos',
-            thumbnailUrl: 'https://localhost/miniatura.png',
+            categoria: 'Videos',
+            urlMiniatura: 'https://localhost/miniatura.png',
           ),
           cache: _CacheFalso()..fallar.add('https://localhost/miniatura.png'),
         ),
@@ -279,7 +281,7 @@ void main() {
       final cache = _CacheFalso();
       await tester.pumpWidget(
         _tarjeta(
-          _material(id: 'v', category: 'Videos', thumbnailUrl: _urlMiniatura),
+          _material(id: 'v', categoria: 'Videos', urlMiniatura: _urlMiniatura),
           cache: cache,
         ),
       );

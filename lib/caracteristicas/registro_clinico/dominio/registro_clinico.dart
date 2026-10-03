@@ -4,31 +4,31 @@ enum NivelAlerta { normal, alerta, critico }
 
 class SignosVitales {
   const SignosVitales({
-    this.temperature,
-    this.heartRate,
-    this.oxygenSaturation,
-    this.respiratoryRate,
+    this.temperatura,
+    this.frecuenciaCardiaca,
+    this.saturacionOxigeno,
+    this.frecuenciaRespiratoria,
   });
 
-  final double? temperature;
-  final int? heartRate;
-  final int? oxygenSaturation;
-  final int? respiratoryRate;
+  final double? temperatura;
+  final int? frecuenciaCardiaca;
+  final int? saturacionOxigeno;
+  final int? frecuenciaRespiratoria;
 }
 
 class EntradaSintoma {
   const EntradaSintoma({
-    required this.name,
-    required this.intensity,
-    this.notes,
+    required this.nombre,
+    required this.intensidad,
+    this.notas,
   });
 
-  final String name;
-  final int intensity;
-  final String? notes;
+  final String nombre;
+  final int intensidad;
+  final String? notas;
 
-  static Color colorPara(int intensity) {
-    switch (intensity) {
+  static Color colorPara(int intensidad) {
+    switch (intensidad) {
       case 0:
         return const Color(0xFF6BA368);
       case 1:
@@ -50,8 +50,8 @@ class EntradaSintoma {
     }
   }
 
-  static IconData iconoPara(int intensity) {
-    switch (intensity) {
+  static IconData iconoPara(int intensidad) {
+    switch (intensidad) {
       case 0:
         return Icons.sentiment_very_satisfied;
       case 1:
@@ -67,8 +67,8 @@ class EntradaSintoma {
     }
   }
 
-  static String etiquetaPara(int intensity) {
-    switch (intensity) {
+  static String etiquetaPara(int intensidad) {
+    switch (intensidad) {
       case 0:
         return 'Sin síntoma';
       case 1:

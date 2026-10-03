@@ -31,39 +31,39 @@ MockFirebaseAuth _auth() => MockFirebaseAuth(
 
 MaterialEducativo _video() => MaterialEducativo(
   id: 'videos-como-medir-la-fiebre',
-  title: 'Cómo medir la fiebre',
-  category: 'Videos',
-  topic: 'Fiebre',
-  body: 'Video paso a paso.',
-  fileUrl:
+  titulo: 'Cómo medir la fiebre',
+  categoria: 'Videos',
+  tema: 'Fiebre',
+  cuerpo: 'Video paso a paso.',
+  urlArchivo:
       'https://firebasestorage.googleapis.com/v0/b/oncuidar-v1.firebasestorage.app/o/videos%2Fprueba.mp4?alt=media',
-  fileType: 'video',
-  fileSizeBytes: 20000000,
-  thumbnailUrl: 'assets/images/miniaturas/video_fiebre.png',
-  createdAt: DateTime.utc(2026, 1, 1),
+  tipoArchivo: 'video',
+  tamanoBytes: 20000000,
+  urlMiniatura: 'assets/images/miniaturas/video_fiebre.png',
+  creadoEn: DateTime.utc(2026, 1, 1),
 );
 
 MaterialEducativo _guia() => MaterialEducativo(
   id: 'guias-manual-de-control-de-sintomas',
-  title: 'Manual de Control de Síntomas',
-  category: 'Guías',
-  topic: 'Cuidados Paliativos',
-  body: 'Guía práctica.',
-  fileUrl:
+  titulo: 'Manual de Control de Síntomas',
+  categoria: 'Guías',
+  tema: 'Cuidados Paliativos',
+  cuerpo: 'Guía práctica.',
+  urlArchivo:
       'https://firebasestorage.googleapis.com/v0/b/oncuidar-v1.firebasestorage.app/o/Guias%2Fprueba.pdf?alt=media',
-  fileType: 'pdf',
-  fileSizeBytes: 3000000,
-  thumbnailUrl: 'assets/images/miniaturas/guia_sintomas.png',
-  createdAt: DateTime.utc(2026, 1, 2),
+  tipoArchivo: 'pdf',
+  tamanoBytes: 3000000,
+  urlMiniatura: 'assets/images/miniaturas/guia_sintomas.png',
+  creadoEn: DateTime.utc(2026, 1, 2),
 );
 
 MaterialEducativo _checklist() => MaterialEducativo(
   id: 'checklist-preparacion-para-consulta-oncologica',
-  title: 'Preparación para consulta oncológica',
-  category: 'Checklist',
-  topic: 'Consulta médica',
-  body: '- Traer carnet de salud',
-  createdAt: DateTime.utc(2026, 1, 3),
+  titulo: 'Preparación para consulta oncológica',
+  categoria: 'Checklist',
+  tema: 'Consulta médica',
+  cuerpo: '- Traer carnet de salud',
+  creadoEn: DateTime.utc(2026, 1, 3),
 );
 
 class _CacheFalso implements ServicioCacheContenido {
@@ -377,12 +377,12 @@ void main() {
     final (base, _) = await _baseConContenido([_video(), _guia()]);
     // La guía ya está en el teléfono; el video no se puede bajar.
     final cache = _CacheFalso()
-      ..descargados.add(_guia().fileUrl!)
-      ..fallar.add(_video().fileUrl!);
+      ..descargados.add(_guia().urlArchivo!)
+      ..fallar.add(_video().urlArchivo!);
     await _montar(tester, base, cache);
 
-    expect(find.text(_video().title), findsOneWidget);
-    expect(find.text(_guia().title), findsOneWidget);
+    expect(find.text(_video().titulo), findsOneWidget);
+    expect(find.text(_guia().titulo), findsOneWidget);
     final marca = find.byIcon(Icons.check_circle_rounded);
     expect(marca, findsOneWidget);
     expect(
@@ -400,12 +400,12 @@ void main() {
     (tester) async {
       final infografia = MaterialEducativo(
         id: 'infografias-lavado-de-manos',
-        title: 'Lavado de manos',
-        category: 'Infografías',
-        topic: 'Higiene',
-        body: 'Pasos del lavado de manos.',
-        imageUrl: 'https://localhost/lavado.png',
-        createdAt: DateTime.utc(2026, 1, 5),
+        titulo: 'Lavado de manos',
+        categoria: 'Infografías',
+        tema: 'Higiene',
+        cuerpo: 'Pasos del lavado de manos.',
+        urlImagen: 'https://localhost/lavado.png',
+        creadoEn: DateTime.utc(2026, 1, 5),
       );
       final (base, _) = await _baseConContenido([infografia]);
       await _montar(tester, base, _CacheFalso());

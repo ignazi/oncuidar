@@ -117,8 +117,8 @@ class _ContenedorSintoma extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = EntradaSintoma.colorPara(sintoma.intensity);
-    final etiqueta = EntradaSintoma.etiquetaPara(sintoma.intensity);
+    final color = EntradaSintoma.colorPara(sintoma.intensidad);
+    final etiqueta = EntradaSintoma.etiquetaPara(sintoma.intensidad);
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -139,7 +139,7 @@ class _ContenedorSintoma extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            '${sintoma.name} · $etiqueta (${sintoma.intensity}/10)',
+            '${sintoma.nombre} · $etiqueta (${sintoma.intensidad}/10)',
             style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w700,

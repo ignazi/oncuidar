@@ -211,8 +211,8 @@ Future<String> _prepararRegistro(
   final idPaciente = await RepositorioPacientes(registros.bd).crearPaciente(
     Paciente(
       id: 'ignorado',
-      fullName: 'Paciente Test',
-      createdAt: DateTime(2026, 10, 1),
+      nombreCompleto: 'Paciente Test',
+      creadoEn: DateTime(2026, 10, 1),
     ),
   );
   tester.view.physicalSize = const Size(800, 2400);

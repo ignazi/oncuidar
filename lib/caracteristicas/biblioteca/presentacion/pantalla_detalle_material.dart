@@ -37,10 +37,10 @@ class _PantallaDetalleMaterialState
 
   Future<void> _abrirArchivo() async {
     final material = _material;
-    if (material == null || material.fileUrl == null) return;
+    if (material == null || material.urlArchivo == null) return;
     setState(() => _descargando = true);
     try {
-      await abrirArchivoMaterial(ref, context, material.fileUrl!);
+      await abrirArchivoMaterial(ref, context, material.urlArchivo!);
     } finally {
       if (mounted) setState(() => _descargando = false);
     }
@@ -80,7 +80,7 @@ class _PantallaDetalleMaterialState
         children: [
           EncabezadoGradiente(
             titulo: 'Material educativo',
-            subtitulo: materialActual?.topic,
+            subtitulo: materialActual?.tema,
             reservaDerecha: 48,
             accionDerecha: GestureDetector(
               onTap: () =>
@@ -115,18 +115,18 @@ class _PantallaDetalleMaterialState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (material.imageUrl != null && material.imageUrl!.isNotEmpty) ...[
+          if (material.urlImagen != null && material.urlImagen!.isNotEmpty) ...[
             GestureDetector(
-              onTap: () => _mostrarImagen(material.imageUrl!),
+              onTap: () => _mostrarImagen(material.urlImagen!),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: _imagenCuerpo(material.imageUrl!),
+                child: _imagenCuerpo(material.urlImagen!),
               ),
             ),
             const SizedBox(height: 12),
           ],
           Text(
-            material.title,
+            material.titulo,
             style: GoogleFonts.nunito(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -147,7 +147,7 @@ class _PantallaDetalleMaterialState
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  etiquetaCategoria(material.category),
+                  etiquetaCategoria(material.categoria),
                   style: GoogleFonts.nunito(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -155,11 +155,11 @@ class _PantallaDetalleMaterialState
                   ),
                 ),
               ),
-              if (material.topic.isNotEmpty) ...[
+              if (material.tema.isNotEmpty) ...[
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    material.topic,
+                    material.tema,
                     style: GoogleFonts.nunito(
                       fontSize: 13,
                       color: Paleta.textoSecundario,
@@ -169,19 +169,19 @@ class _PantallaDetalleMaterialState
               ],
             ],
           ),
-          if (material.body.isNotEmpty) ...[
+          if (material.cuerpo.isNotEmpty) ...[
             if (material.esChecklist)
               ChecklistInteractivo(
-                titulo: material.title,
-                items: parsearItemsChecklist(material.body),
-                textoIntro: textoInformativoChecklist(material.body),
+                titulo: material.titulo,
+                items: parsearItemsChecklist(material.cuerpo),
+                textoIntro: textoInformativoChecklist(material.cuerpo),
               )
             else ...[
               const SizedBox(height: 16),
-              ..._secciones(material.body),
+              ..._secciones(material.cuerpo),
             ],
           ],
-          if (material.fileUrl != null) ...[
+          if (material.urlArchivo != null) ...[
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -231,8 +231,8 @@ class _PantallaDetalleMaterialState
     );
   }
 
-  List<Widget> _secciones(String body) {
-    final bloques = parsearCuerpo(body);
+  List<Widget> _secciones(String cuerpo) {
+    final bloques = parsearCuerpo(cuerpo);
     return [
       for (final bloque in bloques)
         Padding(

@@ -47,8 +47,9 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
   Widget build(BuildContext context) {
     final filtrados = widget.pacientes
         .where(
-          (p) =>
-              p.fullName.toLowerCase().contains(_busqueda.trim().toLowerCase()),
+          (p) => p.nombreCompleto.toLowerCase().contains(
+            _busqueda.trim().toLowerCase(),
+          ),
         )
         .toList();
     return SafeArea(
@@ -145,8 +146,8 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                                 ? Paleta.doradoPrincipal
                                 : Paleta.doradoClaro,
                             child: Text(
-                              p.fullName.isNotEmpty
-                                  ? p.fullName[0].toUpperCase()
+                              p.nombreCompleto.isNotEmpty
+                                  ? p.nombreCompleto[0].toUpperCase()
                                   : '?',
                               style: GoogleFonts.nunito(
                                 fontWeight: FontWeight.w800,
@@ -157,16 +158,17 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                             ),
                           ),
                           title: Text(
-                            p.fullName,
+                            p.nombreCompleto,
                             style: GoogleFonts.nunito(
                               fontWeight: FontWeight.w700,
                               color: Paleta.textoPrincipal,
                             ),
                           ),
                           subtitle:
-                              (p.diagnosis != null && p.diagnosis!.isNotEmpty)
+                              (p.diagnostico != null &&
+                                  p.diagnostico!.isNotEmpty)
                               ? Text(
-                                  p.diagnosis!,
+                                  p.diagnostico!,
                                   style: GoogleFonts.nunito(
                                     fontSize: 12,
                                     color: Paleta.textoSecundario,
@@ -189,7 +191,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                                     icono: Icons.warning_amber_rounded,
                                     titulo: 'Datos incompletos',
                                     mensaje:
-                                        '${p.fullName} no tiene todos '
+                                        '${p.nombreCompleto} no tiene todos '
                                         'los datos completos (nombre, '
                                         'RUT, edad, diagnóstico, fase, '
                                         'centro de salud y contacto de '
@@ -218,10 +220,10 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
 
 bool _pacienteTieneDatosCompletos(Paciente p) {
   bool lleno(String? v) => v != null && v.trim().isNotEmpty;
-  return lleno(p.fullName) &&
+  return lleno(p.nombreCompleto) &&
       lleno(p.rut) &&
-      p.age != null &&
-      lleno(p.diagnosis) &&
+      p.edad != null &&
+      lleno(p.diagnostico) &&
       lleno(p.tratamientoFase) &&
       lleno(p.centroSaludNombre) &&
       lleno(p.centroSaludDireccion) &&

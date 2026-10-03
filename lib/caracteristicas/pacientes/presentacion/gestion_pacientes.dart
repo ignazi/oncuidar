@@ -117,7 +117,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('${paciente.fullName} restaurado'),
+            content: Text('${paciente.nombreCompleto} restaurado'),
             backgroundColor: Paleta.doradoPrincipal,
           ),
         );
@@ -149,7 +149,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Paciente activo: ${p.fullName}'),
+              content: Text('Paciente activo: ${p.nombreCompleto}'),
               duration: const Duration(seconds: 2),
               backgroundColor: Paleta.doradoPrincipal,
             ),
@@ -177,7 +177,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
       icono: Icons.archive_outlined,
       titulo: 'Archivar paciente',
       mensaje:
-          '¿Archivar a ${paciente.fullName}? Sus datos se conservarán y '
+          '¿Archivar a ${paciente.nombreCompleto}? Sus datos se conservarán y '
           'dejará de aparecer en la lista.',
       textoConfirmar: 'Archivar',
       colorConfirmar: Paleta.doradoMedio,
@@ -190,7 +190,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('${paciente.fullName} archivado'),
+            content: Text('${paciente.nombreCompleto} archivado'),
             backgroundColor: Paleta.doradoPrincipal,
           ),
         );
@@ -217,7 +217,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
       icono: Icons.delete_outline,
       titulo: 'Eliminar paciente',
       mensaje:
-          '¿Eliminar a ${paciente.fullName} definitivamente? Esta acción no '
+          '¿Eliminar a ${paciente.nombreCompleto} definitivamente? Esta acción no '
           'se puede deshacer y se borrarán todos sus datos.',
       textoConfirmar: 'Eliminar',
       colorConfirmar: Paleta.error,
@@ -240,7 +240,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('${paciente.fullName} eliminado'),
+            content: Text('${paciente.nombreCompleto} eliminado'),
             backgroundColor: Paleta.doradoPrincipal,
           ),
         );

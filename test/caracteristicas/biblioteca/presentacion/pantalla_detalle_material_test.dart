@@ -31,26 +31,26 @@ MockFirebaseAuth _auth() => MockFirebaseAuth(
 
 MaterialEducativo _guia() => MaterialEducativo(
   id: 'guias-manual-de-control-de-sintomas',
-  title: 'Manual de Control de Síntomas',
-  category: 'Guías',
-  topic: 'Cuidados Paliativos',
-  body:
+  titulo: 'Manual de Control de Síntomas',
+  categoria: 'Guías',
+  tema: 'Cuidados Paliativos',
+  cuerpo:
       '# Dolor\nAdministra el analgésico según horario.\n\n# Náuseas\nOfrece comidas pequeñas.',
-  imageUrl: 'https://localhost/imagen.jpg',
-  fileUrl:
+  urlImagen: 'https://localhost/imagen.jpg',
+  urlArchivo:
       'https://firebasestorage.googleapis.com/v0/b/oncuidar-v1.firebasestorage.app/o/Guias%2Fprueba.pdf?alt=media',
-  fileType: 'pdf',
-  fileSizeBytes: 3000000,
-  createdAt: DateTime.utc(2026, 1, 2),
+  tipoArchivo: 'pdf',
+  tamanoBytes: 3000000,
+  creadoEn: DateTime.utc(2026, 1, 2),
 );
 
 MaterialEducativo _simple() => MaterialEducativo(
   id: 'checklist-preparacion-para-consulta-oncologica',
-  title: 'Preparación para consulta oncológica',
-  category: 'Checklist',
-  topic: 'Consulta médica',
-  body: '- Traer carnet de salud',
-  createdAt: DateTime.utc(2026, 1, 3),
+  titulo: 'Preparación para consulta oncológica',
+  categoria: 'Checklist',
+  tema: 'Consulta médica',
+  cuerpo: '- Traer carnet de salud',
+  creadoEn: DateTime.utc(2026, 1, 3),
 );
 
 class _CacheFalso implements ServicioCacheContenido {
@@ -267,12 +267,12 @@ void main() {
     (tester) async {
       final sinArchivo = MaterialEducativo(
         id: 'guias-alimentacion',
-        title: 'Guía de alimentación',
-        category: 'Guías',
-        topic: 'Alimentación',
-        body:
+        titulo: 'Guía de alimentación',
+        categoria: 'Guías',
+        tema: 'Alimentación',
+        cuerpo:
             '# Desayuno\nFrutas cocidas.\n\n# Agua\nSolo hervida o embotellada.',
-        createdAt: DateTime.utc(2026, 1, 4),
+        creadoEn: DateTime.utc(2026, 1, 4),
       );
       final (base, _) = await _baseConContenido([sinArchivo]);
       await _montar(tester, base, _CacheFalso(), sinArchivo.id);

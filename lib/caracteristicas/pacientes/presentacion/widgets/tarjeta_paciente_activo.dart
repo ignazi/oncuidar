@@ -51,15 +51,17 @@ class TarjetaPacienteActivo extends StatelessWidget {
         CabeceraDorada(
           icono: Icons.child_care_rounded,
           etiqueta: 'PACIENTE ACTIVO',
-          nombre: paciente.fullName.isEmpty ? 'Sin nombre' : paciente.fullName,
+          nombre: paciente.nombreCompleto.isEmpty
+              ? 'Sin nombre'
+              : paciente.nombreCompleto,
           franjas: [
             if (paciente.rut != null && paciente.rut!.isNotEmpty)
               ChipFranja(
                 Icons.badge_outlined,
                 'RUT: ${formatearRut(paciente.rut!)}',
               ),
-            if (paciente.age != null)
-              ChipFranja(Icons.cake_outlined, 'Edad: ${paciente.age} años'),
+            if (paciente.edad != null)
+              ChipFranja(Icons.cake_outlined, 'Edad: ${paciente.edad} años'),
           ],
         ),
         // ── Datos del paciente ──
@@ -68,8 +70,8 @@ class TarjetaPacienteActivo extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if ((paciente.diagnosis != null &&
-                      paciente.diagnosis!.isNotEmpty) ||
+              if ((paciente.diagnostico != null &&
+                      paciente.diagnostico!.isNotEmpty) ||
                   (paciente.tratamientoFase != null &&
                       paciente.tratamientoFase!.isNotEmpty))
                 Padding(
@@ -78,15 +80,15 @@ class TarjetaPacienteActivo extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (paciente.diagnosis != null &&
-                            paciente.diagnosis!.isNotEmpty)
+                        if (paciente.diagnostico != null &&
+                            paciente.diagnostico!.isNotEmpty)
                           FilaDato(
                             icono: Icons.medical_information_outlined,
                             etiqueta: 'Diagnóstico',
-                            valor: paciente.diagnosis!,
+                            valor: paciente.diagnostico!,
                           ),
-                        if ((paciente.diagnosis != null &&
-                                paciente.diagnosis!.isNotEmpty) &&
+                        if ((paciente.diagnostico != null &&
+                                paciente.diagnostico!.isNotEmpty) &&
                             (paciente.tratamientoFase != null &&
                                 paciente.tratamientoFase!.isNotEmpty))
                           const SizedBox(height: 12),

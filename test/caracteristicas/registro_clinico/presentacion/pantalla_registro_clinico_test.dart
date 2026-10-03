@@ -51,8 +51,8 @@ Future<(BaseDatosSegura, FakeFirebaseFirestore)> _baseConDatos(
     await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'paciente',
-        fullName: 'Paciente Test',
-        createdAt: DateTime.now(),
+        nombreCompleto: 'Paciente Test',
+        creadoEn: DateTime.now(),
       ),
     );
   }

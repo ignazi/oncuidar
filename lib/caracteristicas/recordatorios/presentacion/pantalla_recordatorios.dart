@@ -140,7 +140,8 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
                 recordatorio: r,
                 nombrePaciente: r.esParaCuidador
                     ? 'Cuidador'
-                    : ref.read(pacienteActivoProvider).value?.fullName ?? '',
+                    : ref.read(pacienteActivoProvider).value?.nombreCompleto ??
+                          '',
                 silenciadas: _silenciadas,
                 alAlternarActivo: () => _alternarActivo(r),
                 alEditar: () => _dialogoRecordatorio(existente: r),

@@ -17,7 +17,7 @@ String textoSintomas(List<EntradaSintoma> sintomas) {
   return sintomas
       .map(
         (s) =>
-            '${s.name} (${EntradaSintoma.etiquetaPara(s.intensity)}) ${s.intensity}/10',
+            '${s.nombre} (${EntradaSintoma.etiquetaPara(s.intensidad)}) ${s.intensidad}/10',
       )
       .join(', ');
 }
@@ -30,12 +30,14 @@ List<String> celdasRegistro(RegistroClinico rec, {required String vacio}) {
     hora12(rec.creadoEn),
     etiquetaTipoRegistro(rec.tipoRegistro),
     etiquetaEstado(rec.nivelAlerta),
-    vs?.temperature != null
-        ? '${vs!.temperature!.toStringAsFixed(1)}°C'
+    vs?.temperatura != null
+        ? '${vs!.temperatura!.toStringAsFixed(1)}°C'
         : vacio,
-    vs?.heartRate != null ? '${vs!.heartRate} lpm' : vacio,
-    vs?.oxygenSaturation != null ? '${vs!.oxygenSaturation}%' : vacio,
-    vs?.respiratoryRate != null ? '${vs!.respiratoryRate} rpm' : vacio,
+    vs?.frecuenciaCardiaca != null ? '${vs!.frecuenciaCardiaca} lpm' : vacio,
+    vs?.saturacionOxigeno != null ? '${vs!.saturacionOxigeno}%' : vacio,
+    vs?.frecuenciaRespiratoria != null
+        ? '${vs!.frecuenciaRespiratoria} rpm'
+        : vacio,
     textoSintomas(rec.sintomas),
     rec.observaciones?.isNotEmpty == true ? rec.observaciones! : vacio,
   ];

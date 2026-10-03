@@ -49,7 +49,7 @@ void main() {
 
   Future<String> crearPaciente(String nombre) =>
       RepositorioPacientes(base).crearPaciente(
-        Paciente(id: '', fullName: nombre, createdAt: DateTime.now()),
+        Paciente(id: '', nombreCompleto: nombre, creadoEn: DateTime.now()),
       );
 
   Future<void> sembrarPorPaciente(String id, String etiqueta) async {
@@ -110,11 +110,11 @@ void main() {
         .set(
           MaterialEducativo(
             id: 'guia-1',
-            title: 'Guía de síntomas',
-            category: 'Guías',
-            topic: 'Cuidados',
-            body: 'Texto',
-            createdAt: DateTime.utc(2026, 1, 2),
+            titulo: 'Guía de síntomas',
+            categoria: 'Guías',
+            tema: 'Cuidados',
+            cuerpo: 'Texto',
+            creadoEn: DateTime.utc(2026, 1, 2),
           ).toMap(),
         );
     await RepositorioBiblioteca(base).alternarFavorito('guia-1');

@@ -193,10 +193,11 @@ void main() {
       await RepositorioPacientes(base).crearPaciente(
         Paciente(
           id: 'auto',
-          fullName: 'Anastasia Margarita Constanza del Carmen de los Andes',
+          nombreCompleto:
+              'Anastasia Margarita Constanza del Carmen de los Andes',
           rut: '25.123.456-7',
-          age: 87,
-          diagnosis:
+          edad: 87,
+          diagnostico:
               'Cuidados paliativos avanzados con comorbilidades múltiples',
           tratamientoFase: 'Tratamiento paliativo ambulatorio especializado',
           centroSaludNombre:
@@ -204,7 +205,7 @@ void main() {
           centroSaludTelefono: '+56 9 1234 5678',
           contactoEmergenciaNombre: 'Carlos Eduardo Vejar Fuenzalida',
           contactoEmergenciaTelefono: '+56 9 8765 4321',
-          createdAt: DateTime.now(),
+          creadoEn: DateTime.now(),
         ),
       );
       await tester.pumpWidget(_pantalla(auth, base, cifrado, const Perfil()));
@@ -223,8 +224,8 @@ void main() {
     await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'auto',
-        fullName: 'Paciente Test',
-        createdAt: DateTime.now(),
+        nombreCompleto: 'Paciente Test',
+        creadoEn: DateTime.now(),
       ),
     );
     await tester.pumpWidget(
@@ -313,8 +314,8 @@ void main() {
     await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'auto',
-        fullName: 'Paciente Test',
-        createdAt: DateTime.now(),
+        nombreCompleto: 'Paciente Test',
+        creadoEn: DateTime.now(),
       ),
     );
     await tester.pumpWidget(
@@ -341,7 +342,7 @@ void main() {
     final base = await _baseConCuidador(cifrado);
     final fecha = DateTime.now();
     final idPaciente = await RepositorioPacientes(base).crearPaciente(
-      Paciente(id: 'auto', fullName: 'Paciente Test', createdAt: fecha),
+      Paciente(id: 'auto', nombreCompleto: 'Paciente Test', creadoEn: fecha),
     );
     await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
       idPaciente,
@@ -352,12 +353,12 @@ void main() {
         creadoEn: fecha,
         tipoRegistro: 'programado',
         signosVitales: const SignosVitales(
-          temperature: 40,
-          heartRate: 120,
-          oxygenSaturation: 88,
-          respiratoryRate: 24,
+          temperatura: 40,
+          frecuenciaCardiaca: 120,
+          saturacionOxigeno: 88,
+          frecuenciaRespiratoria: 24,
         ),
-        sintomas: const [EntradaSintoma(name: 'Fiebre', intensity: 9)],
+        sintomas: const [EntradaSintoma(nombre: 'Fiebre', intensidad: 9)],
         observaciones:
             'Paciente con observaciones muy largas para comprobar que el '
             'detalle no se desborda horizontalmente en pantallas pequeñas.',
@@ -392,8 +393,8 @@ void main() {
     final idPaciente = await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'auto',
-        fullName: 'Paciente Test',
-        createdAt: DateTime.now(),
+        nombreCompleto: 'Paciente Test',
+        creadoEn: DateTime.now(),
       ),
     );
     final fecha = DateTime.now();
@@ -430,8 +431,8 @@ void main() {
     await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'auto',
-        fullName: 'Paciente Test',
-        createdAt: DateTime.now(),
+        nombreCompleto: 'Paciente Test',
+        creadoEn: DateTime.now(),
       ),
     );
     await tester.pumpWidget(

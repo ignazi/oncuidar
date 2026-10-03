@@ -118,8 +118,8 @@ RegistroClinico _registro(String id, String paciente) => RegistroClinico(
   fecha: DateTime(2026, 10, 1, 9),
   creadoEn: DateTime(2026, 10, 1, 9),
   tipoRegistro: 'diario',
-  signosVitales: const SignosVitales(temperature: 37.2),
-  sintomas: const [EntradaSintoma(name: 'Dolor', intensity: 3)],
+  signosVitales: const SignosVitales(temperatura: 37.2),
+  sintomas: const [EntradaSintoma(nombre: 'Dolor', intensidad: 3)],
   observaciones: 'Observación reservada',
 );
 

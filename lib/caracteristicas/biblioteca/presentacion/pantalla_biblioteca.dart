@@ -40,10 +40,10 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
   ) {
     final termino = _busqueda.trim().toLowerCase();
     return items.where((material) {
-      if (!coincideFiltro(_filtro, material.category)) return false;
+      if (!coincideFiltro(_filtro, material.categoria)) return false;
       if (_soloFavoritos && !favoritos.contains(material.id)) return false;
       if (termino.isNotEmpty &&
-          !material.title.toLowerCase().contains(termino)) {
+          !material.titulo.toLowerCase().contains(termino)) {
         return false;
       }
       return true;
@@ -64,7 +64,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
     try {
       final cache = ref.read(servicioCacheContenidoProvider);
       for (final material in items) {
-        final url = material.fileUrl;
+        final url = material.urlArchivo;
         if (url == null || url.isEmpty || _urlsVerificadas.contains(url)) {
           continue;
         }
@@ -88,14 +88,14 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
       _abrirChecklist(material);
       return;
     }
-    final url = material.fileUrl;
+    final url = material.urlArchivo;
     if (url != null && url.isNotEmpty) {
       await _abrirArchivo(material, url);
       return;
     }
-    final imagen = material.imageUrl;
+    final imagen = material.urlImagen;
     if (imagen != null && imagen.isNotEmpty) {
-      _mostrarInfografia(imagen, material.title);
+      _mostrarInfografia(imagen, material.titulo);
       return;
     }
     if (context.mounted) unawaited(context.push('/biblioteca/${material.id}'));
@@ -109,7 +109,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
   }
 
   Future<void> _reproducirVideo(MaterialEducativo material) async {
-    final url = material.fileUrl;
+    final url = material.urlArchivo;
     if (url == null || url.isEmpty) {
       if (context.mounted) {
         unawaited(context.push('/biblioteca/${material.id}'));
@@ -127,7 +127,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
         MaterialPageRoute<void>(
           builder: (_) => PantallaVideo(
             archivo: archivo,
-            titulo: material.title,
+            titulo: material.titulo,
             idContenido: material.id,
           ),
         ),
@@ -156,7 +156,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
     aviso.showSnackBar(
       SnackBar(
         content: Text(
-          'Descargando ${material.title}…',
+          'Descargando ${material.titulo}…',
           style: GoogleFonts.nunito(fontSize: 14),
         ),
       ),
@@ -181,9 +181,9 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => ChecklistInteractivo(
-        titulo: material.title,
-        items: parsearItemsChecklist(material.body),
-        textoIntro: textoInformativoChecklist(material.body),
+        titulo: material.titulo,
+        items: parsearItemsChecklist(material.cuerpo),
+        textoIntro: textoInformativoChecklist(material.cuerpo),
         enHoja: true,
       ),
     );
@@ -382,7 +382,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
   }
 
   Widget _tarjetaMaterial(MaterialEducativo material, Set<String> descargados) {
-    final url = material.fileUrl;
+    final url = material.urlArchivo;
     return TarjetaMaterial(
       material: material,
       esFavorito:

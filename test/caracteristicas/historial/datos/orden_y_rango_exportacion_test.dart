@@ -45,10 +45,10 @@ Future<(BaseDatosSegura, String, String)> _baseConDosPacientes() async {
     'address': 'Av. Siempre Viva 742',
   });
   final a = await RepositorioPacientes(base).crearPaciente(
-    Paciente(id: 'a', fullName: 'Paciente A', createdAt: DateTime.now()),
+    Paciente(id: 'a', nombreCompleto: 'Paciente A', creadoEn: DateTime.now()),
   );
   final b = await RepositorioPacientes(base).crearPaciente(
-    Paciente(id: 'b', fullName: 'Paciente B', createdAt: DateTime.now()),
+    Paciente(id: 'b', nombreCompleto: 'Paciente B', creadoEn: DateTime.now()),
   );
   return (base, a, b);
 }

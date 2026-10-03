@@ -107,28 +107,28 @@ Uint8List generarExcelHistorial({
       hoja,
       fila,
       'Nombre',
-      paciente.fullName,
+      paciente.nombreCompleto,
       estiloEtiqueta,
       estiloValor,
     );
     fila++;
-    if (paciente.age != null) {
+    if (paciente.edad != null) {
       _etiquetaValor(
         hoja,
         fila,
         'Edad',
-        '${paciente.age} años',
+        '${paciente.edad} años',
         estiloEtiqueta,
         estiloValor,
       );
       fila++;
     }
-    if (paciente.diagnosis?.isNotEmpty == true) {
+    if (paciente.diagnostico?.isNotEmpty == true) {
       _etiquetaValor(
         hoja,
         fila,
         'Diagnóstico',
-        paciente.diagnosis!,
+        paciente.diagnostico!,
         estiloEtiqueta,
         estiloValor,
       );

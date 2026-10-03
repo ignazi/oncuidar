@@ -16,8 +16,8 @@ import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/proveedor
 
 Paciente _paciente() => Paciente(
   id: 'paciente-1',
-  fullName: 'Paciente Test',
-  createdAt: DateTime.now(),
+  nombreCompleto: 'Paciente Test',
+  creadoEn: DateTime.now(),
 );
 
 RegistroClinico _registroConSignos() {
@@ -29,15 +29,15 @@ RegistroClinico _registroConSignos() {
     creadoEn: ahora.subtract(const Duration(hours: 2)),
     tipoRegistro: 'programado',
     signosVitales: const SignosVitales(
-      temperature: 36.5,
-      heartRate: 72,
-      oxygenSaturation: 98,
-      respiratoryRate: 16,
+      temperatura: 36.5,
+      frecuenciaCardiaca: 72,
+      saturacionOxigeno: 98,
+      frecuenciaRespiratoria: 16,
     ),
     nivelAlerta: NivelAlerta.critico,
     sintomas: const [
-      EntradaSintoma(name: 'Dolor de cabeza', intensity: 7),
-      EntradaSintoma(name: 'Fiebre', intensity: 4),
+      EntradaSintoma(nombre: 'Dolor de cabeza', intensidad: 7),
+      EntradaSintoma(nombre: 'Fiebre', intensidad: 4),
     ],
   );
 }
@@ -168,8 +168,8 @@ void main() {
   ) async {
     final paciente = Paciente(
       id: 'paciente-1',
-      fullName: 'Paciente Test',
-      createdAt: DateTime.now(),
+      nombreCompleto: 'Paciente Test',
+      creadoEn: DateTime.now(),
       maximoRegistrosDia: 5,
     );
     await _montar(

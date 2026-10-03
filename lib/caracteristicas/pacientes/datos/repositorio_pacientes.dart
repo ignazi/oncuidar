@@ -161,18 +161,18 @@ class RepositorioPacientes {
     };
     await bd.reemplazarPorCifrado(
       data,
-      plano: p.fullName,
+      plano: p.nombreCompleto,
       cifrado: 'nombre_cifrado',
     );
     await bd.reemplazarPorCifrado(data, plano: p.rut, cifrado: 'rut_cifrado');
     await bd.reemplazarPorCifrado(
       data,
-      plano: p.age?.toString(),
+      plano: p.edad?.toString(),
       cifrado: 'edad_cifrada',
     );
     await bd.reemplazarPorCifrado(
       data,
-      plano: p.diagnosis,
+      plano: p.diagnostico,
       cifrado: 'diagnostico_cifrado',
     );
     await bd.reemplazarPorCifrado(
@@ -217,10 +217,10 @@ class RepositorioPacientes {
     final edad = await bd.descifrarCampo(datos, 'edad_cifrada');
     return Paciente(
       id: id,
-      fullName: nombre ?? '',
+      nombreCompleto: nombre ?? '',
       rut: await bd.descifrarCampo(datos, 'rut_cifrado'),
-      age: int.tryParse(edad ?? ''),
-      diagnosis: await bd.descifrarCampo(datos, 'diagnostico_cifrado'),
+      edad: int.tryParse(edad ?? ''),
+      diagnostico: await bd.descifrarCampo(datos, 'diagnostico_cifrado'),
       tratamientoFase: await bd.descifrarCampo(
         datos,
         'fase_tratamiento_cifrado',
@@ -245,7 +245,7 @@ class RepositorioPacientes {
         datos,
         'contacto_emergencia_telefono_cifrado',
       ),
-      createdAt: (datos['creadoEn'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      creadoEn: (datos['creadoEn'] as Timestamp?)?.toDate() ?? DateTime.now(),
       maximoRegistrosDia: (datos['maximo_registros_dia'] as num?)?.toInt() ?? 3,
     );
   }

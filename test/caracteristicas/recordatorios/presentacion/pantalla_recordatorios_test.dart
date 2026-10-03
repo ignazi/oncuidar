@@ -95,7 +95,11 @@ Future<(BaseDatosSegura, FakeFirebaseFirestore)> _baseDatos() async {
 
 Future<String> _sembrarPaciente(BaseDatosSegura base) async {
   return RepositorioPacientes(base).crearPaciente(
-    Paciente(id: 'auto', fullName: 'Paciente Test', createdAt: DateTime.now()),
+    Paciente(
+      id: 'auto',
+      nombreCompleto: 'Paciente Test',
+      creadoEn: DateTime.now(),
+    ),
   );
 }
 

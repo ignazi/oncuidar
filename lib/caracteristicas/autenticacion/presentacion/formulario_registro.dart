@@ -72,10 +72,10 @@ class FormularioRegistro {
       contrasena: contrasena.text,
       paciente: Paciente(
         id: 'auto',
-        fullName: nombrePaciente.text.trim(),
+        nombreCompleto: nombrePaciente.text.trim(),
         rut: rut.text.trim(),
-        age: int.tryParse(edad.text.trim()),
-        diagnosis: diagnostico.text.trim(),
+        edad: int.tryParse(edad.text.trim()),
+        diagnostico: diagnostico.text.trim(),
         tratamientoFase: faseTratamiento == 'Otro'
             ? faseOtro.text.trim()
             : faseTratamiento,
@@ -84,7 +84,7 @@ class FormularioRegistro {
         centroSaludDireccion: centroDireccion.text.trim(),
         centroSaludTelefono: centroTelefono.text.trim(),
         contactoEmergenciaTelefono: urgenciaTelefono.text.trim(),
-        createdAt: DateTime.now(),
+        creadoEn: DateTime.now(),
       ),
     );
   }

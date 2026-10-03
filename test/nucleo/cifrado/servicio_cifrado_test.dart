@@ -71,16 +71,16 @@ void main() {
       await cifrado.restaurarClave('uid-1');
       return Paciente(
         id: 'auto',
-        fullName: nombre,
+        nombreCompleto: nombre,
         rut: '12.345.678-9',
-        age: 72,
-        diagnosis: 'Cancer de mama',
+        edad: 72,
+        diagnostico: 'Cancer de mama',
         tratamientoFase: 'Tratamiento',
         centroSaludNombre: 'Hospital Central',
         centroSaludTelefono: '+56 9 1234 5678',
         contactoEmergenciaNombre: 'Carlos Vejar',
         contactoEmergenciaTelefono: '+56 9 8765 4321',
-        createdAt: DateTime.now(),
+        creadoEn: DateTime.now(),
       );
     }
 
@@ -125,10 +125,10 @@ void main() {
       ).pacientesEnTiempoReal().first;
       expect(pacientes, hasLength(1));
       expect(pacientes.first.id, id);
-      expect(pacientes.first.fullName, 'Ana Torres');
+      expect(pacientes.first.nombreCompleto, 'Ana Torres');
       expect(pacientes.first.rut, '12.345.678-9');
-      expect(pacientes.first.age, 72);
-      expect(pacientes.first.diagnosis, 'Cancer de mama');
+      expect(pacientes.first.edad, 72);
+      expect(pacientes.first.diagnostico, 'Cancer de mama');
       expect(pacientes.first.tratamientoFase, 'Tratamiento');
       expect(pacientes.first.centroSaludTelefono, '+56 9 1234 5678');
     });
