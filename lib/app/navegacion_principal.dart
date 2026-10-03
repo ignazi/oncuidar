@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:oncuidar/app/proveedores_navegacion.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/compartido/widgets/banner_conexion.dart';
 
@@ -69,10 +70,13 @@ class _NavegacionPrincipalState extends ConsumerState<NavegacionPrincipal> {
     return Scaffold(
       backgroundColor: Paleta.crema,
       body: widget.child,
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [const BannerConexion(), _barraNavegacion()],
-      ),
+      // A pantalla completa (video) la barra inferior desaparece.
+      bottomNavigationBar: ref.watch(pantallaCompletaProvider)
+          ? null
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [const BannerConexion(), _barraNavegacion()],
+            ),
     );
   }
 
