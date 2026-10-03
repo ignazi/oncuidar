@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/chat/datos/repositorio_conversaciones.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/pantalla_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/proveedor_chat_activo.dart';
@@ -269,7 +270,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 1000));
       await tester.pumpAndSettle();
 
-      final convs = await base.conversacionesEnTiempoReal().first;
+      final convs = await RepositorioConversaciones(
+        base.bd,
+      ).conversacionesEnTiempoReal().first;
       expect(convs, hasLength(1));
       expect(
         convs.single.titulo,

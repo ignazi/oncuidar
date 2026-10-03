@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/proveedor_chat_activo.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/hoja_conversaciones.dart';
@@ -228,16 +229,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final mensajes = _mensajesAGuardar;
     if (mensajes.isEmpty) return;
     try {
-      final base = ref.read(servicioBaseDatosProvider);
+      final repositorio = ref.read(repositorioConversacionesProvider);
       final activo = ref.read(chatActivoProvider);
       if (activo.conversacionId == null) {
-        final id = await base.crearConversacion(
+        final id = await repositorio.crearConversacion(
           titulo: _nombrePorDefecto(),
           mensajes: mensajes,
         );
         ref.read(chatActivoProvider.notifier).fijarId(id);
       } else {
-        await base.actualizarConversacion(
+        await repositorio.actualizarConversacion(
           activo.conversacionId!,
           mensajes: mensajes,
         );

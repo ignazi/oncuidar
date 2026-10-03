@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/repositorio_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
+import 'package:oncuidar/caracteristicas/chat/datos/repositorio_conversaciones.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
@@ -110,7 +111,7 @@ void main() {
           ).toMap(),
         );
     await RepositorioBiblioteca(base.bd).alternarFavorito('guia-1');
-    await base.crearConversacion(
+    await RepositorioConversaciones(base.bd).crearConversacion(
       titulo: 'Consulta de prueba',
       mensajes: const [MensajeConversacion(texto: 'Hola', delUsuario: true)],
     );

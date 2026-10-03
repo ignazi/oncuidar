@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/compartido/estilos.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
@@ -109,7 +110,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
     }
     try {
       await ref
-          .read(servicioBaseDatosProvider)
+          .read(repositorioConversacionesProvider)
           .renombrarConversacion(conversacion.id, titulo);
       if (!mounted) return;
       widget.alRenombrar?.call(conversacion.id, titulo);
@@ -151,7 +152,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
     if (confirmado != true || !mounted) return;
     try {
       await ref
-          .read(servicioBaseDatosProvider)
+          .read(repositorioConversacionesProvider)
           .eliminarConversacion(conversacion.id);
       if (!mounted) return;
       _mostrarSnackbar(messenger, 'Conversación eliminada');

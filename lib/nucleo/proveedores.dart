@@ -9,6 +9,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
+import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
@@ -465,7 +466,9 @@ final recordatoriosProvider = StreamProvider.autoDispose<List<Recordatorio>>((
 final conversacionesProvider = StreamProvider.autoDispose<List<Conversacion>>((
   ref,
 ) {
-  return ref.watch(servicioBaseDatosProvider).conversacionesEnTiempoReal();
+  return ref
+      .watch(repositorioConversacionesProvider)
+      .conversacionesEnTiempoReal();
 });
 
 final servicioNotificacionesProvider = Provider<ServicioNotificaciones>((ref) {

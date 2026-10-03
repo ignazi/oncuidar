@@ -7,10 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/chat/datos/repositorio_conversaciones.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/pantalla_chat.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,19 +25,17 @@ List<MensajeConversacion> _mensajes() => const [
   MensajeConversacion(texto: 'Respuesta', delUsuario: false),
 ];
 
-Future<(ServicioBaseDatos, FakeFirebaseFirestore)> _base() async {
+Future<(RepositorioConversaciones, FakeFirebaseFirestore)> _base() async {
   final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
   await cifrado.fijarClave(_uid, _clavePrueba);
   final firestore = FakeFirebaseFirestore();
-  final base = ServicioBaseDatos(
-    base: firestore,
-    uidPrueba: _uid,
-    cifrado: cifrado,
+  final repositorio = RepositorioConversaciones(
+    BaseDatosSegura(base: firestore, uidPrueba: _uid, cifrado: cifrado),
   );
-  return (base, firestore);
+  return (repositorio, firestore);
 }
 
-Widget _pantalla(ServicioBaseDatos base) {
+Widget _pantalla(RepositorioConversaciones repositorio) {
   final router = GoRouter(
     initialLocation: '/chat',
     routes: [
@@ -48,18 +48,25 @@ Widget _pantalla(ServicioBaseDatos base) {
     ],
   );
   return ProviderScope(
-    overrides: [servicioBaseDatosProvider.overrideWith((_) => base)],
+    overrides: [
+      servicioBaseDatosProvider.overrideWith(
+        (_) => ServicioBaseDatos.sobre(repositorio.bd),
+      ),
+    ],
     child: MaterialApp.router(routerConfig: router),
   );
 }
 
-Future<void> _montar(WidgetTester tester, ServicioBaseDatos base) async {
+Future<void> _montar(
+  WidgetTester tester,
+  RepositorioConversaciones repositorio,
+) async {
   SharedPreferences.setMockInitialValues({});
   tester.view.physicalSize = const Size(800, 1600);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(_pantalla(base));
+  await tester.pumpWidget(_pantalla(repositorio));
   await tester.pumpAndSettle();
 }
 
@@ -69,10 +76,10 @@ Future<void> _abrirHoja(WidgetTester tester) async {
 }
 
 void main() {
-  group('ServicioBaseDatos — Conversaciones', () {
+  group('RepositorioConversaciones', () {
     test('crearConversacion cifra título y mensajes', () async {
-      final (base, firestore) = await _base();
-      final id = await base.crearConversacion(
+      final (repositorio, firestore) = await _base();
+      final id = await repositorio.crearConversacion(
         titulo: 'Duda sobre fiebre',
         mensajes: _mensajes(),
       );
@@ -95,17 +102,19 @@ void main() {
     test(
       'el stream devuelve descifrado y ordenado por última actividad',
       () async {
-        final (base, _) = await _base();
-        await base.crearConversacion(
+        final (repositorio, _) = await _base();
+        await repositorio.crearConversacion(
           titulo: 'Duda sobre fiebre',
           mensajes: _mensajes(),
         );
         await Future<void>.delayed(const Duration(milliseconds: 5));
-        await base.crearConversacion(
+        await repositorio.crearConversacion(
           titulo: 'Duda sobre catéter',
           mensajes: _mensajes(),
         );
-        final conversaciones = await base.conversacionesEnTiempoReal().first;
+        final conversaciones = await repositorio
+            .conversacionesEnTiempoReal()
+            .first;
         expect(conversaciones, hasLength(2));
         expect(conversaciones.first.titulo, 'Duda sobre catéter');
         expect(
@@ -118,24 +127,26 @@ void main() {
     );
 
     test('renombrarConversacion actualiza el título descifrado', () async {
-      final (base, _) = await _base();
-      final id = await base.crearConversacion(
+      final (repositorio, _) = await _base();
+      final id = await repositorio.crearConversacion(
         titulo: 'Duda sobre fiebre',
         mensajes: _mensajes(),
       );
-      await base.renombrarConversacion(id, 'Duda resuelta');
-      final conversaciones = await base.conversacionesEnTiempoReal().first;
+      await repositorio.renombrarConversacion(id, 'Duda resuelta');
+      final conversaciones = await repositorio
+          .conversacionesEnTiempoReal()
+          .first;
       expect(conversaciones, hasLength(1));
       expect(conversaciones.single.titulo, 'Duda resuelta');
     });
 
     test('eliminarConversacion borra el doc', () async {
-      final (base, firestore) = await _base();
-      final id = await base.crearConversacion(
+      final (repositorio, firestore) = await _base();
+      final id = await repositorio.crearConversacion(
         titulo: 'Duda sobre fiebre',
         mensajes: _mensajes(),
       );
-      await base.eliminarConversacion(id);
+      await repositorio.eliminarConversacion(id);
       final snap = await firestore
           .collection('users')
           .doc(_uid)
@@ -151,8 +162,8 @@ void main() {
     testWidgets('el botón de carpeta abre la hoja sin salir del chat', (
       tester,
     ) async {
-      final (base, _) = await _base();
-      await _montar(tester, base);
+      final (repositorio, _) = await _base();
+      await _montar(tester, repositorio);
 
       await _abrirHoja(tester);
 
@@ -163,8 +174,8 @@ void main() {
     testWidgets('sin conversaciones la hoja muestra el estado vacío', (
       tester,
     ) async {
-      final (base, _) = await _base();
-      await _montar(tester, base);
+      final (repositorio, _) = await _base();
+      await _montar(tester, repositorio);
 
       await _abrirHoja(tester);
 
@@ -178,12 +189,12 @@ void main() {
     testWidgets('la hoja lista las conversaciones con su detalle', (
       tester,
     ) async {
-      final (base, _) = await _base();
-      await base.crearConversacion(
+      final (repositorio, _) = await _base();
+      await repositorio.crearConversacion(
         titulo: 'Duda sobre fiebre',
         mensajes: _mensajes(),
       );
-      await _montar(tester, base);
+      await _montar(tester, repositorio);
 
       await _abrirHoja(tester);
 
@@ -192,12 +203,12 @@ void main() {
     });
 
     testWidgets('tocar una conversación la carga en el chat', (tester) async {
-      final (base, _) = await _base();
-      final id = await base.crearConversacion(
+      final (repositorio, _) = await _base();
+      final id = await repositorio.crearConversacion(
         titulo: 'Duda sobre fiebre',
         mensajes: _mensajes(),
       );
-      await _montar(tester, base);
+      await _montar(tester, repositorio);
 
       await _abrirHoja(tester);
       await tester.tap(find.byKey(Key('conversacion_$id')));
@@ -210,12 +221,12 @@ void main() {
     });
 
     testWidgets('renombrar una conversación actualiza el doc', (tester) async {
-      final (base, _) = await _base();
-      final id = await base.crearConversacion(
+      final (repositorio, _) = await _base();
+      final id = await repositorio.crearConversacion(
         titulo: 'Duda sobre fiebre',
         mensajes: _mensajes(),
       );
-      await _montar(tester, base);
+      await _montar(tester, repositorio);
 
       await _abrirHoja(tester);
       await tester.tap(find.byKey(Key('menuConversacion_$id')));
@@ -238,19 +249,21 @@ void main() {
       expect(find.text('Duda resuelta'), findsOneWidget);
       expect(find.text('Duda sobre fiebre'), findsNothing);
 
-      final conversaciones = await base.conversacionesEnTiempoReal().first;
+      final conversaciones = await repositorio
+          .conversacionesEnTiempoReal()
+          .first;
       expect(conversaciones.single.titulo, 'Duda resuelta');
     });
 
     testWidgets(
       'renombrar la conversación activa actualiza el subtítulo del chat',
       (tester) async {
-        final (base, _) = await _base();
-        final id = await base.crearConversacion(
+        final (repositorio, _) = await _base();
+        final id = await repositorio.crearConversacion(
           titulo: 'Duda sobre fiebre',
           mensajes: _mensajes(),
         );
-        await _montar(tester, base);
+        await _montar(tester, repositorio);
 
         await _abrirHoja(tester);
         await tester.tap(find.byKey(Key('conversacion_$id')));
@@ -295,12 +308,12 @@ void main() {
     testWidgets(
       'renombrar la activa y enviar un mensaje no revierte el título',
       (tester) async {
-        final (base, _) = await _base();
-        final id = await base.crearConversacion(
+        final (repositorio, _) = await _base();
+        final id = await repositorio.crearConversacion(
           titulo: 'Duda sobre fiebre',
           mensajes: _mensajes(),
         );
-        await _montar(tester, base);
+        await _montar(tester, repositorio);
 
         await _abrirHoja(tester);
         await tester.tap(find.byKey(Key('conversacion_$id')));
@@ -330,7 +343,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('temperatura de 38'), findsOneWidget);
-        final conversaciones = await base.conversacionesEnTiempoReal().first;
+        final conversaciones = await repositorio
+            .conversacionesEnTiempoReal()
+            .first;
         expect(conversaciones, hasLength(1));
         expect(conversaciones.single.titulo, 'Duda resuelta');
         expect(
@@ -345,12 +360,12 @@ void main() {
     testWidgets('eliminar una conversación quita la tarjeta y el doc', (
       tester,
     ) async {
-      final (base, _) = await _base();
-      final id = await base.crearConversacion(
+      final (repositorio, _) = await _base();
+      final id = await repositorio.crearConversacion(
         titulo: 'Duda sobre fiebre',
         mensajes: _mensajes(),
       );
-      await _montar(tester, base);
+      await _montar(tester, repositorio);
 
       await _abrirHoja(tester);
       await tester.tap(find.byKey(Key('menuConversacion_$id')));
@@ -368,19 +383,21 @@ void main() {
 
       expect(find.text('Duda sobre fiebre'), findsNothing);
 
-      final conversaciones = await base.conversacionesEnTiempoReal().first;
+      final conversaciones = await repositorio
+          .conversacionesEnTiempoReal()
+          .first;
       expect(conversaciones, isEmpty);
     });
 
     testWidgets('nueva conversación reinicia el chat a la bienvenida', (
       tester,
     ) async {
-      final (base, _) = await _base();
-      final id = await base.crearConversacion(
+      final (repositorio, _) = await _base();
+      final id = await repositorio.crearConversacion(
         titulo: 'Duda sobre fiebre',
         mensajes: _mensajes(),
       );
-      await _montar(tester, base);
+      await _montar(tester, repositorio);
 
       await _abrirHoja(tester);
       await tester.tap(find.byKey(Key('conversacion_$id')));
@@ -407,8 +424,8 @@ void main() {
     testWidgets(
       'crear con nombre lo muestra en el subtítulo y persiste ese título',
       (tester) async {
-        final (base, _) = await _base();
-        await _montar(tester, base);
+        final (repositorio, _) = await _base();
+        await _montar(tester, repositorio);
 
         await _abrirHoja(tester);
         await tester.tap(find.byKey(const Key('agregarConversacionHoja')));
@@ -427,7 +444,9 @@ void main() {
         await tester.pump(const Duration(milliseconds: 1000));
         await tester.pumpAndSettle();
 
-        final conversaciones = await base.conversacionesEnTiempoReal().first;
+        final conversaciones = await repositorio
+            .conversacionesEnTiempoReal()
+            .first;
         expect(conversaciones, hasLength(1));
         expect(conversaciones.single.titulo, 'Dudas de la semana');
       },
