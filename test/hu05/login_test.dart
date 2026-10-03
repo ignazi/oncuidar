@@ -10,10 +10,13 @@ import 'package:go_router/go_router.dart';
 import 'package:mock_exceptions/mock_exceptions.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_carga.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/repositorio_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,12 +52,14 @@ class _CacheFalso implements ServicioCacheContenido {
   }
 }
 
-class _BaseSinContenido extends ServicioBaseDatos {
-  _BaseSinContenido()
+class _RepositorioSinContenido extends RepositorioBiblioteca {
+  _RepositorioSinContenido()
     : super(
-        base: FakeFirebaseFirestore(),
-        uidPrueba: _uid,
-        cifrado: _cifradoListo(),
+        BaseDatosSegura(
+          base: FakeFirebaseFirestore(),
+          uidPrueba: _uid,
+          cifrado: _cifradoListo(),
+        ),
       );
 
   @override
@@ -283,7 +288,9 @@ void main() {
         overrides: [
           firebaseAuthProvider.overrideWithValue(auth),
           servicioCifradoProvider.overrideWithValue(cifrado),
-          servicioBaseDatosProvider.overrideWith((_) => _BaseSinContenido()),
+          repositorioBibliotecaProvider.overrideWith(
+            (_) => _RepositorioSinContenido(),
+          ),
           servicioCacheContenidoProvider.overrideWithValue(_CacheFalso()),
         ],
         child: MaterialApp.router(routerConfig: router),

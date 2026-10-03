@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/parseo_contenido.dart';
@@ -70,11 +71,11 @@ class _PantallaDetalleMaterialState
   }
 
   Future<void> _alternarFavorito(String materialId) async {
-    final base = ref.read(servicioBaseDatosProvider);
+    final repositorio = ref.read(repositorioBibliotecaProvider);
     final ids = ref.read(idsFavoritosProvider).value ?? const <String>[];
     final eraFavorito = ids.contains(materialId);
     try {
-      await base.alternarFavorito(materialId);
+      await repositorio.alternarFavorito(materialId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

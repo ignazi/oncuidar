@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
@@ -330,10 +331,11 @@ class SincronizacionNotifier extends Notifier<SincronizacionEstado> {
       if (cacheVigente) {
         contenidos = cacheados;
       } else {
-        final base = ref.read(servicioBaseDatosProvider);
-        contenidos = await base.contenidoEducativoEnTiempoReal().first.timeout(
-          const Duration(seconds: 8),
-        );
+        final repositorio = ref.read(repositorioBibliotecaProvider);
+        contenidos = await repositorio
+            .contenidoEducativoEnTiempoReal()
+            .first
+            .timeout(const Duration(seconds: 8));
       }
       await _sincronizarContenido(contenidos, guardarCatalogo: !cacheVigente);
     } catch (_) {
@@ -414,9 +416,10 @@ final contenidosEducativosProvider =
         yield cacheados;
         return;
       }
-      final base = ref.watch(servicioBaseDatosProvider);
+      final repositorio = ref.watch(repositorioBibliotecaProvider);
       try {
-        await for (final contenidos in base.contenidoEducativoEnTiempoReal()) {
+        await for (final contenidos
+            in repositorio.contenidoEducativoEnTiempoReal()) {
           try {
             await cacheMetadata.guardarCatalogo(contenidos);
           } catch (_) {}
@@ -437,12 +440,14 @@ final contenidosEducativosProvider =
     });
 
 final idsFavoritosProvider = StreamProvider.autoDispose<List<String>>((ref) {
-  return ref.watch(servicioBaseDatosProvider).idsFavoritosEnTiempoReal();
+  return ref.watch(repositorioBibliotecaProvider).idsFavoritosEnTiempoReal();
 });
 
 final contenidoDetalleProvider = FutureProvider.autoDispose
     .family<MaterialEducativo?, String>((ref, id) {
-      return ref.watch(servicioBaseDatosProvider).obtenerContenidoEducativo(id);
+      return ref
+          .watch(repositorioBibliotecaProvider)
+          .obtenerContenidoEducativo(id);
     });
 
 final recordatoriosProvider = StreamProvider.autoDispose<List<Recordatorio>>((

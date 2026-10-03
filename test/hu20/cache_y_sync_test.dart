@@ -7,10 +7,13 @@ import 'dart:io';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/repositorio_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -102,12 +105,14 @@ class _CacheFalso implements ServicioCacheContenido {
   }
 }
 
-class _BaseSinRed extends ServicioBaseDatos {
-  _BaseSinRed()
+class _RepositorioSinRed extends RepositorioBiblioteca {
+  _RepositorioSinRed()
     : super(
-        base: FakeFirebaseFirestore(),
-        uidPrueba: _uid,
-        cifrado: ServicioCifrado(clavePrueba: _clavePrueba),
+        BaseDatosSegura(
+          base: FakeFirebaseFirestore(),
+          uidPrueba: _uid,
+          cifrado: ServicioCifrado(clavePrueba: _clavePrueba),
+        ),
       );
 
   @override
@@ -402,7 +407,9 @@ void main() {
       final cache = _CacheFalso();
       final container = ProviderContainer(
         overrides: [
-          servicioBaseDatosProvider.overrideWith((_) => _BaseSinRed()),
+          repositorioBibliotecaProvider.overrideWith(
+            (_) => _RepositorioSinRed(),
+          ),
           servicioCacheContenidoProvider.overrideWithValue(cache),
           servicioCacheMetadataProvider.overrideWithValue(metadata),
         ],

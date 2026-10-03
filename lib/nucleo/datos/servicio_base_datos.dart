@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
@@ -512,66 +511,6 @@ class ServicioBaseDatos {
       }
     }
     return lista;
-  }
-
-  // ── Biblioteca educativa ──
-
-  CollectionReference _contenidoEducativo() =>
-      bd.firestore.collection('educationalContent');
-
-  Stream<List<MaterialEducativo>> contenidoEducativoEnTiempoReal() {
-    return _contenidoEducativo().snapshots().map(
-      (snap) => [
-        for (final doc in snap.docs)
-          MaterialEducativo.fromMap(doc.id, doc.data() as Map<String, dynamic>),
-      ],
-    );
-  }
-
-  Future<MaterialEducativo?> obtenerContenidoEducativo(String id) async {
-    final doc = await _contenidoEducativo().doc(id).get();
-    if (!doc.exists) return null;
-    return MaterialEducativo.fromMap(
-      doc.id,
-      doc.data() as Map<String, dynamic>,
-    );
-  }
-
-  Stream<List<String>> idsFavoritosEnTiempoReal() {
-    if (!bd.tieneIdentidad()) return Stream.value(const []);
-    return bd.docUsuario.snapshots().map((snap) {
-      final datos = snap.data() as Map<String, dynamic>?;
-      return List<String>.from(datos?['favoriteArticleIds'] ?? const []);
-    });
-  }
-
-  Future<void> alternarFavorito(String materialId) async {
-    var favoritos = <String>[];
-    try {
-      final doc = await bd.docUsuario.get(
-        const GetOptions(source: Source.cache),
-      );
-      final datos = doc.data() as Map<String, dynamic>?;
-      favoritos = List<String>.from(datos?['favoriteArticleIds'] ?? const []);
-    } catch (_) {
-      try {
-        final doc = await bd.docUsuario.get();
-        final datos = doc.data() as Map<String, dynamic>?;
-        favoritos = List<String>.from(datos?['favoriteArticleIds'] ?? const []);
-      } catch (_) {
-        favoritos = const [];
-      }
-    }
-    if (favoritos.contains(materialId)) {
-      favoritos.remove(materialId);
-    } else {
-      favoritos.add(materialId);
-    }
-    await bd.sinEsperarSinRed(
-      () => bd.docUsuario.set({
-        'favoriteArticleIds': favoritos,
-      }, SetOptions(merge: true)),
-    );
   }
 
   // ── Conversaciones ──
