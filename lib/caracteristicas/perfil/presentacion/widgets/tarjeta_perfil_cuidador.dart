@@ -128,21 +128,7 @@ class _TarjetaDatosCuidador extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Paleta.tarjeta,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Paleta.doradoClaro),
-        boxShadow: [
-          BoxShadow(
-            color: Paleta.doradoOscuro.withValues(alpha: 0.07),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return TarjetaDorada(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -185,21 +171,7 @@ class _TarjetaAutenticacion extends StatelessWidget {
   Widget build(BuildContext context) {
     final respaldoConfigurado =
         correoRespaldo != null && correoRespaldo!.isNotEmpty;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Paleta.tarjeta,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Paleta.doradoClaro),
-        boxShadow: [
-          BoxShadow(
-            color: Paleta.doradoOscuro.withValues(alpha: 0.07),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return TarjetaDorada(
       child: Stack(
         children: [
           Padding(
@@ -207,7 +179,8 @@ class _TarjetaAutenticacion extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _FilaCorreo(
+                FilaDato(
+                  recortar: true,
                   icono: Icons.alternate_email,
                   etiqueta: 'Correo principal',
                   valor: correoPrincipal.isEmpty
@@ -222,7 +195,8 @@ class _TarjetaAutenticacion extends StatelessWidget {
                     texto: 'Pendiente de confirmar: $correoPrincipalPendiente',
                   ),
                 const SizedBox(height: 10),
-                _FilaCorreo(
+                FilaDato(
+                  recortar: true,
                   icono: Icons.mark_email_read_outlined,
                   etiqueta: 'Correo de respaldo',
                   valor: respaldoConfigurado
@@ -293,75 +267,6 @@ class _TarjetaAutenticacion extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Fila interna de la tarjeta de Autenticación: icono + etiqueta + valor.
-class _FilaCorreo extends StatelessWidget {
-  const _FilaCorreo({
-    required this.icono,
-    required this.etiqueta,
-    required this.valor,
-    required this.valorAusente,
-  });
-
-  final IconData icono;
-  final String etiqueta;
-  final String valor;
-  final bool valorAusente;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
-            ),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icono, size: 17, color: Colors.white),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                etiqueta,
-                style: GoogleFonts.nunito(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: Paleta.textoTerciario,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                valor,
-                overflow: TextOverflow.ellipsis,
-                style: valorAusente
-                    ? GoogleFonts.nunito(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                        color: Paleta.textoSecundario,
-                      )
-                    : GoogleFonts.nunito(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Paleta.textoPrincipal,
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

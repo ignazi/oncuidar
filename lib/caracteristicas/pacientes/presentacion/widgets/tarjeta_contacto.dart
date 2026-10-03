@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/widgets/tarjeta_mapa.dart';
+import 'package:oncuidar/compartido/widgets/tarjeta_dato.dart';
 
 class TarjetaContacto extends StatelessWidget {
   const TarjetaContacto({
@@ -30,39 +31,13 @@ class TarjetaContacto extends StatelessWidget {
         telefono != null && telefono!.isNotEmpty && alLlamar != null;
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Paleta.tarjeta,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Paleta.doradoClaro),
-          boxShadow: [
-            BoxShadow(
-              color: Paleta.doradoOscuro.withValues(alpha: 0.07),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
+      child: TarjetaDorada(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icono, size: 17, color: Colors.white),
-                ),
+                IconoDorado(icono),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(

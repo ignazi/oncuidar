@@ -74,21 +74,7 @@ class TarjetaPacienteActivo extends StatelessWidget {
                       paciente.tratamientoFase!.isNotEmpty))
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Paleta.tarjeta,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Paleta.doradoClaro),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Paleta.doradoOscuro.withValues(alpha: 0.07),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
+                  child: TarjetaDorada(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
