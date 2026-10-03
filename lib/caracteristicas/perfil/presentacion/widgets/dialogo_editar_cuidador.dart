@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
+import 'package:oncuidar/compartido/widgets/hoja_dialogo.dart';
 import 'package:oncuidar/compartido/widgets/titulo_seccion.dart';
 
 Future<void> mostrarDialogoEditarCuidador(
@@ -147,152 +147,80 @@ class _DialogoEditarCuidadorState extends State<_DialogoEditarCuidador> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      child: DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.62,
-        minChildSize: 0.45,
-        maxChildSize: 0.85,
-        builder: (ctx, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Paleta.tarjeta,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Paleta.bordeTarjeta,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      child: HojaDialogo(
+        icono: Icons.edit_outlined,
+        titulo: 'Editar mis datos',
+        tamanoInicial: 0.62,
+        tamanoMinimo: 0.45,
+        tamanoMaximo: 0.85,
+        cuerpo: (ctx, scrollController) => [
+          FormularioDeHoja(
+            formKey: _formKey,
+            controlador: scrollController,
+            hijos: [
+              const TituloSeccion(Icons.person_outline, 'Datos personales'),
+              const SizedBox(height: 10),
+              CampoFormulario(
+                controlador: _nombreController,
+                textoAyuda: 'Nombre completo *',
+                icono: Icons.badge_outlined,
+                validador: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Ingresa tu nombre'
+                    : null,
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 8, 0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.edit_outlined,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Editar mis datos',
-                        style: GoogleFonts.nunito(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Paleta.textoPrincipal,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      icon: const Icon(
-                        Icons.close,
-                        color: Paleta.textoSecundario,
-                      ),
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 12),
+              CampoFormulario(
+                controlador: _relacionController,
+                textoAyuda: 'Parentesco (madre, padre, tía…) *',
+                icono: Icons.family_restroom_outlined,
+                validador: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Ingresa el parentesco'
+                    : null,
               ),
-              const SizedBox(height: 4),
-              Expanded(
-                child: Form(
-                  key: _formKey,
-                  child: ListView(
-                    controller: scrollController,
-                    padding: EdgeInsets.fromLTRB(
-                      20,
-                      8,
-                      20,
-                      24 + MediaQuery.of(ctx).viewInsets.bottom,
+              const SizedBox(height: 12),
+              CampoFormulario(
+                controlador: _telefonoController,
+                textoAyuda: 'Teléfono *',
+                icono: Icons.phone_outlined,
+                tipoTeclado: TextInputType.phone,
+                accionTeclado: TextInputAction.next,
+                validador: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Ingresa el teléfono'
+                    : null,
+              ),
+              const SizedBox(height: 12),
+              CampoFormulario(
+                controlador: _direccionController,
+                textoAyuda: 'Dirección *',
+                icono: Icons.location_on_outlined,
+                accionTeclado: TextInputAction.done,
+                validador: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Ingresa la dirección'
+                    : null,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: BotonPrincipal(
+                      etiqueta: 'Cancelar',
+                      alPulsar: () => Navigator.of(ctx).pop(),
+                      destacado: false,
                     ),
-                    children: [
-                      const TituloSeccion(
-                        Icons.person_outline,
-                        'Datos personales',
-                      ),
-                      const SizedBox(height: 10),
-                      CampoFormulario(
-                        controlador: _nombreController,
-                        textoAyuda: 'Nombre completo *',
-                        icono: Icons.badge_outlined,
-                        validador: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Ingresa tu nombre'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      CampoFormulario(
-                        controlador: _relacionController,
-                        textoAyuda: 'Parentesco (madre, padre, tía…) *',
-                        icono: Icons.family_restroom_outlined,
-                        validador: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Ingresa el parentesco'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      CampoFormulario(
-                        controlador: _telefonoController,
-                        textoAyuda: 'Teléfono *',
-                        icono: Icons.phone_outlined,
-                        tipoTeclado: TextInputType.phone,
-                        accionTeclado: TextInputAction.next,
-                        validador: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Ingresa el teléfono'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      CampoFormulario(
-                        controlador: _direccionController,
-                        textoAyuda: 'Dirección *',
-                        icono: Icons.location_on_outlined,
-                        accionTeclado: TextInputAction.done,
-                        validador: (v) => (v == null || v.trim().isEmpty)
-                            ? 'Ingresa la dirección'
-                            : null,
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: BotonPrincipal(
-                              etiqueta: 'Cancelar',
-                              alPulsar: () => Navigator.of(ctx).pop(),
-                              destacado: false,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 2,
-                            child: BotonPrincipal(
-                              etiqueta: 'Guardar cambios',
-                              alPulsar: _guardar,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: BotonPrincipal(
+                      etiqueta: 'Guardar cambios',
+                      alPulsar: _guardar,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

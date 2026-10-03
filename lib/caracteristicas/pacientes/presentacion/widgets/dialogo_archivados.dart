@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
+import 'package:oncuidar/compartido/widgets/hoja_dialogo.dart';
 
 Future<void> mostrarDialogoArchivados(
   BuildContext context, {
@@ -17,119 +18,55 @@ Future<void> mostrarDialogoArchivados(
       builder: (context, ref, _) {
         final archivados =
             ref.watch(archivedPatientsListProvider).value ?? const <Paciente>[];
-        return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.8,
-          builder: (ctx, scrollController) => Container(
-            decoration: const BoxDecoration(
-              color: Paleta.tarjeta,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(top: 12),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Paleta.bordeTarjeta,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 8, 0),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Paleta.doradoPrincipal,
-                              Paleta.doradoOscuro,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.archive_outlined,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          archivados.length == 1
-                              ? '1 paciente archivado'
-                              : '${archivados.length} pacientes archivados',
-                          style: GoogleFonts.nunito(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Paleta.textoPrincipal,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        icon: const Icon(
-                          Icons.close,
+        return HojaDialogo(
+          icono: Icons.archive_outlined,
+          titulo: archivados.length == 1
+              ? '1 paciente archivado'
+              : '${archivados.length} pacientes archivados',
+          tamanoInicial: 0.6,
+          tamanoMinimo: 0.4,
+          tamanoMaximo: 0.8,
+          tamanoTitulo: 16,
+          cuerpo: (ctx, scrollController) => [
+            const Divider(height: 1, color: Paleta.bordeTarjeta),
+            if (archivados.isEmpty)
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.inbox_outlined,
+                          size: 40,
                           color: Paleta.textoSecundario,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Divider(height: 1, color: Paleta.bordeTarjeta),
-                if (archivados.isEmpty)
-                  Expanded(
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.inbox_outlined,
-                              size: 40,
-                              color: Paleta.textoSecundario,
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'No hay pacientes archivados.',
-                              style: GoogleFonts.nunito(
-                                fontSize: 13,
-                                color: Paleta.textoSecundario,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: ListView(
-                      controller: scrollController,
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                      children: [
-                        for (final p in archivados)
-                          _FilaArchivado(
-                            paciente: p,
-                            alDesarchivar: alDesarchivar,
+                        const SizedBox(height: 10),
+                        Text(
+                          'No hay pacientes archivados.',
+                          style: GoogleFonts.nunito(
+                            fontSize: 13,
+                            color: Paleta.textoSecundario,
                           ),
+                        ),
                       ],
                     ),
                   ),
-              ],
-            ),
-          ),
+                ),
+              )
+            else
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  children: [
+                    for (final p in archivados)
+                      _FilaArchivado(paciente: p, alDesarchivar: alDesarchivar),
+                  ],
+                ),
+              ),
+          ],
         );
       },
     ),

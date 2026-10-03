@@ -7,6 +7,7 @@ import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
+import 'package:oncuidar/compartido/widgets/hoja_dialogo.dart';
 import 'package:oncuidar/compartido/widgets/titulo_seccion.dart';
 import 'package:oncuidar/nucleo/utilidades/validacion_correo.dart';
 
@@ -222,205 +223,130 @@ class _DialogoCorreosState extends State<_DialogoCorreos> {
     final correosEditados = _hayCambios;
     return PopScope(
       canPop: false,
-      child: DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.66,
-        minChildSize: 0.48,
-        maxChildSize: 0.88,
-        builder: (ctx, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Paleta.tarjeta,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Paleta.bordeTarjeta,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 8, 0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.mark_email_unread_outlined,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _titulo,
-                        style: GoogleFonts.nunito(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Paleta.textoPrincipal,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      icon: const Icon(
-                        Icons.close,
-                        color: Paleta.textoSecundario,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Expanded(
-                child: Form(
-                  key: _formKey,
-                  child: ListView(
-                    controller: scrollController,
-                    padding: EdgeInsets.fromLTRB(
-                      20,
-                      8,
-                      20,
-                      24 + MediaQuery.of(ctx).viewInsets.bottom,
-                    ),
-                    children: [
-                      const TituloSeccion(
-                        Icons.mark_email_unread_outlined,
-                        'Correos',
-                      ),
-                      const SizedBox(height: 10),
-                      if (widget.editarPrincipal) ...[
-                        CampoFormulario(
-                          controlador: _principalController,
-                          textoAyuda: widget.correoPrincipalOriginal.isEmpty
-                              ? 'Correo principal (cuenta de acceso)'
-                              : widget.correoPrincipalOriginal,
-                          icono: Icons.alternate_email,
-                          tipoTeclado: TextInputType.emailAddress,
-                          accionTeclado: TextInputAction.next,
-                          alCambiar: (_) => setState(() {}),
-                          validador: (v) => _validarCorreo(
-                            v,
-                            original: widget.correoPrincipalOriginal,
-                            otro: _respaldoController.text,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Al cambiarlo te enviaremos un enlace de '
-                          'verificación al nuevo correo.',
-                          style: GoogleFonts.nunito(
-                            fontSize: 12,
-                            height: 1.4,
-                            color: Paleta.textoSecundario,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      if (widget.editarRespaldo) ...[
-                        CampoFormulario(
-                          controlador: _respaldoController,
-                          textoAyuda: 'Correo de respaldo *',
-                          icono: Icons.mark_email_read_outlined,
-                          tipoTeclado: TextInputType.emailAddress,
-                          accionTeclado: TextInputAction.done,
-                          alCambiar: (_) => setState(() {}),
-                          validador: _validarRespaldo,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Sirve para recuperar tu cuenta si pierdes el '
-                          'acceso al correo principal.',
-                          style: GoogleFonts.nunito(
-                            fontSize: 12,
-                            height: 1.4,
-                            color: Paleta.textoSecundario,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 20),
-                      const TituloSeccion(
-                        Icons.lock_outline,
-                        'Confirmar cambios de correo',
-                      ),
-                      const SizedBox(height: 10),
-                      CampoFormulario(
-                        controlador: _contrasenaController,
-                        textoAyuda: 'Contraseña actual',
-                        icono: Icons.lock_outlined,
-                        oculto: _ocultarContrasena,
-                        iconoSufijo: IconButton(
-                          icon: Icon(
-                            _ocultarContrasena
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            size: 20,
-                          ),
-                          onPressed: () => setState(
-                            () => _ocultarContrasena = !_ocultarContrasena,
-                          ),
-                        ),
-                        accionTeclado: TextInputAction.done,
-                        validador: (v) {
-                          if (correosEditados && (v == null || v.isEmpty)) {
-                            return 'Ingresa tu contraseña';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Confirmamos tu identidad antes de '
-                        'cualquier cambio de correo.',
-                        style: GoogleFonts.nunito(
-                          fontSize: 12,
-                          height: 1.4,
-                          color: Paleta.textoSecundario,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: BotonPrincipal(
-                              etiqueta: 'Cancelar',
-                              alPulsar: () => Navigator.of(ctx).pop(),
-                              destacado: false,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            flex: 2,
-                            child: BotonPrincipal(
-                              etiqueta: _cargando
-                                  ? 'Guardando…'
-                                  : 'Guardar cambios',
-                              alPulsar: _cargando ? () {} : _guardar,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+      child: HojaDialogo(
+        icono: Icons.mark_email_unread_outlined,
+        titulo: _titulo,
+        tamanoInicial: 0.66,
+        tamanoMinimo: 0.48,
+        tamanoMaximo: 0.88,
+        cuerpo: (ctx, scrollController) => [
+          FormularioDeHoja(
+            formKey: _formKey,
+            controlador: scrollController,
+            hijos: [
+              const TituloSeccion(Icons.mark_email_unread_outlined, 'Correos'),
+              const SizedBox(height: 10),
+              if (widget.editarPrincipal) ...[
+                CampoFormulario(
+                  controlador: _principalController,
+                  textoAyuda: widget.correoPrincipalOriginal.isEmpty
+                      ? 'Correo principal (cuenta de acceso)'
+                      : widget.correoPrincipalOriginal,
+                  icono: Icons.alternate_email,
+                  tipoTeclado: TextInputType.emailAddress,
+                  accionTeclado: TextInputAction.next,
+                  alCambiar: (_) => setState(() {}),
+                  validador: (v) => _validarCorreo(
+                    v,
+                    original: widget.correoPrincipalOriginal,
+                    otro: _respaldoController.text,
                   ),
                 ),
+                const SizedBox(height: 10),
+                Text(
+                  'Al cambiarlo te enviaremos un enlace de '
+                  'verificación al nuevo correo.',
+                  style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: Paleta.textoSecundario,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (widget.editarRespaldo) ...[
+                CampoFormulario(
+                  controlador: _respaldoController,
+                  textoAyuda: 'Correo de respaldo *',
+                  icono: Icons.mark_email_read_outlined,
+                  tipoTeclado: TextInputType.emailAddress,
+                  accionTeclado: TextInputAction.done,
+                  alCambiar: (_) => setState(() {}),
+                  validador: _validarRespaldo,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Sirve para recuperar tu cuenta si pierdes el '
+                  'acceso al correo principal.',
+                  style: GoogleFonts.nunito(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: Paleta.textoSecundario,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              const TituloSeccion(
+                Icons.lock_outline,
+                'Confirmar cambios de correo',
+              ),
+              const SizedBox(height: 10),
+              CampoFormulario(
+                controlador: _contrasenaController,
+                textoAyuda: 'Contraseña actual',
+                icono: Icons.lock_outlined,
+                oculto: _ocultarContrasena,
+                iconoSufijo: IconButton(
+                  icon: Icon(
+                    _ocultarContrasena
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 20,
+                  ),
+                  onPressed: () =>
+                      setState(() => _ocultarContrasena = !_ocultarContrasena),
+                ),
+                accionTeclado: TextInputAction.done,
+                validador: (v) {
+                  if (correosEditados && (v == null || v.isEmpty)) {
+                    return 'Ingresa tu contraseña';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Confirmamos tu identidad antes de '
+                'cualquier cambio de correo.',
+                style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  height: 1.4,
+                  color: Paleta.textoSecundario,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: BotonPrincipal(
+                      etiqueta: 'Cancelar',
+                      alPulsar: () => Navigator.of(ctx).pop(),
+                      destacado: false,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: BotonPrincipal(
+                      etiqueta: _cargando ? 'Guardando…' : 'Guardar cambios',
+                      alPulsar: _cargando ? () {} : _guardar,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
