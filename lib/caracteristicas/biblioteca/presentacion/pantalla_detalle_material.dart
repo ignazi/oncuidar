@@ -10,6 +10,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/dominio/parseo_contenido.dar
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_material.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/checklist_interactivo.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/dialogo_imagen_ampliable.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
@@ -255,61 +256,5 @@ class _PantallaDetalleMaterialState
                 ),
         ),
     ];
-  }
-}
-
-class DialogoImagenAmpliable extends StatelessWidget {
-  const DialogoImagenAmpliable({super.key, required this.url});
-
-  final String url;
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.black87,
-      insetPadding: const EdgeInsets.all(16),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          InteractiveViewer(
-            maxScale: 5,
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: ImagenCacheada(
-                url: url,
-                ajuste: BoxFit.contain,
-                reemplazo: const _ImagenIndisponible(),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.close, color: Colors.white, size: 20),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ImagenIndisponible extends StatelessWidget {
-  const _ImagenIndisponible();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Icon(Icons.broken_image_outlined, color: Colors.white70, size: 40),
-    );
   }
 }

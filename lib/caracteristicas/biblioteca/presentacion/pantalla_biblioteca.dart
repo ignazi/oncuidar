@@ -13,7 +13,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_materi
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_video.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/checklist_interactivo.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/dialogo_imagen_ampliable.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
@@ -104,7 +104,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
   void _mostrarInfografia(String url, String titulo) {
     showDialog<void>(
       context: context,
-      builder: (ctx) => DialogoInfografia(url: url, titulo: titulo),
+      builder: (ctx) => DialogoImagenAmpliable(url: url, titulo: titulo),
     );
   }
 
@@ -426,78 +426,6 @@ class _EstadoVacio extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class DialogoInfografia extends StatelessWidget {
-  const DialogoInfografia({super.key, required this.url, required this.titulo});
-
-  final String url;
-  final String titulo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.black87,
-      insetPadding: const EdgeInsets.all(16),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          InteractiveViewer(
-            maxScale: 5,
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: ImagenCacheada(
-                url: url,
-                ajuste: BoxFit.contain,
-                reemplazo: const _ImagenIndisponible(),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 8,
-            left: 8,
-            right: 48,
-            child: Text(
-              titulo,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.nunito(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.close, color: Colors.white, size: 20),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ImagenIndisponible extends StatelessWidget {
-  const _ImagenIndisponible();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Icon(Icons.broken_image_outlined, color: Colors.white70, size: 40),
     );
   }
 }
