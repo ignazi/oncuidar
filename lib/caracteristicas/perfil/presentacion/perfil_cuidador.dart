@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/proveedores_perfil.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/boton_cerrar_sesion.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/dialogo_correos.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/dialogo_editar_cuidador.dart';
@@ -12,7 +14,6 @@ import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/mensaje_err
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/pie_version.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/tarjeta_perfil_cuidador.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
 class PerfilCuidador extends ConsumerStatefulWidget {
@@ -42,19 +43,19 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
       });
     }
     try {
-      final base = ref.read(servicioBaseDatosProvider);
-      var datos = await base.obtenerCuidador().timeout(
+      final repositorio = ref.read(repositorioCuidadorProvider);
+      var datos = await repositorio.obtenerCuidador().timeout(
         const Duration(seconds: 5),
       );
       final pendiente = datos['pendienteCorreo'] as Map?;
       if (pendiente != null && pendiente['tipo'] == 'principal') {
-        await _confirmarCambioCorreoConfirmado(base, datos);
-        datos = await base.obtenerCuidador().timeout(
+        await _confirmarCambioCorreoConfirmado(repositorio, datos);
+        datos = await repositorio.obtenerCuidador().timeout(
           const Duration(seconds: 5),
         );
       }
       if (datos['respaldoPendienteServidor'] == true) {
-        datos = await _reintentarRespaldo(base, datos);
+        datos = await _reintentarRespaldo(repositorio, datos);
       }
       if (!mounted) return;
       setState(() => _cuidador = datos);
@@ -70,7 +71,7 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
   /// verificación, el email de Auth ya cambió: sincronizamos el doc del
   /// cuidador y limpiamos el marcador de cambio pendiente.
   Future<void> _confirmarCambioCorreoConfirmado(
-    ServicioBaseDatos base,
+    RepositorioCuidador repositorio,
     Map<String, dynamic> datos,
   ) async {
     final pendiente = datos['pendienteCorreo'] as Map?;
@@ -84,19 +85,19 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
         ?.toLowerCase();
     if (correoPendiente == null || correoPendiente.isEmpty) return;
     if (correoAuth == correoPendiente) {
-      await base.sincronizarCorreoPrincipal(correoPendiente);
-      await base.limpiarCambioCorreoPendiente();
+      await repositorio.sincronizarCorreoPrincipal(correoPendiente);
+      await repositorio.limpiarCambioCorreoPendiente();
     }
   }
 
   /// Reintenta registrar el respaldo pendiente; si sigue fallando se avisa sin bloquear el perfil.
   Future<Map<String, dynamic>> _reintentarRespaldo(
-    ServicioBaseDatos base,
+    RepositorioCuidador repositorio,
     Map<String, dynamic> datos,
   ) async {
     var confirmado = false;
     try {
-      confirmado = await base.reintentarRegistroRespaldo().timeout(
+      confirmado = await repositorio.reintentarRegistroRespaldo().timeout(
         const Duration(seconds: 8),
       );
     } catch (_) {}
@@ -175,7 +176,7 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
   // ── Editar datos personales (sin correos) ──
 
   Future<void> _dialogoEditarCuidador() async {
-    final servicio = ref.read(servicioBaseDatosProvider);
+    final repositorio = ref.read(repositorioCuidadorProvider);
     await mostrarDialogoEditarCuidador(
       context,
       cuidador: _cuidador ?? {},
@@ -201,7 +202,7 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
             unawaited(_cargar());
             // Si la escritura falla, la excepción llega al diálogo para que NUNCA
             // se muestre "Datos actualizados" cuando en realidad no se guardó.
-            await servicio
+            await repositorio
                 .actualizarCuidador(
                   nombre: nombre,
                   telefono: telefono,
@@ -227,7 +228,7 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
         (cuidador['correoRespaldo'] as String?)?.trim() ?? '';
     await mostrarDialogoCorreos(
       context,
-      servicio: ref.read(servicioBaseDatosProvider),
+      repositorio: ref.read(repositorioCuidadorProvider),
       correoPrincipalOriginal: correoPrincipalOriginal,
       correoRespaldoOriginal: correoRespaldoOriginal,
       editarPrincipal: editarPrincipal,

@@ -12,6 +12,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/datos/repositorio_biblioteca
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
@@ -132,7 +133,7 @@ Future<ServicioBaseDatos> _baseConContenido(
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await base.crearCuidador({
+  await RepositorioCuidador(base.bd).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'cuidador@test.cl',
     'phone': '+56 9 1111 1111',

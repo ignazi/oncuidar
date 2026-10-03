@@ -12,6 +12,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.d
 import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/proveedores_perfil.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -125,7 +126,7 @@ final orquestadorSincronizacionProvider = Provider<OrquestadorSincronizacion>((
 final cuidadorProvider = StreamProvider.autoDispose<Map<String, dynamic>?>((
   ref,
 ) {
-  return ref.watch(servicioBaseDatosProvider).cuidadorEnTiempoReal();
+  return ref.watch(repositorioCuidadorProvider).cuidadorEnTiempoReal();
 });
 
 final servicioRegistroProvider = Provider<ServicioRegistro>((ref) {
@@ -133,6 +134,7 @@ final servicioRegistroProvider = Provider<ServicioRegistro>((ref) {
     auth: ref.watch(firebaseAuthProvider),
     cifrado: ref.watch(servicioCifradoProvider),
     baseDatos: ref.watch(servicioBaseDatosProvider),
+    repositorioCuidador: ref.watch(repositorioCuidadorProvider),
     alDesbloquear: () =>
         ref.read(bloqueoCifradoProvider.notifier).fijarDesbloqueado(true),
   );

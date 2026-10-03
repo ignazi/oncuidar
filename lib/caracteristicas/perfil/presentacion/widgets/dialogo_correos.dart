@@ -4,15 +4,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/compartido/widgets/titulo_seccion.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/utilidades/validacion_correo.dart';
 
 Future<void> mostrarDialogoCorreos(
   BuildContext context, {
-  required ServicioBaseDatos servicio,
+  required RepositorioCuidador repositorio,
   required String correoPrincipalOriginal,
   required String correoRespaldoOriginal,
   required bool editarPrincipal,
@@ -26,7 +26,7 @@ Future<void> mostrarDialogoCorreos(
     isDismissible: false,
     backgroundColor: Colors.transparent,
     builder: (_) => _DialogoCorreos(
-      servicio: servicio,
+      repositorio: repositorio,
       correoPrincipalOriginal: correoPrincipalOriginal,
       correoRespaldoOriginal: correoRespaldoOriginal,
       editarPrincipal: editarPrincipal,
@@ -38,7 +38,7 @@ Future<void> mostrarDialogoCorreos(
 
 class _DialogoCorreos extends StatefulWidget {
   const _DialogoCorreos({
-    required this.servicio,
+    required this.repositorio,
     required this.correoPrincipalOriginal,
     required this.correoRespaldoOriginal,
     required this.editarPrincipal,
@@ -46,7 +46,7 @@ class _DialogoCorreos extends StatefulWidget {
     required this.alRefrescar,
   });
 
-  final ServicioBaseDatos servicio;
+  final RepositorioCuidador repositorio;
   final String correoPrincipalOriginal;
   final String correoRespaldoOriginal;
   final bool editarPrincipal;
@@ -156,7 +156,7 @@ class _DialogoCorreosState extends State<_DialogoCorreos> {
     try {
       if (_hayCambioRespaldo) {
         try {
-          respaldoConfirmado = await widget.servicio.cambiarCorreoRespaldo(
+          respaldoConfirmado = await widget.repositorio.cambiarCorreoRespaldo(
             contrasena: _contrasenaController.text,
             nuevoCorreo: _respaldoController.text.trim(),
           );
@@ -170,7 +170,7 @@ class _DialogoCorreosState extends State<_DialogoCorreos> {
         cambiadoPrincipal = true;
         principalEnviado = _principalController.text.trim();
         try {
-          await widget.servicio.cambiarCorreoPrincipal(
+          await widget.repositorio.cambiarCorreoPrincipal(
             contrasena: _contrasenaController.text,
             nuevoCorreo: principalEnviado,
           );

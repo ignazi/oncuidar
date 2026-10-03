@@ -3,6 +3,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 
@@ -47,11 +48,13 @@ class ServicioRegistro {
     FirebaseAuth? auth,
     required ServicioCifrado cifrado,
     required ServicioBaseDatos baseDatos,
+    required RepositorioCuidador repositorioCuidador,
     VoidCallback? alDesbloquear,
     RegistrarCorreoRespaldo? registrarCorreoRespaldo,
   }) : _auth = auth ?? FirebaseAuth.instance {
     _cifrado = cifrado;
     _baseDatos = baseDatos;
+    _repositorioCuidador = repositorioCuidador;
     _alDesbloquear = alDesbloquear;
     _registrarCorreoRespaldo = registrarCorreoRespaldo ?? _viaCallable;
   }
@@ -59,6 +62,7 @@ class ServicioRegistro {
   final FirebaseAuth _auth;
   late final ServicioCifrado _cifrado;
   late final ServicioBaseDatos _baseDatos;
+  late final RepositorioCuidador _repositorioCuidador;
   late final VoidCallback? _alDesbloquear;
   late final RegistrarCorreoRespaldo _registrarCorreoRespaldo;
 
@@ -87,7 +91,7 @@ class ServicioRegistro {
         await _cifrado.asegurarClave(uid);
         _alDesbloquear?.call();
         final respaldo = datos.correoRespaldo;
-        await _baseDatos.crearCuidador({
+        await _repositorioCuidador.crearCuidador({
           'displayName': datos.nombre,
           'email': datos.correo,
           'phone': datos.telefono,
@@ -106,7 +110,7 @@ class ServicioRegistro {
         await _baseDatos.crearPaciente(datos.paciente);
       } catch (_) {
         // Rollback: primero el doc Firestore (las reglas exigen sesión activa).
-        await _baseDatos.limpiarRegistro(uid);
+        await _repositorioCuidador.limpiarRegistro(uid);
         try {
           await credential.user?.delete();
         } catch (_) {}

@@ -1,6 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 
@@ -127,7 +128,7 @@ void main() {
 
     test('crearCuidador guarda email en texto plano y cifra demas', () async {
       await cifrado.restaurarClave('uid-1');
-      await servicio.crearCuidador({
+      await RepositorioCuidador(servicio.bd).crearCuidador({
         'displayName': 'Ana Torres',
         'email': 'ana@correo.cl',
         'phone': '+56 9 1111 2222',

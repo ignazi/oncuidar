@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -23,10 +24,8 @@ ServicioCifrado _cifradoListo() => ServicioCifrado(clavePrueba: _clavePrueba);
 
 Future<ServicioBaseDatos> _crearBase(
   ServicioCifrado cifrado,
-  MockFirebaseAuth auth, {
-  bool falla = false,
-}) async {
-  if (falla) return _ServicioFallido(cifrado: cifrado);
+  MockFirebaseAuth auth,
+) async {
   return ServicioBaseDatos(
     base: FakeFirebaseFirestore(),
     auth: auth,
@@ -37,8 +36,9 @@ Future<ServicioBaseDatos> _crearBase(
 Widget _pantalla(
   MockFirebaseAuth auth,
   ServicioBaseDatos base,
-  ServicioCifrado cifrado,
-) {
+  ServicioCifrado cifrado, {
+  RepositorioCuidador? repositorioCuidador,
+}) {
   final router = GoRouter(
     routes: [
       GoRoute(path: '/', builder: (context, state) => const Registro()),
@@ -59,6 +59,8 @@ Widget _pantalla(
           auth: auth,
           cifrado: cifrado,
           baseDatos: base,
+          repositorioCuidador:
+              repositorioCuidador ?? RepositorioCuidador(base.bd),
           alDesbloquear: () =>
               ref.read(bloqueoCifradoProvider.notifier).fijarDesbloqueado(true),
           registrarCorreoRespaldo: (email) async {},
@@ -265,8 +267,15 @@ void main() {
     await _pantallaAlta(tester);
     final auth = _authLimpio();
     final cifrado = _cifradoListo();
-    final base = await _crearBase(cifrado, auth, falla: true);
-    await tester.pumpWidget(_pantalla(auth, base, cifrado));
+    final base = await _crearBase(cifrado, auth);
+    await tester.pumpWidget(
+      _pantalla(
+        auth,
+        base,
+        cifrado,
+        repositorioCuidador: _RepositorioCuidadorFallido(base.bd),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await _rellenar(tester);
@@ -337,6 +346,7 @@ void main() {
         auth: auth,
         cifrado: cifrado,
         baseDatos: baseDatos,
+        repositorioCuidador: RepositorioCuidador(baseDatos.bd),
         registrarCorreoRespaldo: (email) async => emailRegistrado = email,
       );
 
@@ -386,11 +396,16 @@ void main() {
       final eventos = <String>[];
       final auth = _AuthQueRegistra(eventos);
       final firestore = FakeFirebaseFirestore();
+      final base = _BaseQueFallaAlCrearPaciente(
+        firestore: firestore,
+        auth: auth,
+      );
       final servicio = ServicioRegistro(
         auth: auth,
         cifrado: _cifradoListo(),
-        baseDatos: _BaseQueFallaAlCrearPaciente(
-          firestore: firestore,
+        baseDatos: base,
+        repositorioCuidador: _RepositorioCuidadorQueRegistra(
+          base.bd,
           auth: auth,
           eventos: eventos,
         ),
@@ -424,9 +439,8 @@ void main() {
   );
 }
 
-class _ServicioFallido extends ServicioBaseDatos {
-  _ServicioFallido({required super.cifrado})
-    : super(base: FakeFirebaseFirestore(), uidPrueba: _uid);
+class _RepositorioCuidadorFallido extends RepositorioCuidador {
+  _RepositorioCuidadorFallido(super.bd);
 
   @override
   Future<void> crearCuidador(Map<String, dynamic> datos) async {
@@ -485,26 +499,33 @@ class _AuthQueRegistra extends MockFirebaseAuth {
   }
 }
 
-// Falla al crear el paciente; el borrado del documento exige sesión (reglas).
+// Falla al crear el paciente.
 class _BaseQueFallaAlCrearPaciente extends ServicioBaseDatos {
   _BaseQueFallaAlCrearPaciente({
     required FakeFirebaseFirestore firestore,
     required FirebaseAuth auth,
-    required this.eventos,
-  }) : _auth = auth,
-       super(base: firestore, auth: auth, cifrado: _cifradoListo());
-
-  final FirebaseAuth _auth;
-  final List<String> eventos;
+  }) : super(base: firestore, auth: auth, cifrado: _cifradoListo());
 
   @override
   Future<String> crearPaciente(Paciente paciente) async {
     throw Exception('fallo firestore');
   }
+}
+
+// El borrado del documento exige sesión (reglas).
+class _RepositorioCuidadorQueRegistra extends RepositorioCuidador {
+  _RepositorioCuidadorQueRegistra(
+    super.bd, {
+    required this.auth,
+    required this.eventos,
+  });
+
+  final FirebaseAuth auth;
+  final List<String> eventos;
 
   @override
   Future<void> limpiarRegistro(String uid) async {
-    if (_auth.currentUser == null) {
+    if (auth.currentUser == null) {
       // Las reglas rechazan el borrado sin sesión; el error se ignora.
       eventos.add('firestore-sin-sesion');
       return;

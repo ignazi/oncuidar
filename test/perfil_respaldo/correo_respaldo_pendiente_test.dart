@@ -3,8 +3,9 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _clavePrueba = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
@@ -12,7 +13,7 @@ const _uid = 'uid-respaldo';
 
 void main() {
   late FakeFirebaseFirestore firestore;
-  late ServicioBaseDatos base;
+  late RepositorioCuidador repositorio;
   late List<String> registrados;
 
   Future<Map<String, dynamic>?> docCuidador() async =>
@@ -23,13 +24,15 @@ void main() {
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     await cifrado.fijarClave(_uid, _clavePrueba);
     firestore = FakeFirebaseFirestore();
-    base = ServicioBaseDatos(
-      base: firestore,
-      auth: MockFirebaseAuth(
-        signedIn: true,
-        mockUser: MockUser(uid: _uid, email: 'cuidador@test.cl'),
+    repositorio = RepositorioCuidador(
+      BaseDatosSegura(
+        base: firestore,
+        auth: MockFirebaseAuth(
+          signedIn: true,
+          mockUser: MockUser(uid: _uid, email: 'cuidador@test.cl'),
+        ),
+        cifrado: cifrado,
       ),
-      cifrado: cifrado,
     );
     registrados = [];
   });
@@ -37,10 +40,10 @@ void main() {
   test(
     'si el servidor falla deja la marca pendiente y devuelve false',
     () async {
-      base.registrarCorreoRespaldoServidor = (_) async =>
+      repositorio.registrarCorreoRespaldoServidor = (_) async =>
           throw Exception('sin conexión');
 
-      final confirmado = await base.cambiarCorreoRespaldo(
+      final confirmado = await repositorio.cambiarCorreoRespaldo(
         contrasena: 'clave-valida',
         nuevoCorreo: 'Respaldo@Test.cl',
       );
@@ -54,16 +57,16 @@ void main() {
   );
 
   test('reintentar registra el correo normalizado y limpia la marca', () async {
-    base.registrarCorreoRespaldoServidor = (_) async =>
+    repositorio.registrarCorreoRespaldoServidor = (_) async =>
         throw Exception('sin conexión');
-    await base.cambiarCorreoRespaldo(
+    await repositorio.cambiarCorreoRespaldo(
       contrasena: 'clave-valida',
       nuevoCorreo: 'Respaldo@Test.cl',
     );
 
-    base.registrarCorreoRespaldoServidor = (correo) async =>
+    repositorio.registrarCorreoRespaldoServidor = (correo) async =>
         registrados.add(correo);
-    final resuelto = await base.reintentarRegistroRespaldo();
+    final resuelto = await repositorio.reintentarRegistroRespaldo();
 
     expect(resuelto, isTrue);
     expect(registrados, ['respaldo@test.cl']);
@@ -71,10 +74,10 @@ void main() {
   });
 
   test('sin marca pendiente el reintento no llama al servidor', () async {
-    base.registrarCorreoRespaldoServidor = (correo) async =>
+    repositorio.registrarCorreoRespaldoServidor = (correo) async =>
         registrados.add(correo);
 
-    expect(await base.reintentarRegistroRespaldo(), isTrue);
+    expect(await repositorio.reintentarRegistroRespaldo(), isTrue);
     expect(registrados, isEmpty);
   });
 }

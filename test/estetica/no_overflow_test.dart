@@ -9,6 +9,7 @@ import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_cre
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
@@ -44,7 +45,7 @@ Future<ServicioBaseDatos> _baseConCuidador(ServicioCifrado cifrado) async {
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await base.crearCuidador({
+  await RepositorioCuidador(base.bd).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'ana@correo.cl',
     'phone': '+56 9 1111 1111',
@@ -88,6 +89,7 @@ Widget _pantalla(
           auth: auth,
           cifrado: cifrado,
           baseDatos: base,
+          repositorioCuidador: RepositorioCuidador(base.bd),
           alDesbloquear: () =>
               ref.read(bloqueoCifradoProvider.notifier).fijarDesbloqueado(true),
           registrarCorreoRespaldo: (email) async {},
@@ -177,7 +179,7 @@ void main() {
         uidPrueba: _uid,
         cifrado: cifrado,
       );
-      await base.crearCuidador({
+      await RepositorioCuidador(base.bd).crearCuidador({
         'displayName': 'Ana Torres',
         'email': 'ana@correo.cl',
         'phone': '+56 9 1111 1111',

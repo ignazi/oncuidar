@@ -11,6 +11,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.d
 import 'package:oncuidar/caracteristicas/chat/datos/repositorio_conversaciones.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -86,7 +87,7 @@ void main() {
       uidPrueba: _uid,
       cifrado: cifrado,
     );
-    await base.crearCuidador({
+    await RepositorioCuidador(base.bd).crearCuidador({
       'displayName': 'Ana Torres',
       'email': 'cuidador@test.cl',
       'phone': '+56 9 1111 1111',

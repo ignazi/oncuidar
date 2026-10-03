@@ -7,6 +7,7 @@ import 'package:oncuidar/caracteristicas/historial/datos/exportador_excel.dart';
 import 'package:oncuidar/caracteristicas/historial/datos/exportador_pdf.dart';
 import 'package:oncuidar/caracteristicas/historial/dominio/orden_registros.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
@@ -34,7 +35,7 @@ Future<(ServicioBaseDatos, String, String)> _baseConDosPacientes() async {
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await base.crearCuidador({
+  await RepositorioCuidador(base.bd).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'cuidador@test.cl',
     'phone': '+56 9 1111 1111',
