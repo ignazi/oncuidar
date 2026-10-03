@@ -5,24 +5,10 @@ import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/proveedores_chat.dart';
+import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/hoja_renombrar_conversacion.dart';
+import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/tarjeta_conversacion.dart';
 import 'package:oncuidar/compartido/estilos.dart';
-import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
-
-const List<String> _mesesEs = [
-  'ene',
-  'feb',
-  'mar',
-  'abr',
-  'may',
-  'jun',
-  'jul',
-  'ago',
-  'sep',
-  'oct',
-  'nov',
-  'dic',
-];
 
 /// Hoja de conversaciones del chat: permite retomar, renombrar y eliminar
 /// las conversaciones guardadas sin salir de la pantalla actual.
@@ -78,16 +64,6 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
     super.dispose();
   }
 
-  String _textoFechaRelativa(DateTime fecha) {
-    final ahora = DateTime.now();
-    final hoy = DateTime(ahora.year, ahora.month, ahora.day);
-    final dia = DateTime(fecha.year, fecha.month, fecha.day);
-    final diferencia = hoy.difference(dia).inDays;
-    if (diferencia == 0) return 'hoy';
-    if (diferencia == 1) return 'ayer';
-    return '${fecha.day} ${_mesesEs[fecha.month - 1]}';
-  }
-
   void _mostrarSnackbar(ScaffoldMessengerState messenger, String mensaje) {
     messenger.showSnackBar(
       SnackBar(
@@ -131,7 +107,8 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
       enableDrag: false,
       isDismissible: false,
       backgroundColor: Colors.transparent,
-      builder: (_) => _DialogoRenombrar(controlador: _controladorRenombrar),
+      builder: (_) =>
+          HojaRenombrarConversacion(controlador: _controladorRenombrar),
     );
   }
 
@@ -427,271 +404,18 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
       itemCount: conversaciones.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, indice) =>
-          _tarjetaConversacion(conversaciones[indice]),
-    );
-  }
-
-  Widget _tarjetaConversacion(Conversacion conversacion) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Paleta.tarjeta,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Paleta.doradoPrincipal.withValues(alpha: 0.20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Paleta.doradoPrincipal.withValues(alpha: 0.06),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          key: Key('conversacion_${conversacion.id}'),
-          onTap: () {
+      itemBuilder: (context, indice) {
+        final conversacion = conversaciones[indice];
+        return TarjetaConversacion(
+          conversacion: conversacion,
+          alEntrar: () {
             Navigator.pop(context);
             widget.alEntrar(conversacion);
           },
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.folder_rounded,
-                  color: Paleta.doradoOscuro,
-                  size: 22,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        conversacion.titulo,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.nunito(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Paleta.textoPrincipal,
-                          height: 1.3,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${_textoFechaRelativa(conversacion.ultimaActividad)}'
-                        ' · ${conversacion.mensajes.length} mensajes',
-                        style: GoogleFonts.nunito(
-                          fontSize: 12,
-                          color: Paleta.textoSecundario,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  key: Key('menuConversacion_${conversacion.id}'),
-                  icon: const Icon(
-                    Icons.more_vert,
-                    color: Paleta.textoSecundario,
-                    size: 20,
-                  ),
-                  onSelected: (valor) {
-                    switch (valor) {
-                      case 'renombrar':
-                        _renombrar(conversacion);
-                      case 'eliminar':
-                        _eliminar(conversacion);
-                    }
-                  },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: 'renombrar',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text('Renombrar'),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'eliminar',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline_rounded, size: 18),
-                          SizedBox(width: 8),
-                          Text('Eliminar'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Hoja inferior para renombrar una conversación, con el mismo patrón
-/// visual que los formularios del perfil.
-class _DialogoRenombrar extends StatefulWidget {
-  const _DialogoRenombrar({required this.controlador});
-
-  final TextEditingController controlador;
-
-  @override
-  State<_DialogoRenombrar> createState() => _DialogoRenombrarState();
-}
-
-class _DialogoRenombrarState extends State<_DialogoRenombrar> {
-  final _foco = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _foco.requestFocus();
-    });
-  }
-
-  @override
-  void dispose() {
-    _foco.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.42,
-      minChildSize: 0.35,
-      maxChildSize: 0.62,
-      builder: (ctx, _) => Container(
-        key: const Key('dialogoRenombrarConversacion'),
-        decoration: const BoxDecoration(
-          color: Paleta.tarjeta,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(top: 12),
-                    decoration: BoxDecoration(
-                      color: Paleta.bordeTarjeta,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 8, 0),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Paleta.doradoPrincipal,
-                              Paleta.doradoOscuro,
-                            ],
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.edit_outlined,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Renombrar conversación',
-                          style: GoogleFonts.nunito(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                            color: Paleta.textoPrincipal,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.of(ctx).pop(false),
-                        icon: const Icon(
-                          Icons.close,
-                          color: Paleta.textoSecundario,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: TextField(
-                    key: const Key('campoRenombrarConversacion'),
-                    controller: widget.controlador,
-                    focusNode: _foco,
-                    style: GoogleFonts.nunito(
-                      fontSize: 14,
-                      color: Paleta.textoPrincipal,
-                    ),
-                    decoration: entradaDorada(
-                      hintText: 'Nombre de la conversación',
-                    ),
-                  ),
-                ),
-                const Expanded(child: SizedBox.shrink()),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: BotonPrincipal(
-                          key: const Key('cancelarRenombrarConversacion'),
-                          etiqueta: 'Cancelar',
-                          alPulsar: () => Navigator.of(ctx).pop(false),
-                          destacado: false,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: BotonPrincipal(
-                          key: const Key('confirmarRenombrarConversacion'),
-                          etiqueta: 'Guardar',
-                          alPulsar: () => Navigator.of(ctx).pop(true),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+          alRenombrar: () => _renombrar(conversacion),
+          alEliminar: () => _eliminar(conversacion),
+        );
+      },
     );
   }
 }
