@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/widgets/dialogo_archivados.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/widgets/dialogo_cambiar_paciente.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/widgets/dialogo_paciente.dart';
@@ -10,7 +11,6 @@ import 'package:oncuidar/caracteristicas/pacientes/presentacion/widgets/tarjeta_
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/widgets/tarjeta_sin_pacientes.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
-import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class GestionPacientes extends ConsumerStatefulWidget {

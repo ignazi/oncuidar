@@ -18,7 +18,7 @@ import 'package:oncuidar/caracteristicas/chat/presentacion/pantalla_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/proveedor_chat_activo.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/catalogo_preguntas.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,17 +27,17 @@ const _uid = 'uid-1';
 const _preguntaFiebre =
     '¿Qué temperatura se considera fiebre y cuándo debo llamar al médico?';
 
-Future<ServicioBaseDatos> _base() async {
+Future<BaseDatosSegura> _base() async {
   final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
   await cifrado.fijarClave(_uid, _clavePrueba);
-  return ServicioBaseDatos(
+  return BaseDatosSegura(
     base: FakeFirebaseFirestore(),
     uidPrueba: _uid,
     cifrado: cifrado,
   );
 }
 
-Widget _pantalla(ServicioBaseDatos base) {
+Widget _pantalla(BaseDatosSegura base) {
   final router = GoRouter(
     initialLocation: '/chat',
     routes: [
@@ -55,12 +55,12 @@ Widget _pantalla(ServicioBaseDatos base) {
     ],
   );
   return ProviderScope(
-    overrides: [servicioBaseDatosProvider.overrideWith((_) => base)],
+    overrides: [baseDatosSeguraProvider.overrideWith((_) => base)],
     child: MaterialApp.router(routerConfig: router),
   );
 }
 
-Future<void> _montar(WidgetTester tester, ServicioBaseDatos base) async {
+Future<void> _montar(WidgetTester tester, BaseDatosSegura base) async {
   SharedPreferences.setMockInitialValues({});
   tester.view.physicalSize = const Size(800, 1600);
   tester.view.devicePixelRatio = 1.0;
@@ -271,7 +271,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final convs = await RepositorioConversaciones(
-        base.bd,
+        base,
       ).conversacionesEnTiempoReal().first;
       expect(convs, hasLength(1));
       expect(

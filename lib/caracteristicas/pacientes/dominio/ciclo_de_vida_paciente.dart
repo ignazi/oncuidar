@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
@@ -81,4 +83,14 @@ class CicloDeVidaPaciente {
       // El reagendado nunca debe interferir con el flujo de inicio de sesión.
     }
   }
+}
+
+/// Reprograma los avisos locales sin bloquear la UI ni fallar sin red o permiso.
+void reagendarAvisosEnSegundoPlano(CicloDeVidaPaciente cicloDeVida) {
+  unawaited(
+    cicloDeVida
+        .reagendarNotificaciones()
+        .timeout(const Duration(seconds: 20), onTimeout: () {})
+        .catchError((_) {}),
+  );
 }

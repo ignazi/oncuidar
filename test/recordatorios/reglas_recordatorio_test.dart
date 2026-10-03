@@ -12,13 +12,13 @@ import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recorda
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ayudas_recordatorios.dart';
 
-Widget _pantalla(ServicioBaseDatos base, NotificacionesFalsas notif) {
+Widget _pantalla(BaseDatosSegura base, NotificacionesFalsas notif) {
   final router = GoRouter(
     initialLocation: '/recordatorios',
     routes: [
@@ -34,7 +34,7 @@ Widget _pantalla(ServicioBaseDatos base, NotificacionesFalsas notif) {
   );
   return ProviderScope(
     overrides: [
-      servicioBaseDatosProvider.overrideWith((_) => base),
+      baseDatosSeguraProvider.overrideWith((_) => base),
       servicioNotificacionesProvider.overrideWithValue(notif),
     ],
     child: MaterialApp.router(routerConfig: router),
@@ -125,7 +125,7 @@ void main() {
             });
 
         final leidos = await RepositorioRecordatorios(
-          base.bd,
+          base,
         ).recordatoriosEnTiempoReal(idPaciente).first;
         expect(leidos.single.titulo, 'Jarabe de la mañana');
         expect(leidos.single.asignadoA, Recordatorio.asignadoAPaciente);
@@ -140,7 +140,7 @@ void main() {
     ) async {
       final (base, firestore) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Retirar receta'),
       );

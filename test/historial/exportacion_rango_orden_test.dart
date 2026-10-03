@@ -12,7 +12,7 @@ import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart'
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 
 // Exportación: orden cronológico ascendente y consulta del rango completo.
 
@@ -29,25 +29,25 @@ RegistroClinico _registro(String id, String idPaciente, DateTime momento) =>
       observaciones: 'obs-$id',
     );
 
-Future<(ServicioBaseDatos, String, String)> _baseConDosPacientes() async {
+Future<(BaseDatosSegura, String, String)> _baseConDosPacientes() async {
   final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
   await cifrado.fijarClave(_uid, _clavePrueba);
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: FakeFirebaseFirestore(),
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'cuidador@test.cl',
     'phone': '+56 9 1111 1111',
     'relationship': 'Madre',
     'address': 'Av. Siempre Viva 742',
   });
-  final a = await RepositorioPacientes(base.bd).crearPaciente(
+  final a = await RepositorioPacientes(base).crearPaciente(
     Paciente(id: 'a', fullName: 'Paciente A', createdAt: DateTime.now()),
   );
-  final b = await RepositorioPacientes(base.bd).crearPaciente(
+  final b = await RepositorioPacientes(base).crearPaciente(
     Paciente(id: 'b', fullName: 'Paciente B', createdAt: DateTime.now()),
   );
   return (base, a, b);
@@ -122,19 +122,19 @@ void main() {
       final inicio = DateTime(2026, 9, 1);
       // 60 registros dentro del rango superan la página de 50 del historial.
       for (var i = 0; i < 60; i++) {
-        await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
+        await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
           a,
           _registro('a$i', a, inicio.add(Duration(hours: 6 * i))),
         );
       }
       await RepositorioRegistrosClinicos(
-        base.bd,
+        base,
       ).guardarRegistroClinico(a, _registro('fuera', a, DateTime(2026, 8, 20)));
       await RepositorioRegistrosClinicos(
-        base.bd,
+        base,
       ).guardarRegistroClinico(b, _registro('otro', b, DateTime(2026, 9, 5)));
 
-      final resultado = await RepositorioRegistrosClinicos(base.bd)
+      final resultado = await RepositorioRegistrosClinicos(base)
           .registrosClinicosEnRango(
             a,
             desde: inicio,
@@ -161,16 +161,16 @@ void main() {
     () async {
       final (base, a, b) = await _baseConDosPacientes();
       await RepositorioRegistrosClinicos(
-        base.bd,
+        base,
       ).guardarRegistroClinico(a, _registro('x', a, DateTime(2025, 1, 1)));
       await RepositorioRegistrosClinicos(
-        base.bd,
+        base,
       ).guardarRegistroClinico(a, _registro('y', a, DateTime(2026, 1, 1)));
       await RepositorioRegistrosClinicos(
-        base.bd,
+        base,
       ).guardarRegistroClinico(b, _registro('z', b, DateTime(2026, 1, 1)));
       final resultado = await RepositorioRegistrosClinicos(
-        base.bd,
+        base,
       ).registrosClinicosEnRango(a);
       expect(resultado.map((r) => r.id), ['x', 'y']);
     },

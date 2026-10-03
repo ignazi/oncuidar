@@ -11,7 +11,7 @@ import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/sincronizacion/cola_escrituras.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,7 +43,7 @@ void main() {
   late ColaEscrituras cola;
   late ConectividadFalsa red;
   late ServicioCifrado cifrado;
-  late ServicioBaseDatos base;
+  late BaseDatosSegura base;
   late RepositorioRegistrosClinicos registros;
 
   /// Arma un servicio con el cifrado real, sin clave cargada en memoria.
@@ -56,14 +56,14 @@ void main() {
     cola = ColaEscrituras();
     red = ConectividadFalsa(enLinea: enLinea);
     cifrado = ServicioCifrado();
-    base = ServicioBaseDatos(
+    base = BaseDatosSegura(
       base: firestore,
       uidPrueba: _uid,
       cifrado: cifrado,
       cola: cola,
       conectividad: red,
     );
-    registros = RepositorioRegistrosClinicos(base.bd);
+    registros = RepositorioRegistrosClinicos(base);
   }
 
   Future<void> afirmarNadaEscrito() async {
@@ -97,7 +97,7 @@ void main() {
       () async {
         await expectLater(
           RepositorioRecordatorios(
-            base.bd,
+            base,
           ).agregarRecordatorio('pacienteA', _recordatorio()),
           throwsA(isA<ClaveNoDisponibleSinConexion>()),
         );
@@ -139,7 +139,7 @@ void main() {
 
     test('también encola recordatorios', () async {
       await RepositorioRecordatorios(
-        base.bd,
+        base,
       ).agregarRecordatorio('pacienteA', _recordatorio());
       expect(await cola.pendientes(_uid), hasLength(1));
     });
@@ -153,7 +153,7 @@ void main() {
       () async {
         await expectLater(
           RepositorioRecordatorios(
-            base.bd,
+            base,
           ).agregarRecordatorio('pacienteA', _recordatorio()),
           throwsA(isA<StateError>()),
         );

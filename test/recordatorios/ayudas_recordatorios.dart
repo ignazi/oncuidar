@@ -6,7 +6,7 @@ import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
 
 const clavePruebaRecordatorios = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
@@ -65,16 +65,16 @@ class NotificacionesFalsas implements ServicioNotificaciones {
   Future<void> cancelarTodas() async => canceladasTodas++;
 }
 
-Future<(ServicioBaseDatos, FakeFirebaseFirestore)> baseRecordatorios() async {
+Future<(BaseDatosSegura, FakeFirebaseFirestore)> baseRecordatorios() async {
   final cifrado = ServicioCifrado(clavePrueba: clavePruebaRecordatorios);
   await cifrado.fijarClave(uidRecordatorios, clavePruebaRecordatorios);
   final firestore = FakeFirebaseFirestore();
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: firestore,
     uidPrueba: uidRecordatorios,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'ana@correo.cl',
     'phone': '+56 9 1111 1111',
@@ -85,10 +85,10 @@ Future<(ServicioBaseDatos, FakeFirebaseFirestore)> baseRecordatorios() async {
 }
 
 Future<String> crearPacienteRecordatorios(
-  ServicioBaseDatos base, {
+  BaseDatosSegura base, {
   String nombre = 'Paciente Test',
 }) {
-  return RepositorioPacientes(base.bd).crearPaciente(
+  return RepositorioPacientes(base).crearPaciente(
     Paciente(id: 'auto', fullName: nombre, createdAt: DateTime.now()),
   );
 }

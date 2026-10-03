@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:oncuidar/nucleo/proveedores.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 
 class ImagenCacheada extends ConsumerStatefulWidget {
   const ImagenCacheada({

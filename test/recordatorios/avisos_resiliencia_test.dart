@@ -12,10 +12,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_carga.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
+import 'package:oncuidar/caracteristicas/pacientes/dominio/ciclo_de_vida_paciente.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -75,12 +77,12 @@ void main() {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
       await RepositorioRecordatorios(
-        base.bd,
+        base,
       ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
       final notif = _AvisosQueFallan();
 
       await expectLater(
-        cicloDeVida(base.bd, notif).reagendarNotificaciones(),
+        cicloDeVida(base, notif).reagendarNotificaciones(),
         completes,
       );
       // Llegó a la fase de programación: el fallo viene del plugin, no antes.
@@ -93,12 +95,12 @@ void main() {
     test('no lanza ni programa avisos ilegibles', () async {
       final (baseOrigen, firestore) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(baseOrigen);
-      await RepositorioRecordatorios(baseOrigen.bd).agregarRecordatorio(
+      await RepositorioRecordatorios(baseOrigen).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Tomar jarabe'),
       );
       // Otra sesión del mismo usuario sin la clave restaurada (sin red).
-      final baseSinClave = ServicioBaseDatos(
+      final baseSinClave = BaseDatosSegura(
         base: firestore,
         uidPrueba: uidRecordatorios,
         cifrado: ServicioCifrado(clavePrueba: clavePruebaRecordatorios),
@@ -106,7 +108,7 @@ void main() {
       final notif = NotificacionesFalsas();
 
       await expectLater(
-        cicloDeVida(baseSinClave.bd, notif).reagendarNotificaciones(),
+        cicloDeVida(baseSinClave, notif).reagendarNotificaciones(),
         completes,
       );
       expect(notif.programados, isEmpty);
@@ -118,10 +120,10 @@ void main() {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
       await RepositorioRecordatorios(
-        base.bd,
+        base,
       ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
 
-      reagendarAvisosEnSegundoPlano(cicloDeVida(base.bd, _AvisosQueFallan()));
+      reagendarAvisosEnSegundoPlano(cicloDeVida(base, _AvisosQueFallan()));
       await Future<void>.delayed(const Duration(milliseconds: 10));
       // Si el futuro no traguera el error, flutter_test lo reportaría aquí.
     });
@@ -129,7 +131,7 @@ void main() {
     test('traga el fallo de la base de datos', () async {
       reagendarAvisosEnSegundoPlano(
         cicloDeVida(
-          _BaseSinDocumentos(firestore: FakeFirebaseFirestore()).bd,
+          _BaseSinDocumentos(firestore: FakeFirebaseFirestore()),
           NotificacionesFalsas(),
         ),
       );
@@ -144,7 +146,7 @@ void main() {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
       await RepositorioRecordatorios(
-        base.bd,
+        base,
       ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
       final notif = _AvisosQueFallan();
 
@@ -159,7 +161,7 @@ void main() {
           servicioCifradoProvider.overrideWithValue(
             ServicioCifrado(clavePrueba: clavePruebaRecordatorios),
           ),
-          servicioBaseDatosProvider.overrideWith((_) => base),
+          baseDatosSeguraProvider.overrideWith((_) => base),
           servicioNotificacionesProvider.overrideWithValue(notif),
           servicioCacheContenidoProvider.overrideWithValue(_CacheFalso()),
         ]),
@@ -175,7 +177,7 @@ void main() {
 }
 
 /// Base sin ningún paciente: el reagendado no tiene nada que reprogramar.
-class _BaseSinDocumentos extends ServicioBaseDatos {
+class _BaseSinDocumentos extends BaseDatosSegura {
   _BaseSinDocumentos({required FakeFirebaseFirestore firestore})
     : super(
         base: firestore,

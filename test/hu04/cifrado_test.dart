@@ -4,7 +4,7 @@ import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.d
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 
 const _clavePrueba = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
 
@@ -52,15 +52,15 @@ void main() {
     });
   });
 
-  group('ServicioBaseDatos', () {
+  group('Cifrado en los repositorios', () {
     late FakeFirebaseFirestore base;
     late ServicioCifrado cifrado;
-    late ServicioBaseDatos servicio;
+    late BaseDatosSegura servicio;
 
     setUp(() {
       base = FakeFirebaseFirestore();
       cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
-      servicio = ServicioBaseDatos(
+      servicio = BaseDatosSegura(
         base: base,
         uidPrueba: 'uid-1',
         cifrado: cifrado,
@@ -86,7 +86,7 @@ void main() {
 
     test('crearPaciente guarda campos sensibles cifrados', () async {
       final id = await RepositorioPacientes(
-        servicio.bd,
+        servicio,
       ).crearPaciente(await paciente('Ana Torres'));
 
       final doc = await base
@@ -117,11 +117,11 @@ void main() {
 
     test('pacientesEnTiempoReal descifra de vuelta', () async {
       final id = await RepositorioPacientes(
-        servicio.bd,
+        servicio,
       ).crearPaciente(await paciente('Ana Torres'));
 
       final pacientes = await RepositorioPacientes(
-        servicio.bd,
+        servicio,
       ).pacientesEnTiempoReal().first;
       expect(pacientes, hasLength(1));
       expect(pacientes.first.id, id);
@@ -135,7 +135,7 @@ void main() {
 
     test('crearCuidador guarda email en texto plano y cifra demas', () async {
       await cifrado.restaurarClave('uid-1');
-      await RepositorioCuidador(servicio.bd).crearCuidador({
+      await RepositorioCuidador(servicio).crearCuidador({
         'displayName': 'Ana Torres',
         'email': 'ana@correo.cl',
         'phone': '+56 9 1111 2222',

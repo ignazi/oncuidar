@@ -12,10 +12,10 @@ import 'package:oncuidar/caracteristicas/biblioteca/datos/repositorio_biblioteca
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -122,18 +122,18 @@ class _RepositorioSinRed extends RepositorioBiblioteca {
   }
 }
 
-Future<ServicioBaseDatos> _baseConContenido(
+Future<BaseDatosSegura> _baseConContenido(
   List<MaterialEducativo> contenido,
 ) async {
   final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
   await cifrado.fijarClave(_uid, _clavePrueba);
   final firestore = FakeFirebaseFirestore();
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: firestore,
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'cuidador@test.cl',
     'phone': '+56 9 1111 1111',
@@ -245,7 +245,7 @@ void main() {
         final metadata = ServicioCacheMetadata();
         final container = ProviderContainer(
           overrides: [
-            servicioBaseDatosProvider.overrideWith((_) => base),
+            baseDatosSeguraProvider.overrideWith((_) => base),
             servicioCacheContenidoProvider.overrideWithValue(cache),
             servicioCacheMetadataProvider.overrideWithValue(metadata),
           ],
@@ -284,7 +284,7 @@ void main() {
       final cache = _CacheFalso();
       final container = ProviderContainer(
         overrides: [
-          servicioBaseDatosProvider.overrideWith((_) => base),
+          baseDatosSeguraProvider.overrideWith((_) => base),
           servicioCacheContenidoProvider.overrideWithValue(cache),
           servicioCacheMetadataProvider.overrideWithValue(
             ServicioCacheMetadata(),
@@ -310,7 +310,7 @@ void main() {
       final cache = _CacheFalso()..fallar.add(_urlImagen);
       final container = ProviderContainer(
         overrides: [
-          servicioBaseDatosProvider.overrideWith((_) => base),
+          baseDatosSeguraProvider.overrideWith((_) => base),
           servicioCacheContenidoProvider.overrideWithValue(cache),
           servicioCacheMetadataProvider.overrideWithValue(
             ServicioCacheMetadata(),
@@ -339,7 +339,7 @@ void main() {
       final cache = _CacheFalso();
       final container = ProviderContainer(
         overrides: [
-          servicioBaseDatosProvider.overrideWith((_) => base),
+          baseDatosSeguraProvider.overrideWith((_) => base),
           servicioCacheContenidoProvider.overrideWithValue(cache),
         ],
       );
@@ -363,7 +363,7 @@ void main() {
       final metadata = ServicioCacheMetadata();
       final container = ProviderContainer(
         overrides: [
-          servicioBaseDatosProvider.overrideWith((_) => base),
+          baseDatosSeguraProvider.overrideWith((_) => base),
           servicioCacheContenidoProvider.overrideWithValue(cache),
           servicioCacheMetadataProvider.overrideWithValue(metadata),
         ],

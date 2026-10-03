@@ -7,17 +7,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/gestion_pacientes.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../recordatorios/ayudas_recordatorios.dart';
 
-Widget _pantalla(ServicioBaseDatos base, NotificacionesFalsas notif) {
+Widget _pantalla(BaseDatosSegura base, NotificacionesFalsas notif) {
   return ProviderScope(
     overrides: [
-      servicioBaseDatosProvider.overrideWith((_) => base),
+      baseDatosSeguraProvider.overrideWith((_) => base),
       servicioNotificacionesProvider.overrideWithValue(notif),
     ],
     child: const MaterialApp(home: Scaffold(body: GestionPacientes())),
@@ -50,11 +50,11 @@ void main() {
       base,
       nombre: 'Rosa Pérez',
     );
-    final id1 = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+    final id1 = await RepositorioRecordatorios(base).agregarRecordatorio(
       idPaciente,
       recordatorioDe(idPaciente, titulo: 'Jarabe'),
     );
-    final id2 = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+    final id2 = await RepositorioRecordatorios(base).agregarRecordatorio(
       idPaciente,
       recordatorioDe(idPaciente, titulo: 'Control'),
     );
@@ -73,7 +73,7 @@ void main() {
       ]),
     );
     expect(
-      await RepositorioPacientes(base.bd).pacientesEnTiempoReal().first,
+      await RepositorioPacientes(base).pacientesEnTiempoReal().first,
       isEmpty,
     );
   });
@@ -83,7 +83,7 @@ void main() {
   ) async {
     final (base, _) = await baseRecordatorios();
     final idPaciente = await crearPacienteRecordatorios(base);
-    final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+    final id = await RepositorioRecordatorios(base).agregarRecordatorio(
       idPaciente,
       recordatorioDe(idPaciente, titulo: 'Jarabe'),
     );
@@ -96,7 +96,7 @@ void main() {
 
     expect(notif.cancelados, contains(ServicioNotificaciones.idSeguro(id)));
     expect(
-      await RepositorioPacientes(base.bd).pacientesEnTiempoReal().first,
+      await RepositorioPacientes(base).pacientesEnTiempoReal().first,
       isEmpty,
     );
   });
@@ -109,11 +109,11 @@ void main() {
       base,
       nombre: 'Rosa Pérez',
     );
-    await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+    await RepositorioRecordatorios(base).agregarRecordatorio(
       idPaciente,
       recordatorioDe(idPaciente, titulo: 'Jarabe'),
     );
-    await RepositorioPacientes(base.bd).archivarPaciente(idPaciente);
+    await RepositorioPacientes(base).archivarPaciente(idPaciente);
     final notif = NotificacionesFalsas();
     await _montar(tester, _pantalla(base, notif));
 
@@ -125,7 +125,7 @@ void main() {
     expect(notif.programados.map((p) => p['cuerpo']), ['Jarabe']);
     expect(
       (await RepositorioPacientes(
-        base.bd,
+        base,
       ).pacientesEnTiempoReal().first).single.id,
       idPaciente,
     );

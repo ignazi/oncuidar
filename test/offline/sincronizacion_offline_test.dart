@@ -11,7 +11,6 @@ import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clini
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/conectividad/servicio_conectividad.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/sincronizacion/cola_escrituras.dart';
 import 'package:oncuidar/nucleo/sincronizacion/orquestador_sincronizacion.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,7 +60,6 @@ class _Entorno {
   final ConectividadFalsa red;
   final _BaseConFallos base;
 
-  ServicioBaseDatos get datos => ServicioBaseDatos.sobre(base);
   RepositorioRecordatorios get recordatorios => RepositorioRecordatorios(base);
   RepositorioRegistrosClinicos get registros =>
       RepositorioRegistrosClinicos(base);

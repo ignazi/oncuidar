@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/datos/proveedores_autenticacion.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
@@ -12,7 +13,6 @@ import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
 const _clavePrueba = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
@@ -24,11 +24,11 @@ MockFirebaseAuth _authLimpio() => MockFirebaseAuth(
 
 ServicioCifrado _cifradoListo() => ServicioCifrado(clavePrueba: _clavePrueba);
 
-Future<ServicioBaseDatos> _crearBase(
+Future<BaseDatosSegura> _crearBase(
   ServicioCifrado cifrado,
   MockFirebaseAuth auth,
 ) async {
-  return ServicioBaseDatos(
+  return BaseDatosSegura(
     base: FakeFirebaseFirestore(),
     auth: auth,
     cifrado: cifrado,
@@ -37,7 +37,7 @@ Future<ServicioBaseDatos> _crearBase(
 
 Widget _pantalla(
   MockFirebaseAuth auth,
-  ServicioBaseDatos base,
+  BaseDatosSegura base,
   ServicioCifrado cifrado, {
   RepositorioCuidador? repositorioCuidador,
 }) {
@@ -55,14 +55,13 @@ Widget _pantalla(
     overrides: [
       firebaseAuthProvider.overrideWithValue(auth),
       servicioCifradoProvider.overrideWithValue(cifrado),
-      servicioBaseDatosProvider.overrideWith((ref) => base),
+      baseDatosSeguraProvider.overrideWith((ref) => base),
       servicioRegistroProvider.overrideWith(
         (ref) => ServicioRegistro(
           auth: auth,
           cifrado: cifrado,
-          repositorioPacientes: RepositorioPacientes(base.bd),
-          repositorioCuidador:
-              repositorioCuidador ?? RepositorioCuidador(base.bd),
+          repositorioPacientes: RepositorioPacientes(base),
+          repositorioCuidador: repositorioCuidador ?? RepositorioCuidador(base),
           alDesbloquear: () =>
               ref.read(bloqueoCifradoProvider.notifier).fijarDesbloqueado(true),
           registrarCorreoRespaldo: (email) async {},
@@ -275,7 +274,7 @@ void main() {
         auth,
         base,
         cifrado,
-        repositorioCuidador: _RepositorioCuidadorFallido(base.bd),
+        repositorioCuidador: _RepositorioCuidadorFallido(base),
       ),
     );
     await tester.pumpAndSettle();
@@ -300,11 +299,7 @@ void main() {
     final auth = _authLimpio();
     final cifrado = _cifradoListo();
     final firestore = FakeFirebaseFirestore();
-    final base = ServicioBaseDatos(
-      base: firestore,
-      auth: auth,
-      cifrado: cifrado,
-    );
+    final base = BaseDatosSegura(base: firestore, auth: auth, cifrado: cifrado);
     await tester.pumpWidget(_pantalla(auth, base, cifrado));
     await tester.pumpAndSettle();
 
@@ -337,7 +332,7 @@ void main() {
       final auth = _authLimpio();
       final cifrado = _cifradoListo();
       final base = FakeFirebaseFirestore();
-      final baseDatos = ServicioBaseDatos(
+      final baseDatos = BaseDatosSegura(
         base: base,
         auth: auth,
         cifrado: cifrado,
@@ -347,8 +342,8 @@ void main() {
       final servicio = ServicioRegistro(
         auth: auth,
         cifrado: cifrado,
-        repositorioPacientes: RepositorioPacientes(baseDatos.bd),
-        repositorioCuidador: RepositorioCuidador(baseDatos.bd),
+        repositorioPacientes: RepositorioPacientes(baseDatos),
+        repositorioCuidador: RepositorioCuidador(baseDatos),
         registrarCorreoRespaldo: (email) async => emailRegistrado = email,
       );
 

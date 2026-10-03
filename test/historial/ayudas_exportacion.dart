@@ -12,10 +12,11 @@ import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
 // Ayudas para probar la exportación del historial de punta a punta: se deja
@@ -40,16 +41,16 @@ RegistroClinico registroDe(String id, String idPaciente, DateTime momento) =>
       observaciones: 'obs-$id',
     );
 
-Future<(ServicioBaseDatos, ServicioCifrado, String activo, String otro)>
+Future<(BaseDatosSegura, ServicioCifrado, String activo, String otro)>
 baseConDosPacientes() async {
   final cifrado = ServicioCifrado(clavePrueba: clavePrueba);
   await cifrado.fijarClave(uidPrueba, clavePrueba);
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: FakeFirebaseFirestore(),
     uidPrueba: uidPrueba,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'cuidador@test.cl',
     'phone': '+56 9 1111 1111',
@@ -57,10 +58,10 @@ baseConDosPacientes() async {
     'address': 'Av. Siempre Viva 742',
   });
   // El id lo genera Firestore, así que se usan los que devuelve.
-  final activo = await RepositorioPacientes(base.bd).crearPaciente(
+  final activo = await RepositorioPacientes(base).crearPaciente(
     Paciente(id: '', fullName: 'Paciente A', createdAt: DateTime(2026, 1, 1)),
   );
-  final otro = await RepositorioPacientes(base.bd).crearPaciente(
+  final otro = await RepositorioPacientes(base).crearPaciente(
     Paciente(id: '', fullName: 'Paciente B', createdAt: DateTime(2026, 1, 2)),
   );
   return (base, cifrado, activo, otro);
@@ -77,7 +78,7 @@ class PacienteActivoFijo extends SelectedPatientNotifier {
 }
 
 Widget pantallaHistorial(
-  ServicioBaseDatos base,
+  BaseDatosSegura base,
   ServicioCifrado cifrado, {
   required String pacienteActivo,
 }) {
@@ -102,7 +103,7 @@ Widget pantallaHistorial(
     overrides: [
       firebaseAuthProvider.overrideWithValue(authPrueba()),
       servicioCifradoProvider.overrideWithValue(cifrado),
-      servicioBaseDatosProvider.overrideWith((_) => base),
+      baseDatosSeguraProvider.overrideWith((_) => base),
       selectedPatientIdProvider.overrideWith(
         () => PacienteActivoFijo(pacienteActivo),
       ),

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
-import 'package:oncuidar/nucleo/proveedores.dart';
+import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 
 Future<void> mostrarDialogoArchivados(
   BuildContext context, {

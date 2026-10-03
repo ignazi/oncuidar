@@ -5,20 +5,26 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/repositorio_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/chat/datos/repositorio_conversaciones.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
+import 'package:oncuidar/caracteristicas/chat/presentacion/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/presentacion/proveedores_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/proveedores_registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,19 +42,19 @@ Future<void> _esperar(bool Function() condicion) async {
 
 void main() {
   late FakeFirebaseFirestore firestore;
-  late ServicioBaseDatos base;
+  late BaseDatosSegura base;
   late ProviderContainer contenedor;
   late String idA;
   late String idB;
 
   Future<String> crearPaciente(String nombre) =>
-      RepositorioPacientes(base.bd).crearPaciente(
+      RepositorioPacientes(base).crearPaciente(
         Paciente(id: '', fullName: nombre, createdAt: DateTime.now()),
       );
 
   Future<void> sembrarPorPaciente(String id, String etiqueta) async {
     final ahora = DateTime.now();
-    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
       id,
       RegistroClinico(
         id: 'registro-$etiqueta',
@@ -59,7 +65,7 @@ void main() {
         observaciones: 'obs $etiqueta',
       ),
     );
-    await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+    await RepositorioRecordatorios(base).agregarRecordatorio(
       id,
       Recordatorio(
         id: '',
@@ -86,12 +92,8 @@ void main() {
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     await cifrado.fijarClave(_uid, _clavePrueba);
     firestore = FakeFirebaseFirestore();
-    base = ServicioBaseDatos(
-      base: firestore,
-      uidPrueba: _uid,
-      cifrado: cifrado,
-    );
-    await RepositorioCuidador(base.bd).crearCuidador({
+    base = BaseDatosSegura(base: firestore, uidPrueba: _uid, cifrado: cifrado);
+    await RepositorioCuidador(base).crearCuidador({
       'displayName': 'Ana Torres',
       'email': 'cuidador@test.cl',
       'phone': '+56 9 1111 1111',
@@ -115,15 +117,15 @@ void main() {
             createdAt: DateTime.utc(2026, 1, 2),
           ).toMap(),
         );
-    await RepositorioBiblioteca(base.bd).alternarFavorito('guia-1');
-    await RepositorioConversaciones(base.bd).crearConversacion(
+    await RepositorioBiblioteca(base).alternarFavorito('guia-1');
+    await RepositorioConversaciones(base).crearConversacion(
       titulo: 'Consulta de prueba',
       mensajes: const [MensajeConversacion(texto: 'Hola', delUsuario: true)],
     );
 
     contenedor = ProviderContainer(
       overrides: [
-        servicioBaseDatosProvider.overrideWith((_) => base),
+        baseDatosSeguraProvider.overrideWith((_) => base),
         servicioCacheMetadataProvider.overrideWithValue(
           ServicioCacheMetadata(),
         ),

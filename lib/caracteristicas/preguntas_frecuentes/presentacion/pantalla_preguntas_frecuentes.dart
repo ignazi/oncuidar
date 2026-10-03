@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/catalogo_preguntas.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/pregunta_base.dart';
 import 'package:oncuidar/compartido/estilos.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
-import 'package:oncuidar/nucleo/proveedores.dart';
 
 /// Preguntas frecuentes con búsqueda en vivo y filtro por categoría.
 class FaqScreen extends StatefulWidget {

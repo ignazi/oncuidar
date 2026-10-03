@@ -15,7 +15,7 @@ import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clini
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/pantalla_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/widgets/selector_multi_sintoma.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
 // Registro clínico (HU-09): indicador de alerta en vivo, guardado con cifrado
@@ -29,18 +29,18 @@ MockFirebaseAuth _auth() => MockFirebaseAuth(
   mockUser: MockUser(uid: _uid, email: 'cuidador@test.cl'),
 );
 
-Future<(ServicioBaseDatos, FakeFirebaseFirestore)> _baseConDatos(
+Future<(BaseDatosSegura, FakeFirebaseFirestore)> _baseConDatos(
   ServicioCifrado cifrado, {
   bool conPaciente = true,
 }) async {
   await cifrado.fijarClave(_uid, _clavePrueba);
   final firestore = FakeFirebaseFirestore();
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: firestore,
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'cuidador@test.cl',
     'phone': '+56 9 1111 1111',
@@ -48,7 +48,7 @@ Future<(ServicioBaseDatos, FakeFirebaseFirestore)> _baseConDatos(
     'address': 'Av. Siempre Viva 742',
   });
   if (conPaciente) {
-    await RepositorioPacientes(base.bd).crearPaciente(
+    await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'paciente',
         fullName: 'Paciente Test',
@@ -77,7 +77,7 @@ Future<List<Map<String, dynamic>>> _sintomasDescifrados(
   return (jsonDecode(texto) as List<dynamic>).cast<Map<String, dynamic>>();
 }
 
-Widget _pantalla(ServicioCifrado cifrado, ServicioBaseDatos base) {
+Widget _pantalla(ServicioCifrado cifrado, BaseDatosSegura base) {
   final router = GoRouter(
     initialLocation: '/',
     routes: [
@@ -110,7 +110,7 @@ Widget _pantalla(ServicioCifrado cifrado, ServicioBaseDatos base) {
     overrides: [
       firebaseAuthProvider.overrideWithValue(_auth()),
       servicioCifradoProvider.overrideWithValue(cifrado),
-      servicioBaseDatosProvider.overrideWith((_) => base),
+      baseDatosSeguraProvider.overrideWith((_) => base),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -309,7 +309,7 @@ void main() {
     final idPaciente = await _idPacienteUnico(firestore);
     final ahora = DateTime.now();
     for (var i = 1; i <= 3; i++) {
-      await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
+      await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
         idPaciente,
         RegistroClinico(
           id: 'p$i',
@@ -359,7 +359,7 @@ void main() {
     final ahora = DateTime.now();
     const tipos = ['programado', 'extra', 'extra'];
     for (var i = 0; i < tipos.length; i++) {
-      await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
+      await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
         idPaciente,
         RegistroClinico(
           id: 'r$i',

@@ -12,7 +12,7 @@ import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recorda
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:oncuidar/nucleo/sincronizacion/cola_escrituras.dart';
 import 'package:oncuidar/nucleo/sincronizacion/orquestador_sincronizacion.dart';
@@ -29,7 +29,7 @@ class _Entorno {
   final FakeFirebaseFirestore firestore;
   final ColaEscrituras cola;
   final ConectividadFalsa red;
-  final ServicioBaseDatos base;
+  final BaseDatosSegura base;
   final OrquestadorSincronizacion orquestador;
 
   CollectionReference<Map<String, dynamic>> coleccion(String nombre) =>
@@ -48,7 +48,7 @@ Future<_Entorno> _crearEntorno({bool enLinea = true}) async {
   final firestore = FakeFirebaseFirestore();
   final cola = ColaEscrituras();
   final red = ConectividadFalsa(enLinea: enLinea);
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: firestore,
     uidPrueba: _uid,
     cifrado: cifrado,
@@ -57,7 +57,7 @@ Future<_Entorno> _crearEntorno({bool enLinea = true}) async {
   );
   final orquestador = OrquestadorSincronizacion(
     cola: cola,
-    base: base.bd,
+    base: base,
     conectividad: red,
     uidActual: () => _uid,
     retardoBase: const Duration(milliseconds: 1),
@@ -81,13 +81,11 @@ void main() {
     test('crear sin red, volver la red y borrar antes de drenar', () async {
       final ent = await _crearEntorno(enLinea: false);
       final id = await RepositorioRecordatorios(
-        ent.base.bd,
+        ent.base,
       ).agregarRecordatorio('p1', _recordatorio('A'));
 
       ent.red.fijar(true);
-      await RepositorioRecordatorios(
-        ent.base.bd,
-      ).eliminarRecordatorio('p1', id);
+      await RepositorioRecordatorios(ent.base).eliminarRecordatorio('p1', id);
 
       final cola = await ent.cola.pendientes(_uid);
       expect(cola.map((e) => e.operacion), [
@@ -110,12 +108,12 @@ void main() {
       () async {
         final ent = await _crearEntorno();
         final id = await RepositorioRecordatorios(
-          ent.base.bd,
+          ent.base,
         ).agregarRecordatorio('p1', _recordatorio('Turno'));
         await ent.coleccion('recordatorios').doc(id).delete();
 
         await RepositorioRecordatorios(
-          ent.base.bd,
+          ent.base,
         ).actualizarRecordatorio('p1', id, activo: false);
 
         expect(
@@ -130,11 +128,11 @@ void main() {
       () async {
         final ent = await _crearEntorno();
         final id = await RepositorioRecordatorios(
-          ent.base.bd,
+          ent.base,
         ).agregarRecordatorio('p1', _recordatorio('Turno'));
         ent.red.fijar(false);
         await RepositorioRecordatorios(
-          ent.base.bd,
+          ent.base,
         ).actualizarRecordatorio('p1', id, activo: false);
         await ent.coleccion('recordatorios').doc(id).delete();
 
@@ -154,16 +152,16 @@ void main() {
     test('con pendientes del mismo documento la nueva va detrás', () async {
       final ent = await _crearEntorno();
       final id = await RepositorioRecordatorios(
-        ent.base.bd,
+        ent.base,
       ).agregarRecordatorio('p1', _recordatorio('Turno'));
       ent.red.fijar(false);
       await RepositorioRecordatorios(
-        ent.base.bd,
+        ent.base,
       ).actualizarRecordatorio('p1', id, activo: false);
 
       ent.red.fijar(true);
       await RepositorioRecordatorios(
-        ent.base.bd,
+        ent.base,
       ).actualizarRecordatorio('p1', id, activo: true);
 
       expect(await ent.cola.pendientes(_uid), hasLength(2));
@@ -177,10 +175,10 @@ void main() {
     test('sin pendientes la escritura va directa al servidor', () async {
       final ent = await _crearEntorno();
       final id = await RepositorioRecordatorios(
-        ent.base.bd,
+        ent.base,
       ).agregarRecordatorio('p1', _recordatorio('Turno'));
       await RepositorioRecordatorios(
-        ent.base.bd,
+        ent.base,
       ).actualizarRecordatorio('p1', id, activo: false);
 
       expect(await ent.cola.pendientes(_uid), isEmpty);
@@ -195,7 +193,7 @@ void main() {
       final ent = await _crearEntorno();
       expect(
         () => RepositorioRecordatorios(
-          ent.base.bd,
+          ent.base,
         ).agregarRecordatorio('p1', _recordatorio('A', paciente: 'p2')),
         throwsArgumentError,
       );

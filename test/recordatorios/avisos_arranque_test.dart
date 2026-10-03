@@ -11,10 +11,11 @@ import 'package:go_router/go_router.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_carga.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,10 +41,10 @@ MockFirebaseAuth _auth({bool conSesion = false}) => MockFirebaseAuth(
   mockUser: MockUser(uid: uidRecordatorios, email: 'ana@correo.cl'),
 );
 
-Future<ServicioBaseDatos> _baseConRecordatorio() async {
+Future<BaseDatosSegura> _baseConRecordatorio() async {
   final (base, _) = await baseRecordatorios();
   final idPaciente = await crearPacienteRecordatorios(base);
-  await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+  await RepositorioRecordatorios(base).agregarRecordatorio(
     idPaciente,
     recordatorioDe(idPaciente, titulo: 'Tomar jarabe'),
   );
@@ -52,14 +53,14 @@ Future<ServicioBaseDatos> _baseConRecordatorio() async {
 
 List<Override> _overrides(
   MockFirebaseAuth auth,
-  ServicioBaseDatos base,
+  BaseDatosSegura base,
   NotificacionesFalsas notif,
 ) => [
   firebaseAuthProvider.overrideWithValue(auth),
   servicioCifradoProvider.overrideWithValue(
     ServicioCifrado(clavePrueba: clavePruebaRecordatorios),
   ),
-  servicioBaseDatosProvider.overrideWith((_) => base),
+  baseDatosSeguraProvider.overrideWith((_) => base),
   servicioNotificacionesProvider.overrideWithValue(notif),
   servicioCacheContenidoProvider.overrideWithValue(_CacheFalso()),
 ];

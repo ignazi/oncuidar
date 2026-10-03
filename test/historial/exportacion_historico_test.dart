@@ -17,7 +17,7 @@ void main() {
     final compartidos = instalarCanalesDeExportacion();
     // Se guardan desordenados a propósito.
     for (final dia in ['03', '01', '02']) {
-      await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
+      await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
         activo,
         registroDe(
           '2026-09-$dia',
@@ -54,7 +54,7 @@ void main() {
     tallerDePrueba(tester);
     final (base, cifrado, activo, _) = await baseConDosPacientes();
     instalarCanalesDeExportacion();
-    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
       activo,
       registroDe('2026-09-01', activo, DateTime(2026, 9, 1, 8)),
     );

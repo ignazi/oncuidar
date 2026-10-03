@@ -13,7 +13,6 @@ import 'package:oncuidar/caracteristicas/chat/presentacion/pantalla_chat.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,11 +47,7 @@ Widget _pantalla(RepositorioConversaciones repositorio) {
     ],
   );
   return ProviderScope(
-    overrides: [
-      servicioBaseDatosProvider.overrideWith(
-        (_) => ServicioBaseDatos.sobre(repositorio.bd),
-      ),
-    ],
+    overrides: [baseDatosSeguraProvider.overrideWith((_) => repositorio.bd)],
     child: MaterialApp.router(routerConfig: router),
   );
 }

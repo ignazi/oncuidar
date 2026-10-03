@@ -14,12 +14,14 @@ import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/chip_est
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/dialogo_rango_fechas.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/estado_vacio.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/tarjeta_registro.dart';
+import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
+import 'package:oncuidar/caracteristicas/perfil/presentacion/proveedores_perfil.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/proveedores_registro_clinico.dart';
 import 'package:oncuidar/compartido/config_alerta.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
-import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';

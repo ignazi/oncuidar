@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
@@ -17,7 +18,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/dominio/parseo_contenido.dar
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_detalle_material.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -76,18 +77,18 @@ class _CacheFalso implements ServicioCacheContenido {
   }
 }
 
-Future<(ServicioBaseDatos, FakeFirebaseFirestore)> _baseConContenido(
+Future<(BaseDatosSegura, FakeFirebaseFirestore)> _baseConContenido(
   List<MaterialEducativo> contenido,
 ) async {
   final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
   await cifrado.fijarClave(_uid, _clavePrueba);
   final firestore = FakeFirebaseFirestore();
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: firestore,
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'cuidador@test.cl',
     'phone': '+56 9 1111 1111',
@@ -103,7 +104,7 @@ Future<(ServicioBaseDatos, FakeFirebaseFirestore)> _baseConContenido(
   return (base, firestore);
 }
 
-Widget _pantalla(ServicioBaseDatos base, _CacheFalso cache, String id) {
+Widget _pantalla(BaseDatosSegura base, _CacheFalso cache, String id) {
   final router = GoRouter(
     initialLocation: '/biblioteca/$id',
     routes: [
@@ -121,7 +122,7 @@ Widget _pantalla(ServicioBaseDatos base, _CacheFalso cache, String id) {
   return ProviderScope(
     overrides: [
       firebaseAuthProvider.overrideWithValue(_auth()),
-      servicioBaseDatosProvider.overrideWith((_) => base),
+      baseDatosSeguraProvider.overrideWith((_) => base),
       servicioCacheContenidoProvider.overrideWithValue(cache),
       servicioCacheMetadataProvider.overrideWithValue(ServicioCacheMetadata()),
     ],
@@ -131,7 +132,7 @@ Widget _pantalla(ServicioBaseDatos base, _CacheFalso cache, String id) {
 
 Future<void> _montar(
   WidgetTester tester,
-  ServicioBaseDatos base,
+  BaseDatosSegura base,
   _CacheFalso cache,
   String id,
 ) async {

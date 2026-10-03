@@ -5,11 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/datos/proveedores_autenticacion.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
-import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:oncuidar/nucleo/utilidades/rut.dart';
 import 'package:oncuidar/nucleo/utilidades/validacion_correo.dart';
 

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/panel_principal/presentacion/widgets/accesos_rapidos.dart';
 import 'package:oncuidar/caracteristicas/panel_principal/presentacion/widgets/estado_sin_pacientes.dart';
 import 'package:oncuidar/caracteristicas/panel_principal/presentacion/widgets/saludo_paciente.dart';
 import 'package:oncuidar/caracteristicas/panel_principal/presentacion/widgets/tarjeta_signos_vitales.dart';
+import 'package:oncuidar/caracteristicas/perfil/presentacion/proveedores_perfil.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/proveedores_registro_clinico.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
-import 'package:oncuidar/nucleo/proveedores.dart';
 
 class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});

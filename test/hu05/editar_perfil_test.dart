@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
 const _clavePrueba = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
@@ -17,14 +17,14 @@ MockFirebaseAuth _authConSesion() => MockFirebaseAuth(
   mockUser: MockUser(uid: _uid, email: 'ana@correo.cl'),
 );
 
-Future<ServicioBaseDatos> _baseConCuidador(ServicioCifrado cifrado) async {
+Future<BaseDatosSegura> _baseConCuidador(ServicioCifrado cifrado) async {
   await cifrado.fijarClave(_uid, _clavePrueba);
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: FakeFirebaseFirestore(),
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'ana@correo.cl',
     'phone': '+56 9 1111 1111',
@@ -36,7 +36,7 @@ Future<ServicioBaseDatos> _baseConCuidador(ServicioCifrado cifrado) async {
 
 Widget _pantallaPerfil(
   MockFirebaseAuth auth,
-  ServicioBaseDatos base,
+  BaseDatosSegura base,
   ServicioCifrado cifrado,
 ) {
   final router = GoRouter(
@@ -54,7 +54,7 @@ Widget _pantallaPerfil(
     overrides: [
       firebaseAuthProvider.overrideWithValue(auth),
       servicioCifradoProvider.overrideWithValue(cifrado),
-      servicioBaseDatosProvider.overrideWith((ref) => base),
+      baseDatosSeguraProvider.overrideWith((ref) => base),
     ],
     child: MaterialApp.router(routerConfig: router),
   );

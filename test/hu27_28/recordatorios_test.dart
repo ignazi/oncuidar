@@ -17,7 +17,7 @@ import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recorda
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -74,16 +74,16 @@ class _FakeNotificaciones implements ServicioNotificaciones {
   Future<String?> consumirPayloadLanzamiento() async => null;
 }
 
-Future<(ServicioBaseDatos, FakeFirebaseFirestore)> _baseDatos() async {
+Future<(BaseDatosSegura, FakeFirebaseFirestore)> _baseDatos() async {
   final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
   await cifrado.fijarClave(_uid, _clavePrueba);
   final firestore = FakeFirebaseFirestore();
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: firestore,
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'ana@correo.cl',
     'phone': '+56 9 1111 1111',
@@ -93,13 +93,13 @@ Future<(ServicioBaseDatos, FakeFirebaseFirestore)> _baseDatos() async {
   return (base, firestore);
 }
 
-Future<String> _sembrarPaciente(ServicioBaseDatos base) async {
-  return RepositorioPacientes(base.bd).crearPaciente(
+Future<String> _sembrarPaciente(BaseDatosSegura base) async {
+  return RepositorioPacientes(base).crearPaciente(
     Paciente(id: 'auto', fullName: 'Paciente Test', createdAt: DateTime.now()),
   );
 }
 
-Widget _pantalla(ServicioBaseDatos base, _FakeNotificaciones notif) {
+Widget _pantalla(BaseDatosSegura base, _FakeNotificaciones notif) {
   final router = GoRouter(
     initialLocation: '/recordatorios',
     routes: [
@@ -116,7 +116,7 @@ Widget _pantalla(ServicioBaseDatos base, _FakeNotificaciones notif) {
   );
   return ProviderScope(
     overrides: [
-      servicioBaseDatosProvider.overrideWith((_) => base),
+      baseDatosSeguraProvider.overrideWith((_) => base),
       servicioNotificacionesProvider.overrideWithValue(notif),
     ],
     child: MaterialApp.router(routerConfig: router),
@@ -166,12 +166,12 @@ Future<Map<String, dynamic>> _payloadRecordatorio(
 }
 
 void main() {
-  group('ServicioBaseDatos — Recordatorios', () {
+  group('RepositorioRecordatorios', () {
     test('agregarRecordatorio cifra título y descripción', () async {
       final (base, firestore) = await _baseDatos();
       final idPaciente = await _sembrarPaciente(base);
       final fecha = DateTime.now();
-      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -205,7 +205,7 @@ void main() {
       final (base, _) = await _baseDatos();
       final idPaciente = await _sembrarPaciente(base);
       final fecha = DateTime.now();
-      await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+      await RepositorioRecordatorios(base).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -218,7 +218,7 @@ void main() {
         ),
       );
       final recordatorios = await RepositorioRecordatorios(
-        base.bd,
+        base,
       ).recordatoriosEnTiempoReal(idPaciente).first;
       expect(recordatorios, hasLength(1));
       expect(recordatorios.first.titulo, 'Control médico');
@@ -229,7 +229,7 @@ void main() {
       final (base, firestore) = await _baseDatos();
       final idPaciente = await _sembrarPaciente(base);
       final fecha = DateTime.now();
-      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -248,15 +248,15 @@ void main() {
       expect(datos!.containsKey('completadoEn'), isFalse);
 
       var recordatorios = await RepositorioRecordatorios(
-        base.bd,
+        base,
       ).recordatoriosEnTiempoReal(idPaciente).first;
       expect(recordatorios.single.esMensual, isTrue);
 
       await RepositorioRecordatorios(
-        base.bd,
+        base,
       ).actualizarRecordatorio(idPaciente, id, recurrencia: '');
       recordatorios = await RepositorioRecordatorios(
-        base.bd,
+        base,
       ).recordatoriosEnTiempoReal(idPaciente).first;
       expect(recordatorios.single.recurrencia, isNull);
     });
@@ -268,7 +268,7 @@ void main() {
         final idPaciente = await _sembrarPaciente(base);
         final fecha = DateTime(2026, 9, 21, 9, 0);
         // Activo semanal: debe reprogramarse.
-        await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+        await RepositorioRecordatorios(base).agregarRecordatorio(
           idPaciente,
           Recordatorio(
             id: '',
@@ -282,7 +282,7 @@ void main() {
           ),
         );
         // Activo mensual: debe reprogramarse con mensual=true.
-        await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+        await RepositorioRecordatorios(base).agregarRecordatorio(
           idPaciente,
           Recordatorio(
             id: '',
@@ -296,7 +296,7 @@ void main() {
           ),
         );
         // Inactivo: no.
-        await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+        await RepositorioRecordatorios(base).agregarRecordatorio(
           idPaciente,
           Recordatorio(
             id: '',
@@ -309,7 +309,7 @@ void main() {
           ),
         );
         final notif = _FakeNotificaciones();
-        await cicloDeVida(base.bd, notif).reagendarNotificaciones();
+        await cicloDeVida(base, notif).reagendarNotificaciones();
 
         expect(notif.canceladasTodas, 1);
         expect(notif.programados, hasLength(2));
@@ -432,7 +432,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+      await RepositorioRecordatorios(base).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -454,7 +454,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -508,7 +508,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -557,7 +557,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -617,7 +617,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -660,7 +660,7 @@ void main() {
         final notif = _FakeNotificaciones();
         // Una sola vez y vigente: los vencidos ya no se reprograman.
         final fecha = DateTime.now().add(const Duration(days: 2));
-        final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+        final id = await RepositorioRecordatorios(base).agregarRecordatorio(
           idPaciente,
           Recordatorio(
             id: '',

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/datos/proveedores_autenticacion.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion.dart';
@@ -20,7 +21,7 @@ import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clini
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/pantalla_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/widgets/selector_multi_sintoma.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
 // Regresión de desbordamientos (RenderFlex overflow) en viewports compactos:
@@ -41,14 +42,14 @@ MockFirebaseAuth _authConSesion() => MockFirebaseAuth(
   mockUser: MockUser(uid: _uid, email: 'ana@correo.cl'),
 );
 
-Future<ServicioBaseDatos> _baseConCuidador(ServicioCifrado cifrado) async {
+Future<BaseDatosSegura> _baseConCuidador(ServicioCifrado cifrado) async {
   await cifrado.fijarClave(_uid, _clavePrueba);
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: FakeFirebaseFirestore(),
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'ana@correo.cl',
     'phone': '+56 9 1111 1111',
@@ -60,7 +61,7 @@ Future<ServicioBaseDatos> _baseConCuidador(ServicioCifrado cifrado) async {
 
 Widget _pantalla(
   MockFirebaseAuth auth,
-  ServicioBaseDatos base,
+  BaseDatosSegura base,
   ServicioCifrado cifrado,
   Widget inicio, {
   List<GoRoute> rutasExtra = const [],
@@ -86,13 +87,13 @@ Widget _pantalla(
     overrides: [
       firebaseAuthProvider.overrideWithValue(auth),
       servicioCifradoProvider.overrideWithValue(cifrado),
-      servicioBaseDatosProvider.overrideWith((ref) => base),
+      baseDatosSeguraProvider.overrideWith((ref) => base),
       servicioRegistroProvider.overrideWith(
         (ref) => ServicioRegistro(
           auth: auth,
           cifrado: cifrado,
-          repositorioPacientes: RepositorioPacientes(base.bd),
-          repositorioCuidador: RepositorioCuidador(base.bd),
+          repositorioPacientes: RepositorioPacientes(base),
+          repositorioCuidador: RepositorioCuidador(base),
           alDesbloquear: () =>
               ref.read(bloqueoCifradoProvider.notifier).fijarDesbloqueado(true),
           registrarCorreoRespaldo: (email) async {},
@@ -177,19 +178,19 @@ void main() {
       final auth = _authConSesion();
       final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
       await cifrado.restaurarClave(_uid);
-      final base = ServicioBaseDatos(
+      final base = BaseDatosSegura(
         base: FakeFirebaseFirestore(),
         uidPrueba: _uid,
         cifrado: cifrado,
       );
-      await RepositorioCuidador(base.bd).crearCuidador({
+      await RepositorioCuidador(base).crearCuidador({
         'displayName': 'Ana Torres',
         'email': 'ana@correo.cl',
         'phone': '+56 9 1111 1111',
         'relationship': 'Madre',
         'address': 'Av. Siempre Viva 742',
       });
-      await RepositorioPacientes(base.bd).crearPaciente(
+      await RepositorioPacientes(base).crearPaciente(
         Paciente(
           id: 'auto',
           fullName: 'Anastasia Margarita Constanza del Carmen de los Andes',
@@ -219,7 +220,7 @@ void main() {
     final auth = _authConSesion();
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
-    await RepositorioPacientes(base.bd).crearPaciente(
+    await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'auto',
         fullName: 'Paciente Test',
@@ -309,7 +310,7 @@ void main() {
     final auth = _authConSesion();
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
-    await RepositorioPacientes(base.bd).crearPaciente(
+    await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'auto',
         fullName: 'Paciente Test',
@@ -339,10 +340,10 @@ void main() {
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
     final fecha = DateTime.now();
-    final idPaciente = await RepositorioPacientes(base.bd).crearPaciente(
+    final idPaciente = await RepositorioPacientes(base).crearPaciente(
       Paciente(id: 'auto', fullName: 'Paciente Test', createdAt: fecha),
     );
-    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
       idPaciente,
       RegistroClinico(
         id: 'detalle',
@@ -388,7 +389,7 @@ void main() {
     final auth = _authConSesion();
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
-    final idPaciente = await RepositorioPacientes(base.bd).crearPaciente(
+    final idPaciente = await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'auto',
         fullName: 'Paciente Test',
@@ -396,7 +397,7 @@ void main() {
       ),
     );
     final fecha = DateTime.now();
-    await RepositorioRecordatorios(base.bd).agregarRecordatorio(
+    await RepositorioRecordatorios(base).agregarRecordatorio(
       idPaciente,
       Recordatorio(
         id: '',
@@ -426,7 +427,7 @@ void main() {
     final auth = _authConSesion();
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
-    await RepositorioPacientes(base.bd).crearPaciente(
+    await RepositorioPacientes(base).crearPaciente(
       Paciente(
         id: 'auto',
         fullName: 'Paciente Test',

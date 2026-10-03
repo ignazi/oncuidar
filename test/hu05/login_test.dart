@@ -18,7 +18,6 @@ import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart'
 import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -68,14 +67,14 @@ class _RepositorioSinContenido extends RepositorioBiblioteca {
       Stream.value(const []);
 }
 
-Future<ServicioBaseDatos> _baseConCuidador(ServicioCifrado cifrado) async {
+Future<BaseDatosSegura> _baseConCuidador(ServicioCifrado cifrado) async {
   await cifrado.fijarClave(_uid, _clavePrueba);
-  final base = ServicioBaseDatos(
+  final base = BaseDatosSegura(
     base: FakeFirebaseFirestore(),
     uidPrueba: _uid,
     cifrado: cifrado,
   );
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(base).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'ana@correo.cl',
     'phone': '+56 9 1111 1111',
@@ -108,7 +107,7 @@ Future<void> _ingresarCredenciales(
 
 Widget _pantallaLogin(
   MockFirebaseAuth auth,
-  ServicioBaseDatos base,
+  BaseDatosSegura base,
   ServicioCifrado cifrado,
 ) {
   final router = GoRouter(
@@ -131,7 +130,7 @@ Widget _pantallaLogin(
     overrides: [
       firebaseAuthProvider.overrideWithValue(auth),
       servicioCifradoProvider.overrideWithValue(cifrado),
-      servicioBaseDatosProvider.overrideWith((ref) => base),
+      baseDatosSeguraProvider.overrideWith((ref) => base),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -329,7 +328,7 @@ void main() {
         overrides: [
           firebaseAuthProvider.overrideWithValue(auth),
           servicioCifradoProvider.overrideWithValue(cifrado),
-          servicioBaseDatosProvider.overrideWith((ref) => base),
+          baseDatosSeguraProvider.overrideWith((ref) => base),
         ],
         child: MaterialApp.router(routerConfig: router),
       ),

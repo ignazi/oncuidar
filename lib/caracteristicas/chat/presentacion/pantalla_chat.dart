@@ -8,12 +8,12 @@ import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/proveedor_chat_activo.dart';
+import 'package:oncuidar/caracteristicas/chat/presentacion/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/hoja_conversaciones.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/catalogo_preguntas.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/pregunta_base.dart';
 import 'package:oncuidar/compartido/estilos.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
-import 'package:oncuidar/nucleo/proveedores.dart';
 
 /// Chat de orientación para cuidadores: responde dudas frecuentes con un
 /// emparejamiento por palabras clave y persiste la conversación en Firestore.
