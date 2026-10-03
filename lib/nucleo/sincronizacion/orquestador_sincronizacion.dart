@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:oncuidar/nucleo/conectividad/servicio_conectividad.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/sincronizacion/cola_escrituras.dart';
 
 /// Drena la cola de escrituras al haber red, con reintentos acotados y sin perder elementos.
@@ -18,7 +18,7 @@ class OrquestadorSincronizacion {
   });
 
   final ColaEscrituras _cola;
-  final ServicioBaseDatos _base;
+  final BaseDatosSegura _base;
   final ServicioConectividad _conectividad;
   final String? Function() _uidActual;
   final Duration retardoBase;

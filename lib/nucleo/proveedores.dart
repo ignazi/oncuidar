@@ -14,6 +14,7 @@ import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/conectividad/servicio_conectividad.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
 import 'package:oncuidar/nucleo/sincronizacion/cola_escrituras.dart';
@@ -81,6 +82,11 @@ final servicioBaseDatosProvider = Provider<ServicioBaseDatos>((ref) {
   );
 });
 
+/// Infraestructura común de datos; mientras dure la migración sale del servicio.
+final baseDatosSeguraProvider = Provider<BaseDatosSegura>((ref) {
+  return ref.watch(servicioBaseDatosProvider).bd;
+});
+
 /// Cantidad de cambios pendientes y fallidos del cuidador con sesión activa.
 final resumenColaProvider = StreamProvider.autoDispose<ResumenCola>((
   ref,
@@ -103,7 +109,7 @@ final orquestadorSincronizacionProvider = Provider<OrquestadorSincronizacion>((
 ) {
   final orquestador = OrquestadorSincronizacion(
     cola: ref.watch(colaEscriturasProvider),
-    base: ref.watch(servicioBaseDatosProvider),
+    base: ref.watch(baseDatosSeguraProvider),
     conectividad: ref.watch(servicioConectividadProvider),
     uidActual: () => ref.read(firebaseAuthProvider).currentUser?.uid,
   )..iniciar();

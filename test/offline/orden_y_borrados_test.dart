@@ -56,7 +56,7 @@ Future<_Entorno> _crearEntorno({bool enLinea = true}) async {
   );
   final orquestador = OrquestadorSincronizacion(
     cola: cola,
-    base: base,
+    base: base.bd,
     conectividad: red,
     uidActual: () => _uid,
     retardoBase: const Duration(milliseconds: 1),
