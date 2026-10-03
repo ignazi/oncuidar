@@ -14,6 +14,8 @@ import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/pantalla_registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -29,15 +31,15 @@ import 'ayudas_offline.dart';
 const _clavePrueba = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
 const _uid = 'uid-integridad';
 
-/// Base que intercepta el guardado clínico para simular el fallo que antes
-/// vaciaba el formulario: la escritura se lanzaba después de limpiarlo.
-class _BaseRegistro extends ServicioBaseDatos {
-  _BaseRegistro({
-    required super.base,
-    required super.cifrado,
+/// Repositorio que intercepta el guardado clínico para simular el fallo que
+/// antes vaciaba el formulario: la escritura se lanzaba después de limpiarlo.
+class _RepositorioRegistro extends RepositorioRegistrosClinicos {
+  _RepositorioRegistro({
+    required FakeFirebaseFirestore base,
+    required ServicioCifrado cifrado,
     this.fallo,
     this.retardo,
-  }) : super(uidPrueba: _uid);
+  }) : super(BaseDatosSegura(base: base, cifrado: cifrado, uidPrueba: _uid));
 
   final Object? fallo;
   final Duration? retardo;
@@ -95,6 +97,8 @@ class _Entorno {
   final _BaseDrenaje base;
 
   ServicioBaseDatos get datos => ServicioBaseDatos.sobre(base);
+  RepositorioRegistrosClinicos get registros =>
+      RepositorioRegistrosClinicos(base);
   final ServicioCifrado cifrado;
   final OrquestadorSincronizacion orquestador;
 
@@ -162,7 +166,10 @@ Future<Map<String, dynamic>> _payloadDe(
 
 // ── Registro clínico: el formulario solo se limpia si el dato quedó a salvo ──
 
-Widget _pantallaRegistro(ServicioCifrado cifrado, ServicioBaseDatos base) {
+Widget _pantallaRegistro(
+  ServicioCifrado cifrado,
+  _RepositorioRegistro registros,
+) {
   final router = GoRouter(
     initialLocation: '/registro-clinico',
     routes: [
@@ -180,7 +187,10 @@ Widget _pantallaRegistro(ServicioCifrado cifrado, ServicioBaseDatos base) {
         ),
       ),
       servicioCifradoProvider.overrideWithValue(cifrado),
-      servicioBaseDatosProvider.overrideWith((_) => base),
+      servicioBaseDatosProvider.overrideWith(
+        (_) => ServicioBaseDatos.sobre(registros.bd),
+      ),
+      repositorioRegistrosClinicosProvider.overrideWith((_) => registros),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -190,16 +200,16 @@ Widget _pantallaRegistro(ServicioCifrado cifrado, ServicioBaseDatos base) {
 Future<String> _prepararRegistro(
   WidgetTester tester,
   ServicioCifrado cifrado,
-  _BaseRegistro base,
+  _RepositorioRegistro registros,
 ) async {
-  await RepositorioCuidador(base.bd).crearCuidador({
+  await RepositorioCuidador(registros.bd).crearCuidador({
     'displayName': 'Ana Torres',
     'email': 'cuidador@test.cl',
     'phone': '+56 9 1111 1111',
     'relationship': 'Madre',
     'address': 'Av. Siempre Viva 742',
   });
-  final idPaciente = await base.crearPaciente(
+  final idPaciente = await ServicioBaseDatos.sobre(registros.bd).crearPaciente(
     Paciente(
       id: 'ignorado',
       fullName: 'Paciente Test',
@@ -210,7 +220,7 @@ Future<String> _prepararRegistro(
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(_pantallaRegistro(cifrado, base));
+  await tester.pumpWidget(_pantallaRegistro(cifrado, registros));
   await tester.pumpAndSettle();
   return idPaciente;
 }
@@ -233,12 +243,12 @@ void main() {
       final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
       await cifrado.fijarClave(_uid, _clavePrueba);
       final firestore = FakeFirebaseFirestore();
-      final base = _BaseRegistro(
+      final registros = _RepositorioRegistro(
         base: firestore,
         cifrado: cifrado,
         fallo: StateError('Clave de datos no disponible.'),
       );
-      await _prepararRegistro(tester, cifrado, base);
+      await _prepararRegistro(tester, cifrado, registros);
 
       await tester.enterText(find.byType(TextField).at(0), '40.0');
       await tester.enterText(find.byType(TextField).at(4), 'fiebre alta');
@@ -269,12 +279,12 @@ void main() {
       final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
       await cifrado.fijarClave(_uid, _clavePrueba);
       final firestore = FakeFirebaseFirestore();
-      final base = _BaseRegistro(
+      final registros = _RepositorioRegistro(
         base: firestore,
         cifrado: cifrado,
         retardo: const Duration(milliseconds: 50),
       );
-      await _prepararRegistro(tester, cifrado, base);
+      await _prepararRegistro(tester, cifrado, registros);
       final idPaciente =
           (await firestore
                   .collection('users')
@@ -300,18 +310,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        base.llamadas,
+        registros.llamadas,
         1,
         reason: 'el segundo toque debe ignorarse mientras se guarda',
       );
-      final registros = await firestore
+      final guardados = await firestore
           .collection('users')
           .doc(_uid)
           .collection('patients')
           .doc(idPaciente)
           .collection('clinicalRecords')
           .get();
-      expect(registros.docs, hasLength(1));
+      expect(guardados.docs, hasLength(1));
     });
   });
 
@@ -530,7 +540,7 @@ void main() {
       'sin red el borrado de un registro clínico llega al servidor',
       () async {
         final ent = await _crearEntorno(enLinea: true);
-        await ent.datos.guardarRegistroClinico(
+        await ent.registros.guardarRegistroClinico(
           'p1',
           RegistroClinico(
             id: 'rc1',
@@ -542,7 +552,7 @@ void main() {
         );
 
         ent.red.fijar(false);
-        await ent.datos.eliminarRegistroClinico('p1', 'rc1');
+        await ent.registros.eliminarRegistroClinico('p1', 'rc1');
 
         expect(
           (await ent.cola.pendientes(_uid)).single.operacion,

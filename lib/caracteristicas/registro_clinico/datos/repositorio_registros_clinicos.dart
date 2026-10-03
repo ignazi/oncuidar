@@ -1,0 +1,268 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
+import 'package:oncuidar/nucleo/sincronizacion/cola_escrituras.dart';
+
+/// Registros clínicos del paciente, con signos, síntomas y notas cifrados.
+class RepositorioRegistrosClinicos {
+  RepositorioRegistrosClinicos(this.bd);
+
+  final BaseDatosSegura bd;
+
+  CollectionReference _registrosClinicos(String idPaciente) => bd.docUsuario
+      .collection('patients')
+      .doc(idPaciente)
+      .collection('clinicalRecords');
+
+  /// Guarda un registro clínico cifrando los campos sensibles.
+  Future<void> guardarRegistroClinico(
+    String idPaciente,
+    RegistroClinico registro,
+  ) async {
+    if (registro.pacienteId != idPaciente) {
+      throw ArgumentError(
+        'El registro pertenece a "${registro.pacienteId}", no a "$idPaciente"',
+      );
+    }
+    await bd.verificarEscrituraDisponible();
+    final signos = registro.signosVitales;
+    final datos = <String, dynamic>{
+      'id': registro.id,
+      'paciente_id': registro.pacienteId,
+      'fecha': registro.fecha,
+      'creadoEn': registro.creadoEn,
+      'tipoRegistro': registro.tipoRegistro,
+      'nivelAlerta': registro.nivelAlerta.name,
+      if (signos != null)
+        'signos_vitales_cifrado': await bd.cifrado.cifrar(
+          bd.uid,
+          jsonEncode({
+            'temperature': signos.temperature,
+            'heartRate': signos.heartRate,
+            'oxygenSaturation': signos.oxygenSaturation,
+            'respiratoryRate': signos.respiratoryRate,
+          }),
+        )
+      else
+        'signos_vitales_cifrado': FieldValue.delete(),
+      'sintomas_cifrado': await bd.cifrado.cifrar(
+        bd.uid,
+        jsonEncode([
+          for (final sintoma in registro.sintomas)
+            {
+              'name': sintoma.name,
+              'intensity': sintoma.intensity,
+              if (sintoma.notes != null && sintoma.notes!.isNotEmpty)
+                'notes': sintoma.notes,
+            },
+        ]),
+      ),
+    };
+    await bd.reemplazarPorCifrado(
+      datos,
+      plano: registro.observaciones,
+      cifrado: 'contenido_registro_cifrado',
+    );
+    await bd.reemplazarPorCifrado(
+      datos,
+      plano: registro.mensajeAlerta,
+      cifrado: 'mensaje_alerta_cifrado',
+    );
+    datos['version_encriptacion'] = 3;
+    await bd.escribir(
+      _registrosClinicos(idPaciente).doc(registro.id),
+      datos,
+      operacion: OperacionPendiente.guardar,
+      idPaciente: idPaciente,
+    );
+  }
+
+  /// Elimina un registro clínico del paciente.
+  Future<void> eliminarRegistroClinico(
+    String idPaciente,
+    String idRegistro,
+  ) async {
+    await bd.borrar(_registrosClinicos(idPaciente).doc(idRegistro), idPaciente);
+  }
+
+  Stream<List<RegistroClinico>> registrosClinicosEnTiempoReal(
+    String idPaciente,
+  ) {
+    if (!bd.tieneIdentidad()) return Stream.value(const []);
+    return _registrosClinicos(idPaciente)
+        .orderBy('creadoEn', descending: true)
+        .limit(50)
+        .snapshots()
+        .asyncMap(
+          (snap) => Future.wait(
+            snap.docs.map(
+              (d) => _descifrarRegistroClinico(
+                d.id,
+                d.data() as Map<String, dynamic>,
+              ),
+            ),
+          ),
+        );
+  }
+
+  Future<List<RegistroClinico>> cargarMasRegistrosClinicos(
+    String idPaciente,
+    DateTime ultimoCreadoEn,
+  ) async {
+    if (!bd.tieneIdentidad()) return const [];
+    final snap = await _registrosClinicos(idPaciente)
+        .orderBy('creadoEn', descending: true)
+        .startAfter([Timestamp.fromDate(ultimoCreadoEn)])
+        .limit(50)
+        .get();
+    final lista = <RegistroClinico>[];
+    for (final doc in snap.docs) {
+      lista.add(
+        await _descifrarRegistroClinico(
+          doc.id,
+          doc.data() as Map<String, dynamic>,
+        ),
+      );
+    }
+    return lista;
+  }
+
+  /// Todos los registros del paciente con `fecha` en [desde, hasta), en orden ascendente.
+  Future<List<RegistroClinico>> registrosClinicosEnRango(
+    String idPaciente, {
+    DateTime? desde,
+    DateTime? hasta,
+  }) async {
+    if (!bd.tieneIdentidad()) return const [];
+    Query consulta = _registrosClinicos(idPaciente);
+    if (desde != null) {
+      consulta = consulta.where(
+        'fecha',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(desde),
+      );
+    }
+    if (hasta != null) {
+      consulta = consulta.where('fecha', isLessThan: Timestamp.fromDate(hasta));
+    }
+    final snap = await consulta.orderBy('fecha').get();
+    final lista = <RegistroClinico>[];
+    for (final doc in snap.docs) {
+      final registro = await _descifrarRegistroClinico(
+        doc.id,
+        doc.data() as Map<String, dynamic>,
+      );
+      // Defensa extra: descarta cualquier documento declarado de otro paciente.
+      if (registro.pacienteId.isEmpty || registro.pacienteId == idPaciente) {
+        lista.add(registro);
+      }
+    }
+    return lista;
+  }
+
+  Future<SignosVitales?> _descifrarSignosVitales(
+    Map<String, dynamic> datos,
+  ) async {
+    final cifrado = datos['signos_vitales_cifrado'] as String?;
+    if (cifrado != null && cifrado.isNotEmpty) {
+      try {
+        final texto = await bd.cifrado.descifrar(bd.uid, cifrado);
+        final mapa = jsonDecode(texto) as Map<String, dynamic>;
+        return SignosVitales(
+          temperature: (mapa['temperature'] as num?)?.toDouble(),
+          heartRate: (mapa['heartRate'] as num?)?.toInt(),
+          oxygenSaturation: (mapa['oxygenSaturation'] as num?)?.toInt(),
+          respiratoryRate: (mapa['respiratoryRate'] as num?)?.toInt(),
+        );
+      } catch (e, pila) {
+        debugPrint('No se pudo descifrar signos_vitales_cifrado: $e\n$pila');
+      }
+    }
+    final signosMapa = datos['signosVitales'];
+    if (signosMapa is Map<String, dynamic>) {
+      return SignosVitales(
+        temperature: (signosMapa['temperature'] as num?)?.toDouble(),
+        heartRate: signosMapa['heartRate'] as int?,
+        oxygenSaturation: signosMapa['oxygenSaturation'] as int?,
+        respiratoryRate: signosMapa['respiratoryRate'] as int?,
+      );
+    }
+    return null;
+  }
+
+  Future<List<EntradaSintoma>> _descifrarSintomas(
+    Map<String, dynamic> datos,
+  ) async {
+    final cifrado = datos['sintomas_cifrado'] as String?;
+    if (cifrado != null && cifrado.isNotEmpty) {
+      try {
+        final texto = await bd.cifrado.descifrar(bd.uid, cifrado);
+        final lista = jsonDecode(texto) as List<dynamic>;
+        return [
+          for (final item in lista)
+            EntradaSintoma(
+              name: (item['name'] as String?) ?? '',
+              intensity: (item['intensity'] as num?)?.toInt() ?? 0,
+              notes: item['notes'] as String?,
+            ),
+        ];
+      } catch (e, pila) {
+        debugPrint('No se pudo descifrar sintomas_cifrado: $e\n$pila');
+      }
+    }
+    final sintomasRaw = datos['sintomas'];
+    if (sintomasRaw is List) {
+      final sintomas = <EntradaSintoma>[];
+      for (final item in sintomasRaw.cast<Map<String, dynamic>>()) {
+        final notesCifradas = item['notes_cifrado'] as String?;
+        final notas = (notesCifradas != null && notesCifradas.isNotEmpty)
+            ? await bd.descifrarCampo(item, 'notes_cifrado')
+            : item['notes'] as String?;
+        sintomas.add(
+          EntradaSintoma(
+            name: (item['name'] as String?) ?? '',
+            intensity: (item['intensity'] as num?)?.toInt() ?? 0,
+            notes: notas,
+          ),
+        );
+      }
+      return sintomas;
+    }
+    return const [];
+  }
+
+  Future<RegistroClinico> _descifrarRegistroClinico(
+    String id,
+    Map<String, dynamic> datos,
+  ) async {
+    final signos = await _descifrarSignosVitales(datos);
+    final sintomas = await _descifrarSintomas(datos);
+
+    final contenidoCifrado = datos['contenido_registro_cifrado'] as String?;
+    final observaciones =
+        (contenidoCifrado != null && contenidoCifrado.isNotEmpty)
+        ? await bd.descifrarCampo(datos, 'contenido_registro_cifrado')
+        : datos['observaciones'] as String?;
+
+    final nivelRaw = datos['nivelAlerta'] as String?;
+    final nivel = NivelAlerta.values.firstWhere(
+      (v) => v.name == nivelRaw,
+      orElse: () => NivelAlerta.normal,
+    );
+
+    return RegistroClinico(
+      id: id,
+      pacienteId: (datos['paciente_id'] as String?) ?? '',
+      fecha: bd.fechaTolerante(datos['fecha']),
+      creadoEn: bd.fechaTolerante(datos['creadoEn']),
+      tipoRegistro: (datos['tipoRegistro'] as String?) ?? 'programado',
+      signosVitales: signos,
+      sintomas: sintomas,
+      observaciones: observaciones,
+      nivelAlerta: nivel,
+      mensajeAlerta: await bd.descifrarCampo(datos, 'mensaje_alerta_cifrado'),
+    );
+  }
+}

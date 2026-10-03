@@ -7,6 +7,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
@@ -42,6 +43,7 @@ void main() {
   late ConectividadFalsa red;
   late ServicioCifrado cifrado;
   late ServicioBaseDatos base;
+  late RepositorioRegistrosClinicos registros;
 
   /// Arma un servicio con el cifrado real, sin clave cargada en memoria.
   void armar({required bool enLinea, required bool claveGuardada}) {
@@ -60,6 +62,7 @@ void main() {
       cola: cola,
       conectividad: red,
     );
+    registros = RepositorioRegistrosClinicos(base.bd);
   }
 
   Future<void> afirmarNadaEscrito() async {
@@ -81,7 +84,7 @@ void main() {
       'un registro clínico falla con un error explícito y no se encola',
       () async {
         await expectLater(
-          base.guardarRegistroClinico('pacienteA', _registro()),
+          registros.guardarRegistroClinico('pacienteA', _registro()),
           throwsA(isA<ClaveNoDisponibleSinConexion>()),
         );
         await afirmarNadaEscrito();
@@ -122,7 +125,7 @@ void main() {
 
     test('restaura la clave sin red y encola el registro cifrado', () async {
       expect(cifrado.tieneClave(_uid), isFalse);
-      await base.guardarRegistroClinico('pacienteA', _registro());
+      await registros.guardarRegistroClinico('pacienteA', _registro());
 
       expect(cifrado.tieneClave(_uid), isTrue);
       final pendiente = (await cola.pendientes(_uid)).single;

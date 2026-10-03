@@ -13,6 +13,7 @@ import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
@@ -44,7 +45,7 @@ void main() {
 
   Future<void> sembrarPorPaciente(String id, String etiqueta) async {
     final ahora = DateTime.now();
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       id,
       RegistroClinico(
         id: 'registro-$etiqueta',

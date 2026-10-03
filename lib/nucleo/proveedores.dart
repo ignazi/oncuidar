@@ -14,6 +14,7 @@ import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/proveedores_perfil.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/conectividad/servicio_conectividad.dart';
@@ -220,7 +221,7 @@ final registrosClinicosProvider =
       final paciente = pacienteAsync.value;
       if (paciente == null) return Stream.value(const []);
       return ref
-          .watch(servicioBaseDatosProvider)
+          .watch(repositorioRegistrosClinicosProvider)
           .registrosClinicosEnTiempoReal(paciente.id);
     });
 

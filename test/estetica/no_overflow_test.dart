@@ -13,6 +13,7 @@ import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart'
 import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/pantalla_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/widgets/selector_multi_sintoma.dart';
@@ -339,7 +340,7 @@ void main() {
     final idPaciente = await base.crearPaciente(
       Paciente(id: 'auto', fullName: 'Paciente Test', createdAt: fecha),
     );
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       RegistroClinico(
         id: 'detalle',

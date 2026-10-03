@@ -8,6 +8,7 @@ import 'package:oncuidar/caracteristicas/historial/datos/exportador_pdf.dart';
 import 'package:oncuidar/caracteristicas/historial/dominio/orden_registros.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
@@ -120,25 +121,24 @@ void main() {
       final inicio = DateTime(2026, 9, 1);
       // 60 registros dentro del rango superan la página de 50 del historial.
       for (var i = 0; i < 60; i++) {
-        await base.guardarRegistroClinico(
+        await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
           a,
           _registro('a$i', a, inicio.add(Duration(hours: 6 * i))),
         );
       }
-      await base.guardarRegistroClinico(
-        a,
-        _registro('fuera', a, DateTime(2026, 8, 20)),
-      );
-      await base.guardarRegistroClinico(
-        b,
-        _registro('otro', b, DateTime(2026, 9, 5)),
-      );
+      await RepositorioRegistrosClinicos(
+        base.bd,
+      ).guardarRegistroClinico(a, _registro('fuera', a, DateTime(2026, 8, 20)));
+      await RepositorioRegistrosClinicos(
+        base.bd,
+      ).guardarRegistroClinico(b, _registro('otro', b, DateTime(2026, 9, 5)));
 
-      final resultado = await base.registrosClinicosEnRango(
-        a,
-        desde: inicio,
-        hasta: DateTime(2026, 10, 1),
-      );
+      final resultado = await RepositorioRegistrosClinicos(base.bd)
+          .registrosClinicosEnRango(
+            a,
+            desde: inicio,
+            hasta: DateTime(2026, 10, 1),
+          );
 
       expect(resultado, hasLength(60));
       expect(resultado.every((r) => r.pacienteId == a), isTrue);
@@ -159,19 +159,18 @@ void main() {
     'la consulta sin límites trae todos los registros del paciente',
     () async {
       final (base, a, b) = await _baseConDosPacientes();
-      await base.guardarRegistroClinico(
-        a,
-        _registro('x', a, DateTime(2025, 1, 1)),
-      );
-      await base.guardarRegistroClinico(
-        a,
-        _registro('y', a, DateTime(2026, 1, 1)),
-      );
-      await base.guardarRegistroClinico(
-        b,
-        _registro('z', b, DateTime(2026, 1, 1)),
-      );
-      final resultado = await base.registrosClinicosEnRango(a);
+      await RepositorioRegistrosClinicos(
+        base.bd,
+      ).guardarRegistroClinico(a, _registro('x', a, DateTime(2025, 1, 1)));
+      await RepositorioRegistrosClinicos(
+        base.bd,
+      ).guardarRegistroClinico(a, _registro('y', a, DateTime(2026, 1, 1)));
+      await RepositorioRegistrosClinicos(
+        base.bd,
+      ).guardarRegistroClinico(b, _registro('z', b, DateTime(2026, 1, 1)));
+      final resultado = await RepositorioRegistrosClinicos(
+        base.bd,
+      ).registrosClinicosEnRango(a);
       expect(resultado.map((r) => r.id), ['x', 'y']);
     },
   );

@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/catalogo_sintomas.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/pantalla_registro_clinico.dart';
@@ -307,7 +308,7 @@ void main() {
     final idPaciente = await _idPacienteUnico(firestore);
     final ahora = DateTime.now();
     for (var i = 1; i <= 3; i++) {
-      await base.guardarRegistroClinico(
+      await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
         idPaciente,
         RegistroClinico(
           id: 'p$i',
@@ -357,7 +358,7 @@ void main() {
     final ahora = DateTime.now();
     const tipos = ['programado', 'extra', 'extra'];
     for (var i = 0; i < tipos.length; i++) {
-      await base.guardarRegistroClinico(
+      await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
         idPaciente,
         RegistroClinico(
           id: 'r$i',

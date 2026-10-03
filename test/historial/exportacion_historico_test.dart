@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 
 import 'ayudas_exportacion.dart';
 
@@ -16,7 +17,7 @@ void main() {
     final compartidos = instalarCanalesDeExportacion();
     // Se guardan desordenados a propósito.
     for (final dia in ['03', '01', '02']) {
-      await base.guardarRegistroClinico(
+      await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
         activo,
         registroDe(
           '2026-09-$dia',
@@ -53,7 +54,7 @@ void main() {
     tallerDePrueba(tester);
     final (base, cifrado, activo, _) = await baseConDosPacientes();
     instalarCanalesDeExportacion();
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       activo,
       registroDe('2026-09-01', activo, DateTime(2026, 9, 1, 8)),
     );

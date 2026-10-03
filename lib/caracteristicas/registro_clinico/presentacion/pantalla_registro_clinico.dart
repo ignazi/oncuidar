@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/catalogo_sintomas.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/conteo_registros.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/motor_reglas_clinicas.dart';
@@ -314,10 +315,10 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
     if (_guardando) return;
     setState(() => _guardando = true);
     try {
-      final base = ref.read(servicioBaseDatosProvider);
+      final repositorio = ref.read(repositorioRegistrosClinicosProvider);
       // Se espera la escritura: el formulario solo se limpia si el dato quedó a salvo.
       try {
-        await base.guardarRegistroClinico(paciente.id, registro);
+        await repositorio.guardarRegistroClinico(paciente.id, registro);
       } on ClaveNoDisponibleSinConexion catch (e) {
         _mostrarSnack(
           e.toString(),

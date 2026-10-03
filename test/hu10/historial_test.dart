@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
@@ -131,11 +132,11 @@ void main() {
     final (base, _, idPaciente) = await _baseConPaciente(cifrado);
     final ahora = DateTime.now();
     final ayer = ahora.subtract(const Duration(days: 1));
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       _registro('hoy', idPaciente, fecha: ahora),
     );
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       _registro('ayer', idPaciente, fecha: ayer),
     );
@@ -164,7 +165,7 @@ void main() {
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final (base, _, idPaciente) = await _baseConPaciente(cifrado);
     final ahora = DateTime.now();
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       RegistroClinico(
         id: 'detalle',
@@ -208,7 +209,7 @@ void main() {
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final (base, _, idPaciente) = await _baseConPaciente(cifrado);
     final ahora = DateTime.now();
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       RegistroClinico(
         id: 'cero',
@@ -236,11 +237,11 @@ void main() {
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final (base, _, idPaciente) = await _baseConPaciente(cifrado);
     final ahora = DateTime.now();
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       _registro('normal', idPaciente, fecha: ahora, nivel: NivelAlerta.normal),
     );
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       _registro(
         'critico',
@@ -271,11 +272,11 @@ void main() {
     final (base, _, idPaciente) = await _baseConPaciente(cifrado);
     final ahora = DateTime.now();
     final ayer = ahora.subtract(const Duration(days: 1));
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       _registro('hoy', idPaciente, fecha: ahora),
     );
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       _registro('ayer', idPaciente, fecha: ayer),
     );
@@ -320,11 +321,11 @@ void main() {
     final ahora = DateTime.now();
     final ayer = ahora.subtract(const Duration(days: 1));
     final inicioDeHoy = DateTime(ahora.year, ahora.month, ahora.day);
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       _registro('hoy', idPaciente, fecha: ahora),
     );
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       _registro('ayer', idPaciente, fecha: ayer),
     );
@@ -349,7 +350,7 @@ void main() {
     final inicioDeHoy = DateTime(ahora.year, ahora.month, ahora.day);
     for (var i = 1; i <= 3; i++) {
       final momento = inicioDeHoy.add(Duration(hours: 4 - i));
-      await base.guardarRegistroClinico(
+      await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
         idPaciente,
         RegistroClinico(
           id: 'p$i',
@@ -362,7 +363,7 @@ void main() {
     }
     // Cuarto registro del día: se guardó como "extra" (tope 3 alcanzado).
     final momentoExtra = inicioDeHoy.add(const Duration(hours: 4));
-    await base.guardarRegistroClinico(
+    await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
       idPaciente,
       RegistroClinico(
         id: 'extra',

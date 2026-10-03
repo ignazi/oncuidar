@@ -14,6 +14,7 @@ import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/chip_est
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/dialogo_rango_fechas.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/estado_vacio.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/tarjeta_registro.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/compartido/config_alerta.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
@@ -85,11 +86,11 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
 
   Future<void> _cargarMas(List<RegistroClinico> visibles) async {
     final paciente = ref.read(currentPatientProvider).value;
-    final base = ref.read(servicioBaseDatosProvider);
+    final repositorio = ref.read(repositorioRegistrosClinicosProvider);
     if (paciente == null || visibles.isEmpty) return;
     setState(() => _cargandoMas = true);
     try {
-      final siguiente = await base.cargarMasRegistrosClinicos(
+      final siguiente = await repositorio.cargarMasRegistrosClinicos(
         paciente.id,
         visibles.last.creadoEn,
       );
@@ -506,7 +507,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     final (desde, hasta) = _limitesRango();
     try {
       final todos = await ref
-          .read(servicioBaseDatosProvider)
+          .read(repositorioRegistrosClinicosProvider)
           .registrosClinicosEnRango(paciente.id, desde: desde, hasta: hasta);
       return [
         for (final r in todos)
@@ -721,7 +722,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     if (confirmar != true || !mounted) return;
     try {
       await ref
-          .read(servicioBaseDatosProvider)
+          .read(repositorioRegistrosClinicosProvider)
           .eliminarRegistroClinico(paciente.id, registro.id);
       if (mounted) {
         setState(() => _cargados.removeWhere((r) => r.id == registro.id));

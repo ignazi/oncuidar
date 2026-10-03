@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/conectividad/servicio_conectividad.dart';
@@ -60,6 +61,8 @@ class _Entorno {
   final _BaseConFallos base;
 
   ServicioBaseDatos get datos => ServicioBaseDatos.sobre(base);
+  RepositorioRegistrosClinicos get registros =>
+      RepositorioRegistrosClinicos(base);
   final OrquestadorSincronizacion orquestador;
 
   CollectionReference<Map<String, dynamic>> coleccion(
@@ -164,7 +167,7 @@ void main() {
       'lo encolado declara el paciente y no lleva datos clínicos en claro',
       () async {
         final e = await _crearEntorno();
-        await e.datos.guardarRegistroClinico(
+        await e.registros.guardarRegistroClinico(
           'pacienteA',
           _registro('r1', 'pacienteA'),
         );
@@ -204,7 +207,7 @@ void main() {
   group('Drenaje al recuperar la red', () {
     test('envía registro y recordatorio con su paciente', () async {
       final e = await _crearEntorno();
-      await e.datos.guardarRegistroClinico(
+      await e.registros.guardarRegistroClinico(
         'pacienteA',
         _registro('r1', 'pacienteA'),
       );
@@ -412,7 +415,7 @@ void main() {
         'pacienteA',
         _recordatorio('pacienteA'),
       );
-      await e.datos.guardarRegistroClinico(
+      await e.registros.guardarRegistroClinico(
         'pacienteA',
         _registro('r1', 'pacienteA'),
       );
@@ -472,7 +475,7 @@ void main() {
 
     test('un error permanente va a fallidas y no bloquea al resto', () async {
       final e = await _crearEntorno();
-      await e.datos.guardarRegistroClinico(
+      await e.registros.guardarRegistroClinico(
         'pacienteA',
         _registro('r1', 'pacienteA'),
       );
