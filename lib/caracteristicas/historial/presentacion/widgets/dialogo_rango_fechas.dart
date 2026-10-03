@@ -189,3 +189,19 @@ class _CampoFechaDialogo extends StatelessWidget {
     );
   }
 }
+
+/// Auto-inserta las barras mientras el usuario escribe.
+void aplicarMascaraFecha(TextEditingController controlador, String texto) {
+  final digitos = texto.replaceAll(RegExp(r'\D'), '');
+  final buffer = StringBuffer();
+  for (var i = 0; i < digitos.length && i < 8; i++) {
+    if (i == 2 || i == 4) buffer.write('/');
+    buffer.write(digitos[i]);
+  }
+  final formateado = buffer.toString();
+  if (formateado == controlador.text) return;
+  controlador.value = TextEditingValue(
+    text: formateado,
+    selection: TextSelection.collapsed(offset: formateado.length),
+  );
+}

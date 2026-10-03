@@ -1,8 +1,6 @@
 /// Utilidades de formato de fecha en español para toda la app.
 library;
 
-import 'package:flutter/material.dart';
-
 String _dd(int v) => v.toString().padLeft(2, '0');
 
 bool mismoDia(DateTime a, DateTime b) =>
@@ -50,20 +48,4 @@ DateTime? parsearFechaEntrada(String texto) {
     return null;
   }
   return fecha;
-}
-
-/// Auto-inserta las barras mientras el usuario escribe.
-void aplicarMascaraFecha(TextEditingController controlador, String texto) {
-  final digitos = texto.replaceAll(RegExp(r'\D'), '');
-  final buffer = StringBuffer();
-  for (var i = 0; i < digitos.length && i < 8; i++) {
-    if (i == 2 || i == 4) buffer.write('/');
-    buffer.write(digitos[i]);
-  }
-  final formateado = buffer.toString();
-  if (formateado == controlador.text) return;
-  controlador.value = TextEditingValue(
-    text: formateado,
-    selection: TextSelection.collapsed(offset: formateado.length),
-  );
 }
