@@ -39,7 +39,7 @@ class _PantallaDetalleMaterialState
     if (material == null || material.urlArchivo == null) return;
     setState(() => _descargando = true);
     try {
-      await abrirArchivoMaterial(ref, context, material.urlArchivo!);
+      await abrirArchivoMaterial(ref, context, material);
     } finally {
       if (mounted) setState(() => _descargando = false);
     }

@@ -27,6 +27,14 @@ class MaterialEducativo {
 
   bool get esVideo => categoria.toLowerCase() == 'videos';
 
+  /// true si el archivo adjunto es un PDF (por tipo declarado o por extensión).
+  bool get esPdf {
+    if (tipoArchivo?.toLowerCase() == 'pdf') return true;
+    final url = urlArchivo;
+    if (url == null) return false;
+    return Uri.tryParse(url)?.path.toLowerCase().endsWith('.pdf') ?? false;
+  }
+
   Map<String, dynamic> toMap() => {
     if (id.isNotEmpty) 'id': id,
     'titulo': titulo,

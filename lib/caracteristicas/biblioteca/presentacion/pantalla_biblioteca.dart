@@ -141,7 +141,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
       await abrirArchivoMaterial(
         ref,
         context,
-        url,
+        material,
         alDescargar: aviso.hideCurrentSnackBar,
       );
     } finally {
