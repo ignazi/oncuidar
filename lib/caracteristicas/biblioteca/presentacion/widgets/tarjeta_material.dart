@@ -23,6 +23,19 @@ class TarjetaMaterial extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!material.esVideo) {
+      return _TarjetaDocumento(
+        material: material,
+        esFavorito: esFavorito,
+        descargado: descargado,
+        alTocar: alTocar,
+        alAlternarFavorito: alAlternarFavorito,
+      );
+    }
+    return _tarjetaVideo();
+  }
+
+  Widget _tarjetaVideo() {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
@@ -216,5 +229,227 @@ class TarjetaMaterial extends StatelessWidget {
       default:
         return Icons.article_rounded;
     }
+  }
+}
+
+/// Aspecto de cada tipo de documento: color, ícono y etiqueta.
+({Color color, IconData icono}) estiloDocumento(String categoria) {
+  if (categoria.toLowerCase() == 'infografías') {
+    return (
+      color: Paleta.categoriaInfografia,
+      icono: Icons.insert_chart_outlined_rounded,
+    );
+  }
+  // Guías y PDFs son lo mismo para el cuidador.
+  return (color: Paleta.categoriaGuia, icono: Icons.menu_book_rounded);
+}
+
+/// Tarjeta horizontal para guías, PDFs e infografías.
+class _TarjetaDocumento extends StatelessWidget {
+  const _TarjetaDocumento({
+    required this.material,
+    required this.esFavorito,
+    required this.descargado,
+    required this.alTocar,
+    required this.alAlternarFavorito,
+  });
+
+  final MaterialEducativo material;
+  final bool esFavorito;
+  final bool descargado;
+  final VoidCallback alTocar;
+  final VoidCallback alAlternarFavorito;
+
+  @override
+  Widget build(BuildContext context) {
+    final estilo = estiloDocumento(material.categoria);
+    return Container(
+      key: const Key('tarjetaDocumento'),
+      height: 168,
+      margin: const EdgeInsets.only(bottom: 12),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Paleta.tarjeta,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Paleta.bordeTarjeta),
+        boxShadow: [
+          BoxShadow(
+            color: Paleta.doradoOscuro.withValues(alpha: 0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, restricciones) => Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              width: restricciones.maxWidth * 0.38,
+              child: GestureDetector(
+                onTap: alTocar,
+                behavior: HitTestBehavior.opaque,
+                child: _panelTipo(estilo.color, estilo.icono),
+              ),
+            ),
+            Expanded(child: _ladoDerecho(estilo.color, estilo.icono)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _panelTipo(Color color, IconData icono) {
+    return ColoredBox(
+      color: color.withValues(alpha: 0.12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(icono, size: 34, color: color),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            etiquetaCategoria(material.categoria),
+            style: GoogleFonts.nunito(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _ladoDerecho(Color color, IconData icono) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 10, 4, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: GestureDetector(
+                key: const Key('miniaturaTarjetaMaterial'),
+                onTap: alTocar,
+                behavior: HitTestBehavior.opaque,
+                child: _imagen(color),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _textos()),
+              _iconoFavorito(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _imagen(Color color) {
+    final url = (material.urlMiniatura?.isNotEmpty ?? false)
+        ? material.urlMiniatura!
+        : material.urlImagen;
+    final reemplazo = ColoredBox(
+      color: color.withValues(alpha: 0.08),
+      child: Center(
+        child: Icon(
+          Icons.image_outlined,
+          size: 30,
+          color: color.withValues(alpha: 0.45),
+        ),
+      ),
+    );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (url != null && url.isNotEmpty)
+            Hero(
+              tag: 'imagen-material-${material.id}',
+              child: ImagenCacheada(
+                url: url,
+                ajuste: BoxFit.cover,
+                reemplazo: reemplazo,
+              ),
+            )
+          else
+            reemplazo,
+          if (descargado && material.urlArchivo != null)
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _textos() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          material.titulo,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.nunito(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Paleta.textoPrincipal,
+            height: 1.15,
+          ),
+        ),
+        if (material.tema.isNotEmpty)
+          Text(
+            material.tema,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.nunito(
+              fontSize: 12,
+              color: Paleta.textoSecundario,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _iconoFavorito() {
+    return GestureDetector(
+      onTap: alAlternarFavorito,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        child: Icon(
+          esFavorito ? Icons.bookmark : Icons.bookmark_border,
+          color: esFavorito ? Paleta.doradoPrincipal : Paleta.textoSecundario,
+          size: 28,
+        ),
+      ),
+    );
   }
 }

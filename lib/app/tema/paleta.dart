@@ -25,4 +25,8 @@ class Paleta {
   static const bordeTarjeta = Color(0x33E8A820);
   static const error = Color(0xFFEF4444);
   static const verdeExito = Color(0xFF10B981);
+
+  // Colores por tipo de material en la biblioteca.
+  static const categoriaGuia = Color(0xFFB7791F);
+  static const categoriaInfografia = Color(0xFF2A8C82);
 }

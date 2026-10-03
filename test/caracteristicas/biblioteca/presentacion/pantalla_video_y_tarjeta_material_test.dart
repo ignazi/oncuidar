@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
@@ -160,6 +161,60 @@ void main() {
   });
 
   group('TarjetaMaterial', () {
+    testWidgets('el video conserva su tarjeta vertical', (tester) async {
+      await tester.pumpWidget(
+        _tarjeta(_material(id: 'v', categoria: 'Videos')),
+      );
+      expect(find.byKey(const Key('tarjetaDocumento')), findsNothing);
+    });
+
+    testWidgets('guías, PDFs e infografías usan la tarjeta horizontal', (
+      tester,
+    ) async {
+      for (final categoria in ['Guías', 'PDFs', 'Infografías']) {
+        await tester.pumpWidget(
+          _tarjeta(_material(id: categoria, categoria: categoria)),
+        );
+        expect(
+          find.byKey(const Key('tarjetaDocumento')),
+          findsOneWidget,
+          reason: categoria,
+        );
+        expect(find.text('Material de prueba'), findsOneWidget);
+        expect(find.text('Tema de prueba'), findsOneWidget);
+        expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
+      }
+    });
+
+    testWidgets('guía e infografía se distinguen por ícono, color y etiqueta', (
+      tester,
+    ) async {
+      Color colorDelIcono(IconData icono) =>
+          tester.widget<Icon>(find.byIcon(icono)).color!;
+
+      await tester.pumpWidget(_tarjeta(_material(id: 'g', categoria: 'Guías')));
+      expect(find.text('Guía'), findsOneWidget);
+      expect(colorDelIcono(Icons.menu_book_rounded), Paleta.categoriaGuia);
+      expect(find.byIcon(Icons.insert_chart_outlined_rounded), findsNothing);
+
+      await tester.pumpWidget(
+        _tarjeta(_material(id: 'i', categoria: 'Infografías')),
+      );
+      expect(find.text('Infografía'), findsOneWidget);
+      expect(
+        colorDelIcono(Icons.insert_chart_outlined_rounded),
+        Paleta.categoriaInfografia,
+      );
+      expect(find.byIcon(Icons.menu_book_rounded), findsNothing);
+    });
+
+    testWidgets('un PDF se ve igual que una guía', (tester) async {
+      await tester.pumpWidget(_tarjeta(_material(id: 'p', categoria: 'PDFs')));
+      expect(find.text('Guía'), findsOneWidget);
+      expect(find.byIcon(Icons.menu_book_rounded), findsOneWidget);
+      expect(estiloDocumento('PDFs'), estiloDocumento('Guías'));
+    });
+
     testWidgets('un video muestra insignia y botón de reproducción', (
       tester,
     ) async {
