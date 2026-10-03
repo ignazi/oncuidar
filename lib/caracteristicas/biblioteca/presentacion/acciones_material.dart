@@ -55,7 +55,8 @@ Future<void> alternarFavoritoMaterial(
   final ids = ref.read(idsFavoritosProvider).value ?? const <String>[];
   final eraFavorito = ids.contains(materialId);
   try {
-    await repositorio.alternarFavorito(materialId);
+    // Se fija el estado que ve el cuidador; no se reescribe la lista completa.
+    await repositorio.fijarFavorito(materialId, favorito: !eraFavorito);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
