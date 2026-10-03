@@ -425,4 +425,146 @@ void main() {
 
     expect(find.text('Registro clínico abierto'), findsOneWidget);
   });
+
+  group('Menú de cada registro (CA-10)', () {
+    final menu = find.byWidgetPredicate((w) => w is PopupMenuButton);
+
+    Future<BaseDatosSegura> conHoyYAyer(
+      WidgetTester tester,
+      ServicioCifrado cifrado,
+    ) async {
+      final (base, _, idPaciente) = await _baseConPaciente(cifrado);
+      final ahora = DateTime.now();
+      await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
+        idPaciente,
+        _registro('hoy', idPaciente, fecha: ahora),
+      );
+      await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
+        idPaciente,
+        _registro(
+          'ayer',
+          idPaciente,
+          fecha: ahora.subtract(const Duration(days: 1)),
+        ),
+      );
+      return base;
+    }
+
+    testWidgets('solo el registro de hoy ofrece editar y eliminar', (
+      tester,
+    ) async {
+      _taller(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await conHoyYAyer(tester, cifrado);
+      await tester.pumpWidget(_pantalla(cifrado, base));
+      await tester.pumpAndSettle();
+
+      expect(menu, findsOneWidget, reason: 'el de ayer no tiene menú');
+      await tester.tap(menu);
+      await tester.pumpAndSettle();
+      expect(find.text('Editar registro'), findsOneWidget);
+      expect(find.text('Eliminar registro'), findsOneWidget);
+    });
+
+    testWidgets('editar abre la pantalla de registro clínico', (tester) async {
+      _taller(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await conHoyYAyer(tester, cifrado);
+      await tester.pumpWidget(_pantalla(cifrado, base));
+      await tester.pumpAndSettle();
+
+      await tester.tap(menu);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Editar registro'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Registro clínico abierto'), findsOneWidget);
+    });
+
+    testWidgets('eliminar pide confirmación y lo quita al instante', (
+      tester,
+    ) async {
+      _taller(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await conHoyYAyer(tester, cifrado);
+      await tester.pumpWidget(_pantalla(cifrado, base));
+      await tester.pumpAndSettle();
+      final etiquetaHoy = _etiquetaFecha(DateTime.now());
+      expect(find.text(etiquetaHoy), findsOneWidget);
+
+      await tester.tap(menu);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Eliminar registro'));
+      await tester.pumpAndSettle();
+      expect(find.text('Eliminar registro'), findsOneWidget);
+      await tester.tap(find.text('Eliminar').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text(etiquetaHoy), findsNothing);
+      expect(find.text('Registro eliminado'), findsOneWidget);
+      expect(menu, findsNothing, reason: 'solo queda el registro de ayer');
+    });
+  });
+
+  group('Cargar más (CA-09.4)', () {
+    Future<BaseDatosSegura> conRegistros(
+      ServicioCifrado cifrado,
+      int cantidad,
+    ) async {
+      final (base, _, idPaciente) = await _baseConPaciente(cifrado);
+      final inicio = DateTime.now().subtract(const Duration(days: 60));
+      for (var i = 0; i < cantidad; i++) {
+        await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
+          idPaciente,
+          _registro('r$i', idPaciente, fecha: inicio.add(Duration(hours: i))),
+        );
+      }
+      return base;
+    }
+
+    testWidgets('con 50 registros cargados se ofrece cargar más', (
+      tester,
+    ) async {
+      _taller(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await conRegistros(cifrado, 50);
+      await tester.pumpWidget(_pantalla(cifrado, base));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('Cargar más registros'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Cargar más registros'), findsOneWidget);
+    });
+
+    testWidgets('aunque el filtro no tenga coincidencias, sigue el botón', (
+      tester,
+    ) async {
+      _taller(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await conRegistros(cifrado, 50);
+      await tester.pumpWidget(_pantalla(cifrado, base));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Crítico'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No hay registros para este filtro.'), findsOneWidget);
+      expect(find.text('Cargar más registros'), findsOneWidget);
+    });
+
+    testWidgets('con menos de 50 registros no hay más que cargar', (
+      tester,
+    ) async {
+      _taller(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await conRegistros(cifrado, 3);
+      await tester.pumpWidget(_pantalla(cifrado, base));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Cargar más registros'), findsNothing);
+    });
+  });
 }

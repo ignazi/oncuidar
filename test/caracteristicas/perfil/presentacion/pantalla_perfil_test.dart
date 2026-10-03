@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,9 @@ import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dar
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../ayudas/recordatorios.dart';
 
 const _clavePrueba = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
 const _uid = 'uid-test';
@@ -37,8 +41,10 @@ Future<BaseDatosSegura> _baseConCuidador(ServicioCifrado cifrado) async {
 Widget _pantallaPerfil(
   MockFirebaseAuth auth,
   BaseDatosSegura base,
-  ServicioCifrado cifrado,
-) {
+  ServicioCifrado cifrado, {
+  NotificacionesFalsas? avisos,
+}) {
+  final notificaciones = avisos ?? NotificacionesFalsas();
   final router = GoRouter(
     initialLocation: '/',
     routes: [
@@ -55,6 +61,7 @@ Widget _pantallaPerfil(
       firebaseAuthProvider.overrideWithValue(auth),
       servicioCifradoProvider.overrideWithValue(cifrado),
       baseDatosSeguraProvider.overrideWith((ref) => base),
+      servicioNotificacionesProvider.overrideWithValue(notificaciones),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -201,4 +208,89 @@ void main() {
       expect(find.text('Ingresa el correo de respaldo'), findsOneWidget);
     },
   );
+
+  group('Correo pendiente de confirmar (CA-04.3)', () {
+    testWidgets('un cambio del correo principal muestra el aviso', (
+      tester,
+    ) async {
+      await _pantallaAlta(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await _baseConCuidador(cifrado);
+      await base.docUsuario.set({
+        'pendiente_correo': 'nuevo@correo.cl',
+        'pendiente_correo_tipo': 'principal',
+      }, SetOptions(merge: true));
+      await tester.pumpWidget(_pantallaPerfil(_authConSesion(), base, cifrado));
+      await tester.pumpAndSettle();
+      await _abrirMiPerfil(tester);
+
+      expect(
+        find.text('Pendiente de confirmar: nuevo@correo.cl'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('un respaldo aún no registrado muestra el aviso', (
+      tester,
+    ) async {
+      await _pantallaAlta(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await _baseConCuidador(cifrado);
+      await base.docUsuario.set({
+        'correo_respaldo_cifrado': await cifrado.cifrar(
+          _uid,
+          'respaldo@correo.cl',
+        ),
+        'respaldo_pendiente_servidor': true,
+      }, SetOptions(merge: true));
+      await tester.pumpWidget(_pantallaPerfil(_authConSesion(), base, cifrado));
+      await tester.pumpAndSettle();
+      await _abrirMiPerfil(tester);
+
+      expect(
+        find.text('Pendiente de confirmar: respaldo@correo.cl'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('sin cambios pendientes no aparece el aviso', (tester) async {
+      await _pantallaAlta(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await _baseConCuidador(cifrado);
+      await tester.pumpWidget(_pantallaPerfil(_authConSesion(), base, cifrado));
+      await tester.pumpAndSettle();
+      await _abrirMiPerfil(tester);
+
+      expect(find.textContaining('Pendiente de confirmar'), findsNothing);
+    });
+  });
+
+  testWidgets('cerrar sesión cancela los avisos programados (CA-16.4)', (
+    tester,
+  ) async {
+    await _pantallaAlta(tester);
+    SharedPreferences.setMockInitialValues({});
+    final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+    final base = await _baseConCuidador(cifrado);
+    final avisos = NotificacionesFalsas();
+    await tester.pumpWidget(
+      _pantallaPerfil(_authConSesion(), base, cifrado, avisos: avisos),
+    );
+    await tester.pumpAndSettle();
+    await _abrirMiPerfil(tester);
+
+    final boton = find.widgetWithText(ElevatedButton, 'Cerrar sesión');
+    await tester.ensureVisible(boton);
+    await tester.pumpAndSettle();
+    await tester.tap(boton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cerrar sesión').last);
+    // El indicador de cierre gira hasta salir: se avanza el reloj a mano.
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+
+    expect(avisos.canceladasTodas, 1);
+    expect(find.text('Bienvenida'), findsOneWidget);
+  });
 }

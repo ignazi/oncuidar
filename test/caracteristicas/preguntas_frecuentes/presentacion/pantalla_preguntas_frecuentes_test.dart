@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/presentacion/pantalla_preguntas_frecuentes.dart';
 
@@ -15,11 +16,17 @@ const _preguntaCateter =
 const _preguntaAlimentacion =
     '¿Qué alimentos debo evitar y qué agua es segura?';
 
-Widget _pantalla() {
+Widget _pantalla({List<MaterialEducativo> catalogo = const []}) {
   final router = GoRouter(
     initialLocation: '/faq',
     routes: [
       GoRoute(path: '/faq', builder: (c, s) => const FaqScreen()),
+      GoRoute(
+        path: '/biblioteca/:id',
+        builder: (c, s) => Scaffold(
+          body: Center(child: Text('Material ${s.pathParameters['id']}')),
+        ),
+      ),
       GoRoute(
         path: '/dashboard',
         builder: (c, s) =>
@@ -31,19 +38,22 @@ Widget _pantalla() {
   return ProviderScope(
     overrides: [
       contenidosEducativosProvider.overrideWith(
-        (ref) => Stream.value(const []),
+        (ref) => Stream.value(catalogo),
       ),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
 }
 
-Future<void> _montar(WidgetTester tester) async {
+Future<void> _montar(
+  WidgetTester tester, {
+  List<MaterialEducativo> catalogo = const [],
+}) async {
   tester.view.physicalSize = const Size(800, 1600);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  await tester.pumpWidget(_pantalla());
+  await tester.pumpWidget(_pantalla(catalogo: catalogo));
   await tester.pumpAndSettle();
 }
 
@@ -154,5 +164,41 @@ void main() {
       find.text('No se encontraron preguntas que coincidan con tu búsqueda.'),
       findsOneWidget,
     );
+  });
+
+  group('Enlace al material relacionado (CA-14.3)', () {
+    final video = MaterialEducativo(
+      id: 'videos-como-medir-la-fiebre',
+      title: 'Cómo medir la fiebre',
+      category: 'Videos',
+      topic: 'Fiebre',
+      body: 'Video paso a paso.',
+      createdAt: DateTime.utc(2026, 1, 1),
+    );
+
+    testWidgets('si el material existe, la respuesta enlaza a él', (
+      tester,
+    ) async {
+      await _montar(tester, catalogo: [video]);
+      await tester.tap(find.byKey(const Key('faq_fiebre')));
+      await tester.pumpAndSettle();
+
+      final enlace = find.byKey(const Key('verMaterial_fiebre'));
+      expect(enlace, findsOneWidget);
+      await tester.tap(enlace);
+      await tester.pumpAndSettle();
+      expect(find.text('Material videos-como-medir-la-fiebre'), findsOneWidget);
+    });
+
+    testWidgets('si el material no está en el catálogo, no hay enlace', (
+      tester,
+    ) async {
+      await _montar(tester);
+      await tester.tap(find.byKey(const Key('faq_fiebre')));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Se considera fiebre'), findsOneWidget);
+      expect(find.byKey(const Key('verMaterial_fiebre')), findsNothing);
+    });
   });
 }

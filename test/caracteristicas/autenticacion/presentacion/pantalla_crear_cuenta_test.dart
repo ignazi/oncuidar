@@ -246,6 +246,70 @@ Future<void> _rellenarConRelacionYFaseOtro(WidgetTester tester) async {
 }
 
 void main() {
+  group('Datos inválidos bloquean el alta (CA-02.2)', () {
+    Future<MockFirebaseAuth> montar(WidgetTester tester) async {
+      await _pantallaAlta(tester);
+      final auth = _authLimpio();
+      final cifrado = _cifradoListo();
+      final base = await _crearBase(cifrado, auth);
+      await tester.pumpWidget(_pantalla(auth, base, cifrado));
+      await tester.pumpAndSettle();
+      return auth;
+    }
+
+    Future<void> guardar(WidgetTester tester) async {
+      final boton = find.text('Guardar y continuar');
+      await tester.ensureVisible(boton);
+      await tester.pumpAndSettle();
+      await tester.tap(boton);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('con campos vacíos se ven los errores y no se crea', (
+      tester,
+    ) async {
+      final auth = await montar(tester);
+
+      await guardar(tester);
+
+      expect(find.text('Ingresa tu nombre'), findsOneWidget);
+      expect(find.text('Ingresa tu correo'), findsWidgets);
+      expect(find.text('Ingresa el RUT del paciente'), findsOneWidget);
+      expect(auth.currentUser, isNull);
+      expect(find.text('Dashboard'), findsNothing);
+    });
+
+    testWidgets('un correo inválido impide crear la cuenta', (tester) async {
+      final auth = await montar(tester);
+      await _rellenar(tester);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'ana@correo.cl'),
+        'ana@correo',
+      );
+
+      await guardar(tester);
+
+      expect(find.text('Ingresa un correo válido'), findsOneWidget);
+      expect(auth.currentUser, isNull);
+      expect(find.text('Dashboard'), findsNothing);
+    });
+
+    testWidgets('un RUT inválido impide crear la cuenta', (tester) async {
+      final auth = await montar(tester);
+      await _rellenar(tester);
+      await tester.enterText(
+        find.widgetWithText(TextField, '15.844.829-7'),
+        '158448290',
+      );
+
+      await guardar(tester);
+
+      expect(find.text('RUT no válido'), findsOneWidget);
+      expect(auth.currentUser, isNull);
+      expect(find.text('Dashboard'), findsNothing);
+    });
+  });
+
   testWidgets('registro crea cuenta, guarda y redirige', (tester) async {
     await _pantallaAlta(tester);
     final auth = _authLimpio();
