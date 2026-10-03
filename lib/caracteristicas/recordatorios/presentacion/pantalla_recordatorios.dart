@@ -140,7 +140,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
                 recordatorio: r,
                 nombrePaciente: r.esParaCuidador
                     ? 'Cuidador'
-                    : ref.read(currentPatientProvider).value?.fullName ?? '',
+                    : ref.read(pacienteActivoProvider).value?.fullName ?? '',
                 silenciadas: _silenciadas,
                 alAlternarActivo: () => _alternarActivo(r),
                 alEditar: () => _dialogoRecordatorio(existente: r),
@@ -157,7 +157,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
       ref.read(controladorRecordatoriosProvider);
 
   Future<void> _alternarActivo(Recordatorio r) async {
-    final paciente = ref.read(currentPatientProvider).value;
+    final paciente = ref.read(pacienteActivoProvider).value;
     if (paciente == null) return;
     try {
       await _controlador.alternarActivo(paciente, r);
@@ -167,7 +167,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
   }
 
   Future<void> _eliminar(Recordatorio r) async {
-    final paciente = ref.read(currentPatientProvider).value;
+    final paciente = ref.read(pacienteActivoProvider).value;
     if (paciente == null) return;
     final confirmar = await mostrarDialogoConfirmacion(
       context,
@@ -238,7 +238,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
     );
     if (datos == null) return;
 
-    final paciente = ref.read(currentPatientProvider).value;
+    final paciente = ref.read(pacienteActivoProvider).value;
     if (paciente == null) return;
 
     try {

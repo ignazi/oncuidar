@@ -15,7 +15,7 @@ class Dashboard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pacienteAsync = ref.watch(currentPatientProvider);
+    final pacienteAsync = ref.watch(pacienteActivoProvider);
     final cuidador = ref.watch(cuidadorProvider).value;
     final nombreCuidador = cuidador?['nombre'] as String?;
 

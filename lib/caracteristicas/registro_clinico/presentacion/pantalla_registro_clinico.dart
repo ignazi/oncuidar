@@ -274,7 +274,7 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
   }
 
   Future<void> _guardar() async {
-    final paciente = ref.read(currentPatientProvider).value;
+    final paciente = ref.read(pacienteActivoProvider).value;
     if (paciente == null) {
       _mostrarSnack(
         'No hay paciente seleccionado',
@@ -438,7 +438,7 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
   // ── UI ──
   @override
   Widget build(BuildContext context) {
-    final paciente = ref.watch(currentPatientProvider).value;
+    final paciente = ref.watch(pacienteActivoProvider).value;
     final registros =
         ref.watch(registrosClinicosProvider).value ?? const <RegistroClinico>[];
     final tope = paciente?.maximoRegistrosDia ?? 3;

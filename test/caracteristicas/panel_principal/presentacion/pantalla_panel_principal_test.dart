@@ -81,7 +81,7 @@ Widget _pantalla({
   );
   return ProviderScope(
     overrides: [
-      currentPatientProvider.overrideWith(
+      pacienteActivoProvider.overrideWith(
         (ref) => Stream<Paciente?>.value(paciente),
       ),
       registrosClinicosProvider.overrideWith(

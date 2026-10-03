@@ -253,7 +253,7 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
     );
     if (confirmar != true || !mounted) return;
     setState(() => _cerrandoSesion = true);
-    await ref.read(selectedPatientIdProvider.notifier).select(null);
+    await ref.read(idPacienteSeleccionadoProvider.notifier).seleccionar(null);
     ref.read(servicioCifradoProvider).bloquear();
     ref.read(bloqueoCifradoProvider.notifier).fijarDesbloqueado(false);
     try {

@@ -135,7 +135,9 @@ void main() {
   });
 
   Future<void> seleccionar(String id) async {
-    await contenedor.read(selectedPatientIdProvider.notifier).select(id);
+    await contenedor
+        .read(idPacienteSeleccionadoProvider.notifier)
+        .seleccionar(id);
   }
 
   group('Datos por paciente activo', () {

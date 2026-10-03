@@ -5,19 +5,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const _clavePacienteSeleccionado = 'selected_patient_id';
 
-final patientsListProvider = StreamProvider.autoDispose<List<Paciente>>((ref) {
+final pacientesProvider = StreamProvider.autoDispose<List<Paciente>>((ref) {
   return ref.watch(repositorioPacientesProvider).pacientesEnTiempoReal();
 });
 
-final archivedPatientsListProvider = StreamProvider.autoDispose<List<Paciente>>(
-  (ref) {
-    return ref
-        .watch(repositorioPacientesProvider)
-        .pacientesArchivadosEnTiempoReal();
-  },
-);
+final pacientesArchivadosProvider = StreamProvider.autoDispose<List<Paciente>>((
+  ref,
+) {
+  return ref
+      .watch(repositorioPacientesProvider)
+      .pacientesArchivadosEnTiempoReal();
+});
 
-class SelectedPatientNotifier extends Notifier<String?> {
+class PacienteSeleccionadoNotifier extends Notifier<String?> {
   @override
   String? build() {
     _cargarDelPrefs();
@@ -34,7 +34,7 @@ class SelectedPatientNotifier extends Notifier<String?> {
     }
   }
 
-  Future<void> select(String? idPaciente) async {
+  Future<void> seleccionar(String? idPaciente) async {
     state = idPaciente;
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -49,22 +49,22 @@ class SelectedPatientNotifier extends Notifier<String?> {
   }
 }
 
-final selectedPatientIdProvider =
-    NotifierProvider<SelectedPatientNotifier, String?>(
-      SelectedPatientNotifier.new,
+final idPacienteSeleccionadoProvider =
+    NotifierProvider<PacienteSeleccionadoNotifier, String?>(
+      PacienteSeleccionadoNotifier.new,
     );
 
-final currentPatientProvider = StreamProvider.autoDispose<Paciente?>((
+final pacienteActivoProvider = StreamProvider.autoDispose<Paciente?>((
   ref,
 ) async* {
-  final pacientesAsync = ref.watch(patientsListProvider);
+  final pacientesAsync = ref.watch(pacientesProvider);
   if (pacientesAsync is AsyncLoading) return;
   final pacientes = pacientesAsync.value ?? const <Paciente>[];
   if (pacientes.isEmpty) {
     yield null;
     return;
   }
-  final seleccionadoId = ref.watch(selectedPatientIdProvider);
+  final seleccionadoId = ref.watch(idPacienteSeleccionadoProvider);
   if (seleccionadoId != null) {
     for (final paciente in pacientes) {
       if (paciente.id == seleccionadoId) {

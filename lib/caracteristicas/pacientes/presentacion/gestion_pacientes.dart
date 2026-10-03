@@ -23,9 +23,9 @@ class GestionPacientes extends ConsumerStatefulWidget {
 class _GestionPacientesState extends ConsumerState<GestionPacientes> {
   @override
   Widget build(BuildContext context) {
-    final pacientesAsync = ref.watch(patientsListProvider);
-    final pacienteActualAsync = ref.watch(currentPatientProvider);
-    final archivadosAsync = ref.watch(archivedPatientsListProvider);
+    final pacientesAsync = ref.watch(pacientesProvider);
+    final pacienteActualAsync = ref.watch(pacienteActivoProvider);
+    final archivadosAsync = ref.watch(pacientesArchivadosProvider);
     final pacientes = pacientesAsync.value ?? const <Paciente>[];
     final pacienteActual = pacienteActualAsync.value;
     final archivados = archivadosAsync.value ?? const <Paciente>[];
@@ -137,13 +137,15 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
   // ── Cambiar paciente activo ──
 
   void _cambiarPaciente(List<Paciente> pacientes) {
-    final idActual = ref.read(currentPatientProvider).value?.id;
+    final idActual = ref.read(pacienteActivoProvider).value?.id;
     mostrarDialogoCambiarPaciente(
       context,
       pacientes: pacientes,
       idActual: idActual,
       alCambiar: (p) async {
-        await ref.read(selectedPatientIdProvider.notifier).select(p.id);
+        await ref
+            .read(idPacienteSeleccionadoProvider.notifier)
+            .seleccionar(p.id);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -223,17 +225,17 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
     );
     if (confirmar != true || !mounted) return;
     final messenger = ScaffoldMessenger.of(context);
-    final eraActivo = ref.read(currentPatientProvider).value?.id == paciente.id;
+    final eraActivo = ref.read(pacienteActivoProvider).value?.id == paciente.id;
     try {
       await ref.read(cicloDeVidaPacienteProvider).eliminar(paciente.id);
       if (eraActivo) {
         final restantes =
-            (ref.read(patientsListProvider).value ?? const <Paciente>[])
+            (ref.read(pacientesProvider).value ?? const <Paciente>[])
                 .where((p) => p.id != paciente.id)
                 .toList();
         await ref
-            .read(selectedPatientIdProvider.notifier)
-            .select(restantes.isEmpty ? null : restantes.first.id);
+            .read(idPacienteSeleccionadoProvider.notifier)
+            .seleccionar(restantes.isEmpty ? null : restantes.first.id);
       }
       if (mounted) {
         messenger.showSnackBar(

@@ -20,29 +20,33 @@ void main() {
 
   test('el paciente elegido sigue seleccionado tras reiniciar', () async {
     final antes = ProviderContainer();
-    await antes.read(selectedPatientIdProvider.notifier).select('paciente-b');
-    expect(antes.read(selectedPatientIdProvider), 'paciente-b');
+    await antes
+        .read(idPacienteSeleccionadoProvider.notifier)
+        .seleccionar('paciente-b');
+    expect(antes.read(idPacienteSeleccionadoProvider), 'paciente-b');
     antes.dispose();
 
     // Un contenedor nuevo equivale a volver a abrir la aplicación.
     final despues = ProviderContainer();
     addTearDown(despues.dispose);
-    despues.read(selectedPatientIdProvider);
+    despues.read(idPacienteSeleccionadoProvider);
     await _esperar(
-      () => despues.read(selectedPatientIdProvider) == 'paciente-b',
+      () => despues.read(idPacienteSeleccionadoProvider) == 'paciente-b',
     );
   });
 
   test('al quitar la selección no queda nada guardado', () async {
     final antes = ProviderContainer();
-    await antes.read(selectedPatientIdProvider.notifier).select('paciente-a');
-    await antes.read(selectedPatientIdProvider.notifier).select(null);
+    await antes
+        .read(idPacienteSeleccionadoProvider.notifier)
+        .seleccionar('paciente-a');
+    await antes.read(idPacienteSeleccionadoProvider.notifier).seleccionar(null);
     antes.dispose();
 
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('selected_patient_id'), isNull);
     final despues = ProviderContainer();
     addTearDown(despues.dispose);
-    expect(despues.read(selectedPatientIdProvider), isNull);
+    expect(despues.read(idPacienteSeleccionadoProvider), isNull);
   });
 }

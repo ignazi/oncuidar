@@ -68,7 +68,7 @@ baseConDosPacientes() async {
 }
 
 /// Fija el paciente activo: los ids automáticos no garantizan el orden.
-class PacienteActivoFijo extends SelectedPatientNotifier {
+class PacienteActivoFijo extends PacienteSeleccionadoNotifier {
   PacienteActivoFijo(this.idActivo);
 
   final String? idActivo;
@@ -104,7 +104,7 @@ Widget pantallaHistorial(
       firebaseAuthProvider.overrideWithValue(authPrueba()),
       servicioCifradoProvider.overrideWithValue(cifrado),
       baseDatosSeguraProvider.overrideWith((_) => base),
-      selectedPatientIdProvider.overrideWith(
+      idPacienteSeleccionadoProvider.overrideWith(
         () => PacienteActivoFijo(pacienteActivo),
       ),
     ],

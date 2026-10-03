@@ -81,7 +81,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
   }
 
   Future<void> _cargarMas(List<RegistroClinico> visibles) async {
-    final paciente = ref.read(currentPatientProvider).value;
+    final paciente = ref.read(pacienteActivoProvider).value;
     if (paciente == null || visibles.isEmpty) return;
     setState(() => _cargandoMas = true);
     try {
@@ -166,7 +166,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
 
     final hayFiltros = _filtro.hayFiltros;
     final tope =
-        ref.read(currentPatientProvider).value?.maximoRegistrosDia ?? 3;
+        ref.read(pacienteActivoProvider).value?.maximoRegistrosDia ?? 3;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -231,7 +231,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     if (_exportando) return;
     setState(() => _exportando = true);
     try {
-      final paciente = ref.read(currentPatientProvider).value;
+      final paciente = ref.read(pacienteActivoProvider).value;
       final registros = await _controlador.registrosParaExportar(
         paciente,
         _filtro,
@@ -318,7 +318,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
   }
 
   Future<void> _eliminarRegistro(RegistroClinico registro) async {
-    final paciente = ref.read(currentPatientProvider).value;
+    final paciente = ref.read(pacienteActivoProvider).value;
     if (paciente == null || !esEditableHoy(registro)) return;
     final confirmar = await mostrarDialogoConfirmacion(
       context,

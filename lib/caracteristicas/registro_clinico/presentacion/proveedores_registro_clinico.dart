@@ -6,7 +6,7 @@ import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clini
 
 final registrosClinicosProvider =
     StreamProvider.autoDispose<List<RegistroClinico>>((ref) {
-      final pacienteAsync = ref.watch(currentPatientProvider);
+      final pacienteAsync = ref.watch(pacienteActivoProvider);
       if (pacienteAsync is AsyncLoading) return const Stream.empty();
       final paciente = pacienteAsync.value;
       if (paciente == null) return Stream.value(const []);

@@ -17,7 +17,7 @@ Future<void> mostrarDialogoArchivados(
     builder: (ctx) => Consumer(
       builder: (context, ref, _) {
         final archivados =
-            ref.watch(archivedPatientsListProvider).value ?? const <Paciente>[];
+            ref.watch(pacientesArchivadosProvider).value ?? const <Paciente>[];
         return HojaDialogo(
           icono: Icons.archive_outlined,
           titulo: archivados.length == 1
