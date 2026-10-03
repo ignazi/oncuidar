@@ -219,9 +219,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(InteractiveViewer), findsOneWidget);
-    expect(find.byType(Dialog), findsOneWidget);
+    expect(find.byKey(const Key('barraVisorImagen')), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(find.byKey(const Key('cerrarVisorImagen')));
     await tester.pumpAndSettle();
 
     expect(find.byType(InteractiveViewer), findsNothing);

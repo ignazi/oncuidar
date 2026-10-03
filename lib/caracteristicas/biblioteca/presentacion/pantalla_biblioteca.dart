@@ -10,8 +10,8 @@ import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_material.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_video.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_imagen.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/dialogo_imagen_ampliable.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
@@ -89,17 +89,17 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
     }
     final imagen = material.urlImagen;
     if (imagen != null && imagen.isNotEmpty) {
-      _mostrarInfografia(imagen, material.titulo);
+      unawaited(
+        abrirVisorImagen(
+          context,
+          url: imagen,
+          titulo: material.titulo,
+          idMaterial: material.id,
+        ),
+      );
       return;
     }
     if (context.mounted) unawaited(context.push('/biblioteca/${material.id}'));
-  }
-
-  void _mostrarInfografia(String url, String titulo) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => DialogoImagenAmpliable(url: url, titulo: titulo),
-    );
   }
 
   Future<void> _reproducirVideo(MaterialEducativo material) async {

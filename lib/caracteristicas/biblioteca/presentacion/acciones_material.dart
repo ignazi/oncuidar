@@ -5,6 +5,7 @@ import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Aviso de error de la biblioteca.
 void mostrarAvisoBiblioteca(BuildContext context, String mensaje) {
@@ -41,6 +42,27 @@ Future<void> abrirArchivoMaterial(
   } catch (e) {
     if (context.mounted) {
       mostrarAvisoBiblioteca(context, 'Error al abrir el archivo: $e');
+    }
+  }
+}
+
+/// Comparte la imagen del material desde la caché del teléfono.
+Future<void> compartirImagenMaterial(
+  WidgetRef ref,
+  BuildContext context,
+  String url,
+  String titulo,
+) async {
+  try {
+    final archivo = await ref
+        .read(servicioCacheContenidoProvider)
+        .descargar(url);
+    await SharePlus.instance.share(
+      ShareParams(files: [XFile(archivo.path)], subject: titulo),
+    );
+  } catch (e) {
+    if (context.mounted) {
+      mostrarAvisoBiblioteca(context, 'No se pudo compartir la imagen.');
     }
   }
 }

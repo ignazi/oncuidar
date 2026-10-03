@@ -15,6 +15,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_conteni
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_biblioteca.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_imagen.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -361,7 +362,7 @@ void main() {
   });
 
   testWidgets(
-    'una infografía sin adjunto se amplía con zoom y se cierra (CA-19.3)',
+    'una infografía sin adjunto se abre en el visor con zoom y se cierra (CA-19.3)',
     (tester) async {
       final infografia = MaterialEducativo(
         id: 'infografias-lavado-de-manos',
@@ -378,22 +379,23 @@ void main() {
       await tester.tap(find.byKey(const Key('miniaturaTarjetaMaterial')));
       await tester.pumpAndSettle();
 
-      expect(find.byType(Dialog), findsOneWidget);
+      expect(find.byType(PantallaVisorImagen), findsOneWidget);
       final visor = tester.widget<InteractiveViewer>(
         find.byType(InteractiveViewer),
       );
+      expect(visor.minScale, 1);
       expect(visor.maxScale, 5);
       expect(
         find.descendant(
-          of: find.byType(Dialog),
+          of: find.byType(PantallaVisorImagen),
           matching: find.text('Lavado de manos'),
         ),
         findsOneWidget,
       );
 
-      await tester.tap(find.byIcon(Icons.close));
+      await tester.tap(find.byKey(const Key('cerrarVisorImagen')));
       await tester.pumpAndSettle();
-      expect(find.byType(Dialog), findsNothing);
+      expect(find.byType(PantallaVisorImagen), findsNothing);
     },
   );
 }

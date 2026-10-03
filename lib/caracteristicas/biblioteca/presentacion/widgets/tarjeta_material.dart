@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_imagen.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
 
 class TarjetaMaterial extends StatelessWidget {
@@ -379,7 +380,7 @@ class _TarjetaDocumento extends StatelessWidget {
         children: [
           if (url != null && url.isNotEmpty)
             Hero(
-              tag: 'imagen-material-${material.id}',
+              tag: etiquetaHeroImagen(material.id),
               child: ImagenCacheada(
                 url: url,
                 ajuste: BoxFit.cover,

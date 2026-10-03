@@ -8,8 +8,8 @@ import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/parseo_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_material.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_imagen.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/dialogo_imagen_ampliable.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
@@ -45,10 +45,14 @@ class _PantallaDetalleMaterialState
     }
   }
 
-  void _mostrarImagen(final String url) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => DialogoImagenAmpliable(url: url),
+  void _mostrarImagen(MaterialEducativo material) {
+    unawaited(
+      abrirVisorImagen(
+        context,
+        url: material.urlImagen!,
+        titulo: material.titulo,
+        idMaterial: material.id,
+      ),
     );
   }
 
@@ -116,7 +120,7 @@ class _PantallaDetalleMaterialState
         children: [
           if (material.urlImagen != null && material.urlImagen!.isNotEmpty) ...[
             GestureDetector(
-              onTap: () => _mostrarImagen(material.urlImagen!),
+              onTap: () => _mostrarImagen(material),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: _imagenCuerpo(material.urlImagen!),
