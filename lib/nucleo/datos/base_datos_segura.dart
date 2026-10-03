@@ -36,7 +36,7 @@ class BaseDatosSegura {
     return usuario.uid;
   }
 
-  DocumentReference get docUsuario => firestore.collection('users').doc(uid);
+  DocumentReference get docUsuario => firestore.collection('usuarios').doc(uid);
 
   /// true si hay un cuidador identificado (o un uid de prueba).
   bool tieneIdentidad() {
@@ -160,7 +160,7 @@ class BaseDatosSegura {
 
   /// Envía al servidor una escritura de la cola; el orquestador decide qué hacer si falla.
   Future<void> aplicarEscrituraPendiente(EscrituraPendiente escritura) async {
-    final prefijo = 'users/$uid/patients/${escritura.pacienteId}/';
+    final prefijo = 'usuarios/$uid/pacientes/${escritura.pacienteId}/';
     if (!escritura.ruta.startsWith(prefijo)) {
       throw ArgumentError(
         'La escritura pendiente no corresponde al paciente indicado',

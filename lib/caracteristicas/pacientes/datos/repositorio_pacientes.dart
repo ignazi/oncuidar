@@ -9,7 +9,7 @@ class RepositorioPacientes {
   final BaseDatosSegura bd;
 
   Future<String> crearPaciente(Paciente paciente) async {
-    final ref = bd.docUsuario.collection('patients').doc();
+    final ref = bd.docUsuario.collection('pacientes').doc();
     final datos = await _cifrarPaciente(paciente);
     await bd.sinEsperarSinRed(() => ref.set(datos, SetOptions(merge: true)));
     return ref.id;
@@ -33,8 +33,8 @@ class RepositorioPacientes {
     }
 
     await campo(
-      claveFormulario: 'fullName',
-      valor: datos['fullName'],
+      claveFormulario: 'nombreCompleto',
+      valor: datos['nombreCompleto'],
       clave: 'nombre_cifrado',
     );
     await campo(
@@ -43,13 +43,13 @@ class RepositorioPacientes {
       clave: 'rut_cifrado',
     );
     await campo(
-      claveFormulario: 'age',
-      valor: datos['age'],
+      claveFormulario: 'edad',
+      valor: datos['edad'],
       clave: 'edad_cifrada',
     );
     await campo(
-      claveFormulario: 'diagnosis',
-      valor: datos['diagnosis'],
+      claveFormulario: 'diagnostico',
+      valor: datos['diagnostico'],
       clave: 'diagnostico_cifrado',
     );
     await campo(
@@ -88,7 +88,7 @@ class RepositorioPacientes {
     }
     if (plano.isEmpty) return;
     await bd.docUsuario
-        .collection('patients')
+        .collection('pacientes')
         .doc(idPaciente)
         .set(plano, SetOptions(merge: true));
   }
@@ -96,7 +96,7 @@ class RepositorioPacientes {
   /// Borrado LÓGICO del paciente: lo marca como archivado.
   Future<void> archivarPaciente(String idPaciente) async {
     await bd.sinEsperarSinRed(
-      () => bd.docUsuario.collection('patients').doc(idPaciente).set({
+      () => bd.docUsuario.collection('pacientes').doc(idPaciente).set({
         'archivado': true,
       }, SetOptions(merge: true)),
     );
@@ -105,7 +105,7 @@ class RepositorioPacientes {
   /// Restaura un paciente archivado.
   Future<void> desarchivarPaciente(String idPaciente) async {
     await bd.sinEsperarSinRed(
-      () => bd.docUsuario.collection('patients').doc(idPaciente).set({
+      () => bd.docUsuario.collection('pacientes').doc(idPaciente).set({
         'archivado': false,
       }, SetOptions(merge: true)),
     );
@@ -116,7 +116,7 @@ class RepositorioPacientes {
     // Lo encolado del paciente se purga primero: si no, el drenaje recrearía documentos borrados.
     final cola = bd.cola;
     if (cola != null) await cola.quitarDePaciente(bd.uid, idPaciente);
-    final docPaciente = bd.docUsuario.collection('patients').doc(idPaciente);
+    final docPaciente = bd.docUsuario.collection('pacientes').doc(idPaciente);
     for (final sub in subcoleccionesPaciente) {
       await bd.borrarColeccionEnLotes(docPaciente.collection(sub));
     }
@@ -124,12 +124,12 @@ class RepositorioPacientes {
   }
 
   /// Subcolecciones que cuelgan de un paciente y se borran con él.
-  static const subcoleccionesPaciente = ['clinicalRecords', 'recordatorios'];
+  static const subcoleccionesPaciente = ['registrosClinicos', 'recordatorios'];
 
   /// Stream en tiempo real de los pacientes archivados (`archivado == true`).
   Stream<List<Paciente>> pacientesArchivadosEnTiempoReal() {
     return bd.docUsuario
-        .collection('patients')
+        .collection('pacientes')
         .snapshots()
         .asyncMap(
           (snap) => Future.wait(
@@ -142,7 +142,7 @@ class RepositorioPacientes {
 
   Stream<List<Paciente>> pacientesEnTiempoReal() {
     return bd.docUsuario
-        .collection('patients')
+        .collection('pacientes')
         .snapshots()
         .asyncMap(
           (snap) => Future.wait(

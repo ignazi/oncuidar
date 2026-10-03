@@ -30,9 +30,9 @@ Future<int> _cantidad(
   String subcoleccion,
 ) async {
   final snap = await firestore
-      .collection('users')
+      .collection('usuarios')
       .doc(uidRecordatorios)
-      .collection('patients')
+      .collection('pacientes')
       .doc(idPaciente)
       .collection(subcoleccion)
       .get();
@@ -54,29 +54,29 @@ void main() {
       await registros.guardarRegistroClinico(id, _registro(id, 'r2-$id'));
       await recordatorios.agregarRecordatorio(id, recordatorioDe(id));
     }
-    expect(await _cantidad(firestore, idA, 'clinicalRecords'), 2);
+    expect(await _cantidad(firestore, idA, 'registrosClinicos'), 2);
     expect(await _cantidad(firestore, idA, 'recordatorios'), 1);
 
     await pacientes.eliminarPaciente(idA);
 
-    expect(await _cantidad(firestore, idA, 'clinicalRecords'), 0);
+    expect(await _cantidad(firestore, idA, 'registrosClinicos'), 0);
     expect(await _cantidad(firestore, idA, 'recordatorios'), 0);
     final docA = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(uidRecordatorios)
-        .collection('patients')
+        .collection('pacientes')
         .doc(idA)
         .get();
     expect(docA.exists, isFalse);
     // El otro paciente no se toca.
-    expect(await _cantidad(firestore, idB, 'clinicalRecords'), 2);
+    expect(await _cantidad(firestore, idB, 'registrosClinicos'), 2);
     expect(await _cantidad(firestore, idB, 'recordatorios'), 1);
   });
 
   test('las subcolecciones que se borran son registros y recordatorios', () {
     expect(
       RepositorioPacientes.subcoleccionesPaciente,
-      containsAll(['clinicalRecords', 'recordatorios']),
+      containsAll(['registrosClinicos', 'recordatorios']),
     );
   });
 }

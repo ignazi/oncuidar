@@ -153,7 +153,7 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
     final emailAuth =
         ref.read(firebaseAuthProvider).currentUser?.email?.trim() ?? '';
     final correoPrincipal =
-        (_cuidador?['email'] as String?)?.trim() ?? emailAuth;
+        (_cuidador?['correo'] as String?)?.trim() ?? emailAuth;
     final pendiente = _cuidador?['pendienteCorreo'] as Map?;
 
     return TarjetaPerfilCuidador(
@@ -225,7 +225,7 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
   }) async {
     final cuidador = _cuidador ?? {};
     final correoPrincipalOriginal =
-        (cuidador['email'] as String?)?.trim() ?? '';
+        (cuidador['correo'] as String?)?.trim() ?? '';
     final correoRespaldoOriginal =
         (cuidador['correoRespaldo'] as String?)?.trim() ?? '';
     await mostrarDialogoCorreos(

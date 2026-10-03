@@ -94,18 +94,18 @@ void main() {
     firestore = FakeFirebaseFirestore();
     base = BaseDatosSegura(base: firestore, uidPrueba: _uid, cifrado: cifrado);
     await RepositorioCuidador(base).crearCuidador({
-      'displayName': 'Ana Torres',
-      'email': 'cuidador@test.cl',
-      'phone': '+56 9 1111 1111',
-      'relationship': 'Madre',
-      'address': 'Av. Siempre Viva 742',
+      'nombre': 'Ana Torres',
+      'correo': 'cuidador@test.cl',
+      'telefono': '+56 9 1111 1111',
+      'relacion': 'Madre',
+      'direccion': 'Av. Siempre Viva 742',
     });
     idA = await crearPaciente('Paciente A');
     idB = await crearPaciente('Paciente B');
     await sembrarPorPaciente(idA, 'A');
     await sembrarPorPaciente(idB, 'B');
     await firestore
-        .collection('educationalContent')
+        .collection('materialEducativo')
         .doc('guia-1')
         .set(
           MaterialEducativo(
@@ -238,16 +238,16 @@ void main() {
       'los documentos del chat y la biblioteca no declaran paciente',
       () async {
         final chat = await firestore
-            .collection('users')
+            .collection('usuarios')
             .doc(_uid)
-            .collection('conversations')
+            .collection('conversaciones')
             .get();
         for (final doc in chat.docs) {
           expect(doc.data().keys, isNot(contains('paciente_id')));
           expect(doc.data().keys, isNot(contains('pacienteId')));
         }
         final biblioteca = await firestore
-            .collection('educationalContent')
+            .collection('materialEducativo')
             .get();
         for (final doc in biblioteca.docs) {
           expect(doc.data().keys, isNot(contains('paciente_id')));

@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PROJECT_ID = 'oncuidar-v1';
-const COLLECTION = 'educationalContent';
-const SEED_FILE = path.join(__dirname, 'educational_content.json');
+const COLLECTION = 'materialEducativo';
+const SEED_FILE = path.join(__dirname, 'material_educativo.json');
 
 const items = JSON.parse(fs.readFileSync(SEED_FILE, 'utf-8'));
 console.log(`Leidos ${items.length} items desde ${SEED_FILE}`);
@@ -11,16 +11,16 @@ console.log(`Leidos ${items.length} items desde ${SEED_FILE}`);
 function toFirestoreDocument(item) {
   const fields = {};
   for (const [key, value] of Object.entries(item)) {
-    if (key === 'createdAt') {
+    if (key === 'creadoEn') {
       fields[key] = { timestampValue: new Date().toISOString() };
-    } else if (key === 'fileSizeBytes') {
+    } else if (key === 'tamanoBytes') {
       fields[key] = { integerValue: value };
     } else {
       fields[key] = { stringValue: String(value) };
     }
   }
-  if (!fields.createdAt) {
-    fields.createdAt = { timestampValue: new Date().toISOString() };
+  if (!fields.creadoEn) {
+    fields.creadoEn = { timestampValue: new Date().toISOString() };
   }
   return { fields };
 }
@@ -44,13 +44,13 @@ function getAccessToken() {
 }
 
 function docId(item) {
-  const cleanTitle = item.title
+  const cleanTitle = item.titulo
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-  return `${item.category.toLowerCase()}-${cleanTitle}`;
+  return `${item.categoria.toLowerCase()}-${cleanTitle}`;
 }
 
 async function uploadItem(accessToken, item, index) {

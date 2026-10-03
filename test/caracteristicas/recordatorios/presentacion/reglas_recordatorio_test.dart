@@ -58,9 +58,9 @@ Future<Map<String, dynamic>> _payload(
 ) async {
   final datos =
       (await firestore
-              .collection('users')
+              .collection('usuarios')
               .doc(uidRecordatorios)
-              .collection('patients')
+              .collection('pacientes')
               .doc(idPaciente)
               .collection('recordatorios')
               .doc(id)
@@ -99,9 +99,9 @@ void main() {
         await cifrado.fijarClave(uidRecordatorios, clavePruebaRecordatorios);
         // Documento anterior a la asignación: el payload no trae el campo.
         await firestore
-            .collection('users')
+            .collection('usuarios')
             .doc(uidRecordatorios)
-            .collection('patients')
+            .collection('pacientes')
             .doc(idPaciente)
             .collection('recordatorios')
             .doc('anterior')

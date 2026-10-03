@@ -9,7 +9,7 @@ class RepositorioBiblioteca {
   final BaseDatosSegura bd;
 
   CollectionReference _contenidoEducativo() =>
-      bd.firestore.collection('educationalContent');
+      bd.firestore.collection('materialEducativo');
 
   Stream<List<MaterialEducativo>> contenidoEducativoEnTiempoReal() {
     return _contenidoEducativo().snapshots().map(
@@ -33,7 +33,7 @@ class RepositorioBiblioteca {
     if (!bd.tieneIdentidad()) return Stream.value(const []);
     return bd.docUsuario.snapshots().map((snap) {
       final datos = snap.data() as Map<String, dynamic>?;
-      return List<String>.from(datos?['favoriteArticleIds'] ?? const []);
+      return List<String>.from(datos?['idsFavoritos'] ?? const []);
     });
   }
 
@@ -44,12 +44,12 @@ class RepositorioBiblioteca {
         const GetOptions(source: Source.cache),
       );
       final datos = doc.data() as Map<String, dynamic>?;
-      favoritos = List<String>.from(datos?['favoriteArticleIds'] ?? const []);
+      favoritos = List<String>.from(datos?['idsFavoritos'] ?? const []);
     } catch (_) {
       try {
         final doc = await bd.docUsuario.get();
         final datos = doc.data() as Map<String, dynamic>?;
-        favoritos = List<String>.from(datos?['favoriteArticleIds'] ?? const []);
+        favoritos = List<String>.from(datos?['idsFavoritos'] ?? const []);
       } catch (_) {
         favoritos = const [];
       }
@@ -61,7 +61,7 @@ class RepositorioBiblioteca {
     }
     await bd.sinEsperarSinRed(
       () => bd.docUsuario.set({
-        'favoriteArticleIds': favoritos,
+        'idsFavoritos': favoritos,
       }, SetOptions(merge: true)),
     );
   }

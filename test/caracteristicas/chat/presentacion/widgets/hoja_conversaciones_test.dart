@@ -80,9 +80,9 @@ void main() {
       );
       final datos =
           (await firestore
-                  .collection('users')
+                  .collection('usuarios')
                   .doc(_uid)
-                  .collection('conversations')
+                  .collection('conversaciones')
                   .doc(id)
                   .get())
               .data()!;
@@ -143,9 +143,9 @@ void main() {
       );
       await repositorio.eliminarConversacion(id);
       final snap = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('conversations')
+          .collection('conversaciones')
           .snapshots()
           .first
           .timeout(const Duration(seconds: 5));

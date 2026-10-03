@@ -51,9 +51,9 @@ void main() {
         recordatorioDe(idPaciente, asignadoA: Recordatorio.asignadoACuidador),
       );
       final doc = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(uidRecordatorios)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
           .collection('recordatorios')
           .doc(id)

@@ -13,9 +13,9 @@ class RepositorioRegistrosClinicos {
   final BaseDatosSegura bd;
 
   CollectionReference _registrosClinicos(String idPaciente) => bd.docUsuario
-      .collection('patients')
+      .collection('pacientes')
       .doc(idPaciente)
-      .collection('clinicalRecords');
+      .collection('registrosClinicos');
 
   /// Guarda un registro clínico cifrando los campos sensibles.
   Future<void> guardarRegistroClinico(
@@ -40,10 +40,10 @@ class RepositorioRegistrosClinicos {
         'signos_vitales_cifrado': await bd.cifrado.cifrar(
           bd.uid,
           jsonEncode({
-            'temperature': signos.temperatura,
-            'heartRate': signos.frecuenciaCardiaca,
-            'oxygenSaturation': signos.saturacionOxigeno,
-            'respiratoryRate': signos.frecuenciaRespiratoria,
+            'temperatura': signos.temperatura,
+            'frecuenciaCardiaca': signos.frecuenciaCardiaca,
+            'saturacionOxigeno': signos.saturacionOxigeno,
+            'frecuenciaRespiratoria': signos.frecuenciaRespiratoria,
           }),
         )
       else
@@ -53,10 +53,10 @@ class RepositorioRegistrosClinicos {
         jsonEncode([
           for (final sintoma in registro.sintomas)
             {
-              'name': sintoma.nombre,
-              'intensity': sintoma.intensidad,
+              'nombre': sintoma.nombre,
+              'intensidad': sintoma.intensidad,
               if (sintoma.notas != null && sintoma.notas!.isNotEmpty)
-                'notes': sintoma.notas,
+                'notas': sintoma.notas,
             },
         ]),
       ),
@@ -171,10 +171,11 @@ class RepositorioRegistrosClinicos {
         final texto = await bd.cifrado.descifrar(bd.uid, cifrado);
         final mapa = jsonDecode(texto) as Map<String, dynamic>;
         return SignosVitales(
-          temperatura: (mapa['temperature'] as num?)?.toDouble(),
-          frecuenciaCardiaca: (mapa['heartRate'] as num?)?.toInt(),
-          saturacionOxigeno: (mapa['oxygenSaturation'] as num?)?.toInt(),
-          frecuenciaRespiratoria: (mapa['respiratoryRate'] as num?)?.toInt(),
+          temperatura: (mapa['temperatura'] as num?)?.toDouble(),
+          frecuenciaCardiaca: (mapa['frecuenciaCardiaca'] as num?)?.toInt(),
+          saturacionOxigeno: (mapa['saturacionOxigeno'] as num?)?.toInt(),
+          frecuenciaRespiratoria: (mapa['frecuenciaRespiratoria'] as num?)
+              ?.toInt(),
         );
       } catch (e, pila) {
         debugPrint('No se pudo descifrar signos_vitales_cifrado: $e\n$pila');
@@ -183,10 +184,10 @@ class RepositorioRegistrosClinicos {
     final signosMapa = datos['signosVitales'];
     if (signosMapa is Map<String, dynamic>) {
       return SignosVitales(
-        temperatura: (signosMapa['temperature'] as num?)?.toDouble(),
-        frecuenciaCardiaca: signosMapa['heartRate'] as int?,
-        saturacionOxigeno: signosMapa['oxygenSaturation'] as int?,
-        frecuenciaRespiratoria: signosMapa['respiratoryRate'] as int?,
+        temperatura: (signosMapa['temperatura'] as num?)?.toDouble(),
+        frecuenciaCardiaca: signosMapa['frecuenciaCardiaca'] as int?,
+        saturacionOxigeno: signosMapa['saturacionOxigeno'] as int?,
+        frecuenciaRespiratoria: signosMapa['frecuenciaRespiratoria'] as int?,
       );
     }
     return null;
@@ -203,9 +204,9 @@ class RepositorioRegistrosClinicos {
         return [
           for (final item in lista)
             EntradaSintoma(
-              nombre: (item['name'] as String?) ?? '',
-              intensidad: (item['intensity'] as num?)?.toInt() ?? 0,
-              notas: item['notes'] as String?,
+              nombre: (item['nombre'] as String?) ?? '',
+              intensidad: (item['intensidad'] as num?)?.toInt() ?? 0,
+              notas: item['notas'] as String?,
             ),
         ];
       } catch (e, pila) {
@@ -216,14 +217,14 @@ class RepositorioRegistrosClinicos {
     if (sintomasRaw is List) {
       final sintomas = <EntradaSintoma>[];
       for (final item in sintomasRaw.cast<Map<String, dynamic>>()) {
-        final notesCifradas = item['notes_cifrado'] as String?;
+        final notesCifradas = item['notas_cifrado'] as String?;
         final notas = (notesCifradas != null && notesCifradas.isNotEmpty)
-            ? await bd.descifrarCampo(item, 'notes_cifrado')
-            : item['notes'] as String?;
+            ? await bd.descifrarCampo(item, 'notas_cifrado')
+            : item['notas'] as String?;
         sintomas.add(
           EntradaSintoma(
-            nombre: (item['name'] as String?) ?? '',
-            intensidad: (item['intensity'] as num?)?.toInt() ?? 0,
+            nombre: (item['nombre'] as String?) ?? '',
+            intensidad: (item['intensidad'] as num?)?.toInt() ?? 0,
             notas: notas,
           ),
         );

@@ -69,9 +69,9 @@ class _Entorno {
     String paciente,
     String nombre,
   ) => firestore
-      .collection('users')
+      .collection('usuarios')
       .doc(_uid)
-      .collection('patients')
+      .collection('pacientes')
       .doc(paciente)
       .collection(nombre);
 
@@ -220,7 +220,7 @@ void main() {
       await e.orquestador.drenar();
 
       final registro = await e
-          .coleccion('pacienteA', 'clinicalRecords')
+          .coleccion('pacienteA', 'registrosClinicos')
           .doc('r1')
           .get();
       final rec = await e
@@ -269,7 +269,7 @@ void main() {
       final doc =
           (await e.coleccion('pacienteA', 'recordatorios').get()).docs.single;
       final escritura = escrituraDe(
-        ruta: 'users/$_uid/patients/pacienteA/recordatorios/${doc.id}',
+        ruta: 'usuarios/$_uid/pacientes/pacienteA/recordatorios/${doc.id}',
         pacienteId: 'pacienteA',
         datos: CodecPayload.codificar(doc.data()) as Map<String, dynamic>,
       );
@@ -455,7 +455,7 @@ void main() {
         hasLength(1),
       );
       expect(
-        (await e.coleccion('pacienteA', 'clinicalRecords').get()).docs,
+        (await e.coleccion('pacienteA', 'registrosClinicos').get()).docs,
         hasLength(1),
       );
     });
@@ -499,7 +499,7 @@ void main() {
         'pacienteA',
         _recordatorio('pacienteA'),
       );
-      e.base.falla = (escritura) => escritura.ruta.contains('clinicalRecords')
+      e.base.falla = (escritura) => escritura.ruta.contains('registrosClinicos')
           ? FirebaseException(
               plugin: 'cloud_firestore',
               code: 'permission-denied',
@@ -541,7 +541,7 @@ void main() {
       await e.cola.encolar(
         _uid,
         escrituraDe(
-          ruta: 'users/$_uid/patients/pacienteB/recordatorios/c1',
+          ruta: 'usuarios/$_uid/pacientes/pacienteB/recordatorios/c1',
           pacienteId: 'pacienteA',
         ),
       );
@@ -559,16 +559,16 @@ void main() {
       await e.cola.encolar(
         _uid,
         escrituraDe(
-          ruta: 'users/otro-cuidador/patients/pacienteA/recordatorios/c1',
+          ruta: 'usuarios/otro-cuidador/pacientes/pacienteA/recordatorios/c1',
           pacienteId: 'pacienteA',
         ),
       );
       await e.orquestador.drenar();
       expect(await e.cola.fallidas(_uid), hasLength(1));
       final ajeno = await e.firestore
-          .collection('users')
+          .collection('usuarios')
           .doc('otro-cuidador')
-          .collection('patients')
+          .collection('pacientes')
           .doc('pacienteA')
           .collection('recordatorios')
           .get();

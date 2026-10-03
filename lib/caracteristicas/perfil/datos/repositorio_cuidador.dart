@@ -13,8 +13,8 @@ class RepositorioCuidador {
   /// Guarda al cuidador cifrando los datos personales.
   Future<void> crearCuidador(Map<String, dynamic> datos) async {
     final plano = <String, dynamic>{};
-    // Solo el servidor (registerRecoveryEmail) escribe correo_respaldo_hash.
-    if (datos['email'] != null) plano['email'] = datos['email'];
+    // Solo el servidor (registrarCorreoRespaldo) escribe correo_respaldo_hash.
+    if (datos['correo'] != null) plano['correo'] = datos['correo'];
     final correoRespaldo = datos['correo_respaldo'] as String?;
     if (correoRespaldo != null && correoRespaldo.isNotEmpty) {
       plano['correo_respaldo_cifrado'] = await bd.cifrado.cifrar(
@@ -22,25 +22,25 @@ class RepositorioCuidador {
         correoRespaldo.trim().toLowerCase(),
       );
     }
-    if (datos['createdAt'] != null) plano['createdAt'] = datos['createdAt'];
+    if (datos['creadoEn'] != null) plano['creadoEn'] = datos['creadoEn'];
     await bd.reemplazarPorCifrado(
       plano,
-      plano: datos['displayName'] as String?,
+      plano: datos['nombre'] as String?,
       cifrado: 'nombre_cifrado',
     );
     await bd.reemplazarPorCifrado(
       plano,
-      plano: datos['phone'] as String?,
+      plano: datos['telefono'] as String?,
       cifrado: 'telefono_cifrado',
     );
     await bd.reemplazarPorCifrado(
       plano,
-      plano: datos['relationship'] as String?,
+      plano: datos['relacion'] as String?,
       cifrado: 'relacion_cifrada',
     );
     await bd.reemplazarPorCifrado(
       plano,
-      plano: datos['address'] as String?,
+      plano: datos['direccion'] as String?,
       cifrado: 'direccion_cifrada',
     );
     plano['version_encriptacion'] = 2;
@@ -52,7 +52,7 @@ class RepositorioCuidador {
   /// o la red falla, se ignora para no enmascarar el error original.
   Future<void> limpiarRegistro(String uid) async {
     try {
-      await bd.firestore.collection('users').doc(uid).delete();
+      await bd.firestore.collection('usuarios').doc(uid).delete();
     } catch (_) {}
   }
 
@@ -89,7 +89,7 @@ class RepositorioCuidador {
   ) async {
     final correoPendiente = datos['pendiente_correo'] as String?;
     return {
-      'email': datos['email'] as String?,
+      'correo': datos['correo'] as String?,
       'nombre': await bd.descifrarCampo(datos, 'nombre_cifrado'),
       'telefono': await bd.descifrarCampo(datos, 'telefono_cifrado'),
       'relacion': await bd.descifrarCampo(datos, 'relacion_cifrada'),
@@ -210,8 +210,8 @@ class RepositorioCuidador {
   @visibleForTesting
   Future<void> Function(String correo) registrarCorreoRespaldoServidor =
       (correo) => FirebaseFunctions.instanceFor(region: 'southamerica-west1')
-          .httpsCallable('registerRecoveryEmail')
-          .call({'email': correo})
+          .httpsCallable('registrarCorreoRespaldo')
+          .call({'correo': correo})
           .timeout(
             const Duration(seconds: 5),
             onTimeout: () => throw FirebaseFunctionsException(
@@ -254,7 +254,7 @@ class RepositorioCuidador {
 
   Future<void> sincronizarCorreoPrincipal(String email) async {
     await bd.docUsuario.set({
-      'email': email.trim().toLowerCase(),
+      'correo': email.trim().toLowerCase(),
     }, SetOptions(merge: true));
   }
 }

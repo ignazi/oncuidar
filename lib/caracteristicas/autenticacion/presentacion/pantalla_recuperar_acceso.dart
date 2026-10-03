@@ -39,8 +39,8 @@ class _RecuperarAccesoState extends State<RecuperarAcceso> {
   Future<void> _envioPorDefecto(String email) async {
     final resultado =
         await FirebaseFunctions.instanceFor(region: 'southamerica-west1')
-            .httpsCallable('recoverByBackupEmail')
-            .call({'email': email})
+            .httpsCallable('recuperarPorCorreoRespaldo')
+            .call({'correo': email})
             .timeout(
               const Duration(seconds: 5),
               onTimeout: () => throw FirebaseFunctionsException(

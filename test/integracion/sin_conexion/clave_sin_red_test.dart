@@ -69,9 +69,9 @@ void main() {
   Future<void> afirmarNadaEscrito() async {
     expect(await cola.pendientes(_uid), isEmpty);
     final pacientes = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(_uid)
-        .collection('patients')
+        .collection('pacientes')
         .doc('pacienteA')
         .collection('recordatorios')
         .get();

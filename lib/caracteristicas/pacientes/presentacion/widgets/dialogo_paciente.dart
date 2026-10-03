@@ -119,10 +119,10 @@ class _DialogoPacienteState extends State<_DialogoPaciente> {
     final messenger = ScaffoldMessenger.of(context);
     final nav = Navigator.of(context);
     final datos = <String, dynamic>{
-      'fullName': _nombreController.text.trim(),
+      'nombreCompleto': _nombreController.text.trim(),
       'rut': _rutController.text.trim(),
-      'age': int.tryParse(_edadController.text.trim()),
-      'diagnosis': _diagnosticoController.text.trim(),
+      'edad': int.tryParse(_edadController.text.trim()),
+      'diagnostico': _diagnosticoController.text.trim(),
       'tratamientoFase': _faseController.text.trim(),
       'centroSaludNombre': _centroNombreController.text.trim(),
       'centroSaludDireccion': _centroDireccionController.text.trim(),
@@ -159,10 +159,10 @@ class _DialogoPacienteState extends State<_DialogoPaciente> {
         await repositorio.crearPaciente(
           Paciente(
             id: '',
-            nombreCompleto: datos['fullName'] as String,
+            nombreCompleto: datos['nombreCompleto'] as String,
             rut: datos['rut'] as String?,
-            edad: datos['age'] as int?,
-            diagnostico: datos['diagnosis'] as String?,
+            edad: datos['edad'] as int?,
+            diagnostico: datos['diagnostico'] as String?,
             tratamientoFase: datos['tratamientoFase'] as String?,
             centroSaludNombre: datos['centroSaludNombre'] as String?,
             centroSaludDireccion: datos['centroSaludDireccion'] as String?,

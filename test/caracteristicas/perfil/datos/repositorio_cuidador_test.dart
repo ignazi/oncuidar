@@ -17,7 +17,7 @@ void main() {
   late List<String> registrados;
 
   Future<Map<String, dynamic>?> docCuidador() async =>
-      (await firestore.collection('users').doc(_uid).get()).data();
+      (await firestore.collection('usuarios').doc(_uid).get()).data();
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});

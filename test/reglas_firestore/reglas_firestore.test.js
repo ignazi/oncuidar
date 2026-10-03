@@ -1,5 +1,5 @@
 // Pruebas de firestore.rules contra el emulador.
-// Ejecutar desde la raíz: firebase emulators:exec --only firestore "npm --prefix test/aislamiento test"
+// Ejecutar desde la raíz: firebase emulators:exec --only firestore "npm --prefix test/reglas_firestore test"
 
 const { test, before, after, beforeEach } = require('node:test');
 const fs = require('node:fs');
@@ -39,12 +39,12 @@ beforeEach(async () => {
 
 const bd = (uid = UID) => entorno.authenticatedContext(uid).firestore();
 const ruta = (coleccion, idPaciente, id) =>
-  `users/${UID}/patients/${idPaciente}/${coleccion}/${id}`;
+  `usuarios/${UID}/pacientes/${idPaciente}/${coleccion}/${id}`;
 
 // Cada colección clínica con su nombre de campo de paciente y un documento válido.
 const colecciones = [
   {
-    nombre: 'clinicalRecords',
+    nombre: 'registrosClinicos',
     campo: 'paciente_id',
     valido: (p) => ({ paciente_id: p, tipoRegistro: 'diario', sintomas_cifrado: 'a.b.c' }),
   },
@@ -91,9 +91,9 @@ for (const c of colecciones) {
   });
 }
 
-test('clinicalRecords: los campos sensibles en claro siguen prohibidos', async () => {
+test('registrosClinicos: los campos sensibles en claro siguen prohibidos', async () => {
   await assertFails(
-    setDoc(doc(bd(), ruta('clinicalRecords', 'A', 'd1')), {
+    setDoc(doc(bd(), ruta('registrosClinicos', 'A', 'd1')), {
       paciente_id: 'A',
       observaciones: 'texto en claro',
     }),
@@ -108,7 +108,7 @@ const sembrarDocLegado = async (coleccion, idPaciente, id, campos) => {
   const [host, puerto] = (process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080').split(':');
   const url =
     `http://${host}:${puerto}/v1/projects/oncuidar-reglas-test` +
-    `/databases/(default)/documents/users/${UID}/patients/${idPaciente}/${coleccion}/${id}`;
+    `/databases/(default)/documents/usuarios/${UID}/pacientes/${idPaciente}/${coleccion}/${id}`;
   const fields = {};
   for (const [clave, valor] of Object.entries(campos)) {
     fields[clave] =

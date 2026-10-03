@@ -84,11 +84,11 @@ Future<(BaseDatosSegura, FakeFirebaseFirestore)> _baseDatos() async {
     cifrado: cifrado,
   );
   await RepositorioCuidador(base).crearCuidador({
-    'displayName': 'Ana Torres',
-    'email': 'ana@correo.cl',
-    'phone': '+56 9 1111 1111',
-    'relationship': 'Madre',
-    'address': 'Av. Siempre Viva 742',
+    'nombre': 'Ana Torres',
+    'correo': 'ana@correo.cl',
+    'telefono': '+56 9 1111 1111',
+    'relacion': 'Madre',
+    'direccion': 'Av. Siempre Viva 742',
   });
   return (base, firestore);
 }
@@ -143,9 +143,9 @@ Future<Map<String, dynamic>?> _doc(
   String idRecordatorio,
 ) async {
   return (await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
           .collection('recordatorios')
           .doc(idRecordatorio)
@@ -376,9 +376,9 @@ void main() {
         expect(notif.cancelados, isEmpty);
 
         final docs = await firestore
-            .collection('users')
+            .collection('usuarios')
             .doc(_uid)
-            .collection('patients')
+            .collection('pacientes')
             .doc(idPaciente)
             .collection('recordatorios')
             .get();
@@ -409,9 +409,9 @@ void main() {
       await tester.pumpAndSettle();
 
       final docs = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
           .collection('recordatorios')
           .get();
@@ -495,9 +495,9 @@ void main() {
       await tester.pumpAndSettle();
 
       final docs = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
           .collection('recordatorios')
           .get();
@@ -588,9 +588,9 @@ void main() {
       await tester.pumpAndSettle();
 
       final docs = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
           .collection('recordatorios')
           .get();

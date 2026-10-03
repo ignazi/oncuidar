@@ -4,8 +4,8 @@ import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.d
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServicioCacheMetadata {
-  static const _claveCatalogo = 'educational_content_cache';
-  static const _claveTimestamp = 'educational_content_cache_timestamp';
+  static const _claveCatalogo = 'cache_material_educativo';
+  static const _claveTimestamp = 'cache_material_educativo_marca_tiempo';
   static const _validez = Duration(hours: 24);
 
   Future<(List<MaterialEducativo>, int?)> obtenerCatalogoCache() async {

@@ -31,31 +31,31 @@ class MaterialEducativo {
 
   Map<String, dynamic> toMap() => {
     if (id.isNotEmpty) 'id': id,
-    'title': titulo,
-    'category': categoria,
-    'topic': tema,
-    'body': cuerpo,
-    if (urlImagen != null) 'imageUrl': urlImagen,
-    if (urlArchivo != null) 'fileUrl': urlArchivo,
-    if (urlMiniatura != null) 'thumbnailUrl': urlMiniatura,
-    if (tipoArchivo != null) 'fileType': tipoArchivo,
-    if (tamanoBytes != null) 'fileSizeBytes': tamanoBytes,
-    'createdAt': creadoEn.toIso8601String(),
+    'titulo': titulo,
+    'categoria': categoria,
+    'tema': tema,
+    'cuerpo': cuerpo,
+    if (urlImagen != null) 'urlImagen': urlImagen,
+    if (urlArchivo != null) 'urlArchivo': urlArchivo,
+    if (urlMiniatura != null) 'urlMiniatura': urlMiniatura,
+    if (tipoArchivo != null) 'tipoArchivo': tipoArchivo,
+    if (tamanoBytes != null) 'tamanoBytes': tamanoBytes,
+    'creadoEn': creadoEn.toIso8601String(),
   };
 
   factory MaterialEducativo.fromMap(String id, Map<String, dynamic> mapa) {
-    final creado = mapa['createdAt'];
+    final creado = mapa['creadoEn'];
     return MaterialEducativo(
       id: (mapa['id'] as String?) ?? id,
-      titulo: mapa['title'] as String? ?? '',
-      categoria: mapa['category'] as String? ?? '',
-      tema: mapa['topic'] as String? ?? '',
-      cuerpo: mapa['body'] as String? ?? '',
-      urlImagen: mapa['imageUrl'] as String?,
-      urlArchivo: mapa['fileUrl'] as String?,
-      urlMiniatura: mapa['thumbnailUrl'] as String?,
-      tipoArchivo: mapa['fileType'] as String?,
-      tamanoBytes: (mapa['fileSizeBytes'] as num?)?.toInt(),
+      titulo: mapa['titulo'] as String? ?? '',
+      categoria: mapa['categoria'] as String? ?? '',
+      tema: mapa['tema'] as String? ?? '',
+      cuerpo: mapa['cuerpo'] as String? ?? '',
+      urlImagen: mapa['urlImagen'] as String?,
+      urlArchivo: mapa['urlArchivo'] as String?,
+      urlMiniatura: mapa['urlMiniatura'] as String?,
+      tipoArchivo: mapa['tipoArchivo'] as String?,
+      tamanoBytes: (mapa['tamanoBytes'] as num?)?.toInt(),
       creadoEn: creado is DateTime
           ? creado
           : DateTime.tryParse(creado?.toString() ?? '') ?? DateTime.now(),

@@ -56,9 +56,9 @@ Future<Map<String, dynamic>> _payload(
 ) async {
   final datos =
       (await firestore
-              .collection('users')
+              .collection('usuarios')
               .doc(uidRecordatorios)
-              .collection('patients')
+              .collection('pacientes')
               .doc(idPaciente)
               .collection('recordatorios')
               .doc(id)
@@ -108,9 +108,9 @@ void main() {
         await tester.pumpAndSettle();
 
         final docs = await firestore
-            .collection('users')
+            .collection('usuarios')
             .doc(uidRecordatorios)
-            .collection('patients')
+            .collection('pacientes')
             .doc(idPaciente)
             .collection('recordatorios')
             .get();
@@ -141,9 +141,9 @@ void main() {
       await tester.pumpAndSettle();
 
       final docs = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(uidRecordatorios)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
           .collection('recordatorios')
           .get();
@@ -188,9 +188,9 @@ void main() {
       await tester.pumpAndSettle();
 
       final docs = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(uidRecordatorios)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
           .collection('recordatorios')
           .get();
@@ -241,9 +241,9 @@ void main() {
       await tester.pumpAndSettle();
 
       final docs = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(uidRecordatorios)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
           .collection('recordatorios')
           .get();
@@ -344,9 +344,9 @@ void main() {
     await tester.pumpAndSettle();
 
     final docs = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(uidRecordatorios)
-        .collection('patients')
+        .collection('pacientes')
         .doc(idPaciente)
         .collection('recordatorios')
         .get();

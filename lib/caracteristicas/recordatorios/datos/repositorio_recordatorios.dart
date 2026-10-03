@@ -14,7 +14,7 @@ class RepositorioRecordatorios {
   final BaseDatosSegura bd;
 
   CollectionReference _recordatorios(String idPaciente) => bd.docUsuario
-      .collection('patients')
+      .collection('pacientes')
       .doc(idPaciente)
       .collection('recordatorios');
 

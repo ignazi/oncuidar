@@ -68,8 +68,8 @@ class ServicioRegistro {
 
   Future<void> _viaCallable(String email) async {
     await FirebaseFunctions.instanceFor(region: 'southamerica-west1')
-        .httpsCallable('registerRecoveryEmail')
-        .call({'email': email})
+        .httpsCallable('registrarCorreoRespaldo')
+        .call({'correo': email})
         .timeout(
           const Duration(seconds: 5),
           onTimeout: () => throw FirebaseFunctionsException(
@@ -92,15 +92,15 @@ class ServicioRegistro {
         _alDesbloquear?.call();
         final respaldo = datos.correoRespaldo;
         await _repositorioCuidador.crearCuidador({
-          'displayName': datos.nombre,
-          'email': datos.correo,
-          'phone': datos.telefono,
-          'relationship': datos.relacion,
-          'address': datos.direccion,
+          'nombre': datos.nombre,
+          'correo': datos.correo,
+          'telefono': datos.telefono,
+          'relacion': datos.relacion,
+          'direccion': datos.direccion,
           // Cifrado para mostrarlo en el perfil
           if (respaldo != null && respaldo.isNotEmpty)
             'correo_respaldo': respaldo,
-          'createdAt': FieldValue.serverTimestamp(),
+          'creadoEn': FieldValue.serverTimestamp(),
         });
         // El hash del respaldo lo registra el servidor (HMAC), no el cliente.
         if (respaldo != null && respaldo.isNotEmpty) {

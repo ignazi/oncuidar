@@ -55,7 +55,7 @@ class ServicioCifrado {
     } catch (_) {}
     final resultado =
         await FirebaseFunctions.instanceFor(region: 'southamerica-west1')
-            .httpsCallable('getOrCreateDataKey')
+            .httpsCallable('obtenerClaveDatos')
             .call()
             .timeout(
               const Duration(seconds: 5),
@@ -64,7 +64,7 @@ class ServicioCifrado {
                 message: 'Sin conexión',
               ),
             );
-    await fijarClave(uid, (resultado.data as Map)['dataKey'] as String);
+    await fijarClave(uid, (resultado.data as Map)['claveDatos'] as String);
   }
 
   Future<void> fijarClave(String uid, String codificada) async {

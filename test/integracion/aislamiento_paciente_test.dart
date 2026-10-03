@@ -44,9 +44,9 @@ void main() {
           ),
         );
         final doc = await firestore
-            .collection('users')
+            .collection('usuarios')
             .doc(_uid)
-            .collection('patients')
+            .collection('pacientes')
             .doc('pacienteA')
             .collection('recordatorios')
             .doc(id)

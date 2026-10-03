@@ -12,7 +12,7 @@ class RepositorioConversaciones {
   final BaseDatosSegura bd;
 
   CollectionReference _conversaciones() =>
-      bd.docUsuario.collection('conversations');
+      bd.docUsuario.collection('conversaciones');
 
   /// Stream en tiempo real de las conversaciones del chat del cuidador,
   /// ordenadas por última actividad y descifrando título y mensajes.

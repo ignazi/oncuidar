@@ -35,7 +35,7 @@ Future<void> esperarHasta(Future<bool> Function() condicion) async {
 
 EscrituraPendiente escrituraDe({
   String id = 'e1',
-  String ruta = 'users/u1/patients/p1/recordatorios/c1',
+  String ruta = 'usuarios/u1/pacientes/p1/recordatorios/c1',
   OperacionPendiente operacion = OperacionPendiente.crear,
   Map<String, dynamic>? datos,
   String pacienteId = 'p1',

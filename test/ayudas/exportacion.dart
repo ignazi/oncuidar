@@ -51,11 +51,11 @@ baseConDosPacientes() async {
     cifrado: cifrado,
   );
   await RepositorioCuidador(base).crearCuidador({
-    'displayName': 'Ana Torres',
-    'email': 'cuidador@test.cl',
-    'phone': '+56 9 1111 1111',
-    'relationship': 'Madre',
-    'address': 'Av. Siempre Viva 742',
+    'nombre': 'Ana Torres',
+    'correo': 'cuidador@test.cl',
+    'telefono': '+56 9 1111 1111',
+    'relacion': 'Madre',
+    'direccion': 'Av. Siempre Viva 742',
   });
   // El id lo genera Firestore, así que se usan los que devuelve.
   final activo = await RepositorioPacientes(base).crearPaciente(

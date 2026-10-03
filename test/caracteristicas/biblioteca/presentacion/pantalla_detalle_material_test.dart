@@ -89,15 +89,15 @@ Future<(BaseDatosSegura, FakeFirebaseFirestore)> _baseConContenido(
     cifrado: cifrado,
   );
   await RepositorioCuidador(base).crearCuidador({
-    'displayName': 'Ana Torres',
-    'email': 'cuidador@test.cl',
-    'phone': '+56 9 1111 1111',
-    'relationship': 'Madre',
-    'address': 'Av. Siempre Viva 742',
+    'nombre': 'Ana Torres',
+    'correo': 'cuidador@test.cl',
+    'telefono': '+56 9 1111 1111',
+    'relacion': 'Madre',
+    'direccion': 'Av. Siempre Viva 742',
   });
   for (final item in contenido) {
     await firestore
-        .collection('educationalContent')
+        .collection('materialEducativo')
         .doc(item.id)
         .set(item.toMap());
   }
@@ -191,8 +191,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.bookmark_border));
     await tester.pumpAndSettle();
 
-    final doc = await firestore.collection('users').doc(_uid).get();
-    final favoritos = List<String>.from(doc.data()?['favoriteArticleIds']);
+    final doc = await firestore.collection('usuarios').doc(_uid).get();
+    final favoritos = List<String>.from(doc.data()?['idsFavoritos']);
     expect(favoritos, contains(_guia().id));
     expect(find.byIcon(Icons.bookmark), findsOneWidget);
   });

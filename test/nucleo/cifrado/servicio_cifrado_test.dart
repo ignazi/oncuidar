@@ -90,9 +90,9 @@ void main() {
       ).crearPaciente(await paciente('Ana Torres'));
 
       final doc = await base
-          .collection('users')
+          .collection('usuarios')
           .doc('uid-1')
-          .collection('patients')
+          .collection('pacientes')
           .doc(id)
           .get();
       final datos = doc.data()!;
@@ -108,8 +108,8 @@ void main() {
       expect(datos.containsKey('contacto_emergencia_nombre_cifrado'), isTrue);
       expect(datos.containsKey('centro_salud_telefono_cifrado'), isTrue);
       // Campos sensibles no quedan en texto plano
-      expect(datos.containsKey('fullName'), isFalse);
-      expect(datos.containsKey('diagnosis'), isFalse);
+      expect(datos.containsKey('nombreCompleto'), isFalse);
+      expect(datos.containsKey('diagnostico'), isFalse);
       expect(datos.containsKey('healthCenter'), isFalse);
       expect(datos.containsKey('rut'), isFalse);
       expect(datos.containsKey('edad'), isFalse);
@@ -133,17 +133,18 @@ void main() {
       expect(pacientes.first.centroSaludTelefono, '+56 9 1234 5678');
     });
 
-    test('crearCuidador guarda email en texto plano y cifra demas', () async {
+    test('crearCuidador guarda correo en texto plano y cifra demas', () async {
       await cifrado.restaurarClave('uid-1');
       await RepositorioCuidador(servicio).crearCuidador({
-        'displayName': 'Ana Torres',
-        'email': 'ana@correo.cl',
-        'phone': '+56 9 1111 2222',
-        'relationship': 'Madre',
+        'nombre': 'Ana Torres',
+        'correo': 'ana@correo.cl',
+        'telefono': '+56 9 1111 2222',
+        'relacion': 'Madre',
       });
 
-      final datos = (await base.collection('users').doc('uid-1').get()).data()!;
-      expect(datos['email'], 'ana@correo.cl');
+      final datos = (await base.collection('usuarios').doc('uid-1').get())
+          .data()!;
+      expect(datos['correo'], 'ana@correo.cl');
       expect(
         datos.containsKey('correo_respaldo_hash'),
         isFalse,
@@ -152,9 +153,9 @@ void main() {
       expect(datos['nombre_cifrado'], isNot('Ana Torres'));
       expect(datos['telefono_cifrado'], isNot('+56 9 1111 2222'));
       expect(datos['relacion_cifrada'], isNot('Madre'));
-      expect(datos.containsKey('displayName'), isFalse);
-      expect(datos.containsKey('phone'), isFalse);
-      expect(datos.containsKey('relationship'), isFalse);
+      expect(datos.containsKey('nombre'), isFalse);
+      expect(datos.containsKey('telefono'), isFalse);
+      expect(datos.containsKey('relacion'), isFalse);
     });
   });
 }

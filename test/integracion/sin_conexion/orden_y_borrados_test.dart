@@ -34,9 +34,9 @@ class _Entorno {
 
   CollectionReference<Map<String, dynamic>> coleccion(String nombre) =>
       firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('patients')
+          .collection('pacientes')
           .doc('p1')
           .collection(nombre);
 }

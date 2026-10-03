@@ -375,18 +375,18 @@ void main() {
     expect(auth.currentUser, isNotNull);
     final uid = auth.currentUser!.uid;
 
-    final userData = (await firestore.collection('users').doc(uid).get())
+    final datosUsuario = (await firestore.collection('usuarios').doc(uid).get())
         .data()!;
-    final relacionCifrada = userData['relacion_cifrada'] as String;
+    final relacionCifrada = datosUsuario['relacion_cifrada'] as String;
     expect(await cifrado.descifrar(uid, relacionCifrada), 'Madrastra');
 
-    final patients = await firestore
-        .collection('users')
+    final pacientes = await firestore
+        .collection('usuarios')
         .doc(uid)
-        .collection('patients')
+        .collection('pacientes')
         .get();
-    final patientData = patients.docs.single.data();
-    final faseCifrada = patientData['fase_tratamiento_cifrado'] as String;
+    final datosPaciente = pacientes.docs.single.data();
+    final faseCifrada = datosPaciente['fase_tratamiento_cifrado'] as String;
     expect(await cifrado.descifrar(uid, faseCifrada), 'Terapia de mantención');
   });
 
@@ -437,7 +437,8 @@ void main() {
         reason: 'el respaldo se normaliza en minúsculas antes del callable',
       );
       final uidCreado = auth.currentUser!.uid;
-      final doc = (await base.collection('users').doc(uidCreado).get()).data()!;
+      final doc = (await base.collection('usuarios').doc(uidCreado).get())
+          .data()!;
       expect(
         doc.containsKey('correo_respaldo_hash'),
         isFalse,
@@ -491,7 +492,7 @@ void main() {
 
       expect(resultado, isA<RegistroFallido>());
       expect(eventos, ['firestore', 'auth']);
-      final usuarios = await firestore.collection('users').get();
+      final usuarios = await firestore.collection('usuarios').get();
       expect(
         usuarios.docs,
         isEmpty,

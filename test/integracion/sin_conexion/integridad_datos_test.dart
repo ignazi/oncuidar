@@ -107,9 +107,9 @@ class _Entorno {
     String paciente,
     String nombre,
   ) => firestore
-      .collection('users')
+      .collection('usuarios')
       .doc(_uid)
-      .collection('patients')
+      .collection('pacientes')
       .doc(paciente)
       .collection(nombre);
 }
@@ -150,9 +150,9 @@ Future<_Entorno> _crearEntorno({
 }
 
 /// La ruta debe pertenecer al uid: `aplicarEscrituraPendiente` rechaza con
-/// ArgumentError cualquier escritura que no viva bajo `users/{uid}/patients/...`.
+/// ArgumentError cualquier escritura que no viva bajo `usuarios/{uid}/pacientes/...`.
 EscrituraPendiente _escritura(String id) =>
-    escrituraDe(id: id, ruta: 'users/$_uid/patients/p1/recordatorios/c1');
+    escrituraDe(id: id, ruta: 'usuarios/$_uid/pacientes/p1/recordatorios/c1');
 
 Future<Map<String, dynamic>> _payloadDe(
   _Entorno ent,
@@ -202,11 +202,11 @@ Future<String> _prepararRegistro(
   _RepositorioRegistro registros,
 ) async {
   await RepositorioCuidador(registros.bd).crearCuidador({
-    'displayName': 'Ana Torres',
-    'email': 'cuidador@test.cl',
-    'phone': '+56 9 1111 1111',
-    'relationship': 'Madre',
-    'address': 'Av. Siempre Viva 742',
+    'nombre': 'Ana Torres',
+    'correo': 'cuidador@test.cl',
+    'telefono': '+56 9 1111 1111',
+    'relacion': 'Madre',
+    'direccion': 'Av. Siempre Viva 742',
   });
   final idPaciente = await RepositorioPacientes(registros.bd).crearPaciente(
     Paciente(
@@ -286,9 +286,9 @@ void main() {
       await _prepararRegistro(tester, cifrado, registros);
       final idPaciente =
           (await firestore
-                  .collection('users')
+                  .collection('usuarios')
                   .doc(_uid)
-                  .collection('patients')
+                  .collection('pacientes')
                   .get())
               .docs
               .single
@@ -314,11 +314,11 @@ void main() {
         reason: 'el segundo toque debe ignorarse mientras se guarda',
       );
       final guardados = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
-          .collection('clinicalRecords')
+          .collection('registrosClinicos')
           .get();
       expect(guardados.docs, hasLength(1));
     });
@@ -561,7 +561,7 @@ void main() {
         ent.red.fijar(true);
         await ent.orquestador.drenar();
 
-        final docs = await ent.coleccion('p1', 'clinicalRecords').get();
+        final docs = await ent.coleccion('p1', 'registrosClinicos').get();
         expect(docs.docs, isEmpty);
       },
     );

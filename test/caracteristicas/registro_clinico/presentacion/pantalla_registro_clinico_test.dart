@@ -41,11 +41,11 @@ Future<(BaseDatosSegura, FakeFirebaseFirestore)> _baseConDatos(
     cifrado: cifrado,
   );
   await RepositorioCuidador(base).crearCuidador({
-    'displayName': 'Ana Torres',
-    'email': 'cuidador@test.cl',
-    'phone': '+56 9 1111 1111',
-    'relationship': 'Madre',
-    'address': 'Av. Siempre Viva 742',
+    'nombre': 'Ana Torres',
+    'correo': 'cuidador@test.cl',
+    'telefono': '+56 9 1111 1111',
+    'relacion': 'Madre',
+    'direccion': 'Av. Siempre Viva 742',
   });
   if (conPaciente) {
     await RepositorioPacientes(base).crearPaciente(
@@ -61,9 +61,9 @@ Future<(BaseDatosSegura, FakeFirebaseFirestore)> _baseConDatos(
 
 Future<String> _idPacienteUnico(FakeFirebaseFirestore firestore) async {
   final docs = await firestore
-      .collection('users')
+      .collection('usuarios')
       .doc(_uid)
-      .collection('patients')
+      .collection('pacientes')
       .get();
   return docs.docs.single.id;
 }
@@ -241,11 +241,11 @@ void main() {
 
       final idPaciente = await _idPacienteUnico(firestore);
       final registros = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
-          .collection('clinicalRecords')
+          .collection('registrosClinicos')
           .get();
       final doc = registros.docs.single.data();
       expect(doc['nivelAlerta'], 'critico');
@@ -271,7 +271,7 @@ void main() {
           jsonDecode(await cifrado.descifrar(_uid, signosCifrados))
               as Map<String, dynamic>;
       expect(
-        (signosMapa['temperature'] as num).toDouble(),
+        (signosMapa['temperatura'] as num).toDouble(),
         40.0,
         reason: 'la temperatura debe hacer round-trip cifrada',
       );
@@ -293,9 +293,9 @@ void main() {
 
     expect(find.text('No hay paciente seleccionado'), findsOneWidget);
     final sinPacientes = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(_uid)
-        .collection('patients')
+        .collection('pacientes')
         .get();
     expect(sinPacientes.docs, isEmpty);
   });
@@ -333,11 +333,11 @@ void main() {
     expect(find.text('Guardado correctamente'), findsOneWidget);
 
     final registros = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(_uid)
-        .collection('patients')
+        .collection('pacientes')
         .doc(idPaciente)
-        .collection('clinicalRecords')
+        .collection('registrosClinicos')
         .get();
     final extras = registros.docs
         .where((d) => d.data()['tipoRegistro'] == 'extra')
@@ -383,11 +383,11 @@ void main() {
     expect(find.text('Guardado correctamente'), findsOneWidget);
 
     final registros = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(_uid)
-        .collection('patients')
+        .collection('pacientes')
         .doc(idPaciente)
-        .collection('clinicalRecords')
+        .collection('registrosClinicos')
         .get();
     final programados = registros.docs
         .where((d) => d.data()['tipoRegistro'] == 'programado')
@@ -419,11 +419,11 @@ void main() {
       reason: 'el guardado debe bloquearse por rango inválido',
     );
     final registros = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(_uid)
-        .collection('patients')
+        .collection('pacientes')
         .doc(idPaciente)
-        .collection('clinicalRecords')
+        .collection('registrosClinicos')
         .get();
     expect(registros.docs, isEmpty, reason: 'no debe guardarse nada');
   });
@@ -461,11 +461,11 @@ void main() {
       expect(find.text('Guardado correctamente'), findsOneWidget);
 
       var registros = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
-          .collection('clinicalRecords')
+          .collection('registrosClinicos')
           .get();
       final doc = registros.docs.single.data();
       expect(
@@ -479,9 +479,9 @@ void main() {
         reason: 'sin signos ingresados no se escribe el campo',
       );
       final sintomas = await _sintomasDescifrados(cifrado, doc);
-      final dolorGuardado = sintomas.singleWhere((s) => s['name'] == 'Dolor');
+      final dolorGuardado = sintomas.singleWhere((s) => s['nombre'] == 'Dolor');
       expect(
-        dolorGuardado['intensity'],
+        dolorGuardado['intensidad'],
         0,
         reason: 'una intensidad 0 seleccionada también se persiste',
       );
@@ -522,18 +522,18 @@ void main() {
       await tester.pumpAndSettle();
 
       registros = await firestore
-          .collection('users')
+          .collection('usuarios')
           .doc(_uid)
-          .collection('patients')
+          .collection('pacientes')
           .doc(idPaciente)
-          .collection('clinicalRecords')
+          .collection('registrosClinicos')
           .get();
       final intensidades = <int>[];
       for (final r in registros.docs) {
         final lista = await _sintomasDescifrados(cifrado, r.data());
         for (final s in lista) {
-          if (s['name'] == 'Dolor') {
-            intensidades.add(s['intensity'] as int);
+          if (s['nombre'] == 'Dolor') {
+            intensidades.add(s['intensidad'] as int);
           }
         }
       }
@@ -545,7 +545,7 @@ void main() {
     },
   );
 
-  testWidgets('"Otro problema" guarda nombre personalizado en notes', (
+  testWidgets('"Otro problema" guarda nombre personalizado en notas', (
     tester,
   ) async {
     _taller(tester);
@@ -590,11 +590,11 @@ void main() {
     expect(find.text('Guardado correctamente'), findsOneWidget);
 
     final registros = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(_uid)
-        .collection('patients')
+        .collection('pacientes')
         .doc(idPaciente)
-        .collection('clinicalRecords')
+        .collection('registrosClinicos')
         .get();
     final doc = registros.docs.single.data();
     expect(
@@ -603,10 +603,10 @@ void main() {
       reason: 'los síntomas no deben viajar en claro',
     );
     final sintomas = await _sintomasDescifrados(cifrado, doc);
-    final otro = sintomas.singleWhere((s) => s['name'] == 'Otro problema');
-    expect(otro['intensity'], 10);
+    final otro = sintomas.singleWhere((s) => s['nombre'] == 'Otro problema');
+    expect(otro['intensidad'], 10);
     expect(
-      otro['notes'],
+      otro['notas'],
       'Sequedad de boca',
       reason: 'las notas viajan dentro del síntoma cifrado',
     );
@@ -626,11 +626,11 @@ void main() {
     expect(find.text('Guardado correctamente'), findsOneWidget);
 
     final registros = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(_uid)
-        .collection('patients')
+        .collection('pacientes')
         .doc(idPaciente)
-        .collection('clinicalRecords')
+        .collection('registrosClinicos')
         .get();
     final doc = registros.docs.single.data();
     final sintomas = await _sintomasDescifrados(cifrado, doc);
@@ -687,11 +687,11 @@ void main() {
     expect(find.text('Guardado correctamente'), findsOneWidget);
 
     final registros = await firestore
-        .collection('users')
+        .collection('usuarios')
         .doc(_uid)
-        .collection('patients')
+        .collection('pacientes')
         .doc(idPaciente)
-        .collection('clinicalRecords')
+        .collection('registrosClinicos')
         .get();
     final doc = registros.docs.single.data();
     expect(
@@ -700,8 +700,8 @@ void main() {
       reason: 'los síntomas no deben viajar en claro',
     );
     final sintomas = await _sintomasDescifrados(cifrado, doc);
-    final comezon = sintomas.singleWhere((s) => s['name'] == 'Comezón');
-    expect(comezon['intensity'], 0);
+    final comezon = sintomas.singleWhere((s) => s['nombre'] == 'Comezón');
+    expect(comezon['intensidad'], 0);
   });
 
   testWidgets('"Listo" cierra el selector y conserva la selección', (

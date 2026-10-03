@@ -38,11 +38,11 @@ Future<(BaseDatosSegura, String, String)> _baseConDosPacientes() async {
     cifrado: cifrado,
   );
   await RepositorioCuidador(base).crearCuidador({
-    'displayName': 'Ana Torres',
-    'email': 'cuidador@test.cl',
-    'phone': '+56 9 1111 1111',
-    'relationship': 'Madre',
-    'address': 'Av. Siempre Viva 742',
+    'nombre': 'Ana Torres',
+    'correo': 'cuidador@test.cl',
+    'telefono': '+56 9 1111 1111',
+    'relacion': 'Madre',
+    'direccion': 'Av. Siempre Viva 742',
   });
   final a = await RepositorioPacientes(base).crearPaciente(
     Paciente(id: 'a', nombreCompleto: 'Paciente A', creadoEn: DateTime.now()),

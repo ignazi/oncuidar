@@ -50,11 +50,11 @@ Future<BaseDatosSegura> _baseConCuidador(ServicioCifrado cifrado) async {
     cifrado: cifrado,
   );
   await RepositorioCuidador(base).crearCuidador({
-    'displayName': 'Ana Torres',
-    'email': 'ana@correo.cl',
-    'phone': '+56 9 1111 1111',
-    'relationship': 'Madre',
-    'address': 'Av. Siempre Viva 742',
+    'nombre': 'Ana Torres',
+    'correo': 'ana@correo.cl',
+    'telefono': '+56 9 1111 1111',
+    'relacion': 'Madre',
+    'direccion': 'Av. Siempre Viva 742',
   });
   return base;
 }
@@ -184,11 +184,11 @@ void main() {
         cifrado: cifrado,
       );
       await RepositorioCuidador(base).crearCuidador({
-        'displayName': 'Ana Torres',
-        'email': 'ana@correo.cl',
-        'phone': '+56 9 1111 1111',
-        'relationship': 'Madre',
-        'address': 'Av. Siempre Viva 742',
+        'nombre': 'Ana Torres',
+        'correo': 'ana@correo.cl',
+        'telefono': '+56 9 1111 1111',
+        'relacion': 'Madre',
+        'direccion': 'Av. Siempre Viva 742',
       });
       await RepositorioPacientes(base).crearPaciente(
         Paciente(

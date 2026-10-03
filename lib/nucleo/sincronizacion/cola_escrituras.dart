@@ -39,7 +39,7 @@ class EscrituraPendiente {
 
   final String id;
 
-  /// Ruta completa del documento, p. ej. users/{uid}/patients/{id}/recordatorios/{id}.
+  /// Ruta completa del documento, p. ej. usuarios/{uid}/pacientes/{id}/recordatorios/{id}.
   final String ruta;
   final OperacionPendiente operacion;
 
