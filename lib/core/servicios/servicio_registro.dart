@@ -105,11 +105,11 @@ class ServicioRegistro {
 
         await _baseDatos.crearPaciente(datos.paciente);
       } catch (_) {
+        // Rollback: primero el doc Firestore (las reglas exigen sesión activa).
+        await _baseDatos.limpiarRegistro(uid);
         try {
           await credential.user?.delete();
         } catch (_) {}
-        // Rollback: borra el doc Firestore huérfano del registro fallido.
-        await _baseDatos.limpiarRegistro(uid);
         rethrow;
       }
 

@@ -32,6 +32,18 @@ final estadoAutenticacionProvider = StreamProvider<User?>((ref) {
   return ref.watch(firebaseAuthProvider).authStateChanges();
 });
 
+/// Uid con sesión activa; mientras el flujo carga usa el usuario ya conocido.
+final uidSesionProvider = Provider<String?>((ref) {
+  final auth = ref.watch(estadoAutenticacionProvider);
+  if (auth.hasValue) return auth.value?.uid;
+  try {
+    return ref.read(firebaseAuthProvider).currentUser?.uid;
+  } catch (_) {
+    // Sin Firebase inicializado (tests) no hay usuario.
+    return null;
+  }
+});
+
 class BloqueoCifradoNotifier extends Notifier<bool> {
   @override
   bool build() => false;

@@ -1,13 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/proveedores/proveedores.dart';
 import '../../modelos/conversacion.dart';
 import '../faq/datos_faq.dart';
 
-/// Clave de SharedPreferences con el id de la conversación activa del chat.
+/// Prefijo de la clave de SharedPreferences con la conversación activa.
 const claveConversacionActiva = 'chat_conversacion_activa';
 
+/// Clave de la conversación activa de un usuario concreto.
+String claveConversacionActivaDe(String uid) =>
+    '${claveConversacionActiva}_$uid';
+
 /// Estado vivo de la conversación activa del chat de orientación. Incluye el
-/// mensaje de bienvenida y sobrevive a la navegación (no es autoDispose).
+/// mensaje de bienvenida y sobrevive a la navegación (no es autoDispose),
+/// pero se vacía cuando cambia el usuario autenticado.
 class ChatActivoEstado {
   const ChatActivoEstado({
     this.conversacionId,
@@ -24,16 +30,37 @@ class ChatActivoEstado {
 
 class ChatActivoNotifier extends Notifier<ChatActivoEstado> {
   @override
-  ChatActivoEstado build() => const ChatActivoEstado();
+  ChatActivoEstado build() {
+    // Al cambiar de usuario o cerrar sesión se reconstruye vacío.
+    ref.watch(uidSesionProvider);
+    return const ChatActivoEstado();
+  }
+
+  /// Id de la conversación activa guardada para el usuario actual.
+  Future<String?> idGuardado() async {
+    final uid = ref.read(uidSesionProvider);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // La clave global antigua no sabe de quién es: se descarta.
+      await prefs.remove(claveConversacionActiva);
+      if (uid == null) return null;
+      return prefs.getString(claveConversacionActivaDe(uid));
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<void> _persistirId() async {
+    final uid = ref.read(uidSesionProvider);
+    if (uid == null) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       final id = state.conversacionId;
+      final clave = claveConversacionActivaDe(uid);
       if (id == null) {
-        await prefs.remove(claveConversacionActiva);
+        await prefs.remove(clave);
       } else {
-        await prefs.setString(claveConversacionActiva, id);
+        await prefs.setString(clave, id);
       }
     } catch (_) {
       // Best-effort: sin almacenamiento disponible el estado en memoria

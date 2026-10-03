@@ -82,6 +82,10 @@ class _IniciarSesionState extends ConsumerState<IniciarSesion> {
         case 'wrong-password':
           mensaje = 'La contraseña es incorrecta.';
           break;
+        case 'invalid-credential':
+          // firebase_auth 6.x no distingue correo y contraseña errados.
+          mensaje = 'Correo o contraseña incorrectos.';
+          break;
         case 'invalid-email':
           mensaje = 'El correo electrónico no es válido.';
           break;
