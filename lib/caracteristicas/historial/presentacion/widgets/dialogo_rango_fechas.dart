@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
 Future<({DateTime? inicio, DateTime? fin})?> mostrarDialogoRangoFechas(
@@ -68,139 +69,60 @@ class _DialogoRangoFechasState extends State<_DialogoRangoFechas> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: Paleta.tarjeta,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Paleta.doradoMedio, Paleta.doradoOscuro],
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Paleta.doradoOscuro.withValues(alpha: 0.35),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.date_range_rounded,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Filtrar por fecha',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Paleta.textoPrincipal,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Escribe la fecha y las barras se agregan solas '
-              '(DD/MM/AAAA). Deja vacío para no limitar.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
-                fontSize: 12.5,
-                height: 1.4,
-                color: Paleta.textoSecundario,
-              ),
-            ),
-            const SizedBox(height: 18),
-            _CampoFechaDialogo(
-              keyDialogo: const Key('campoFechaDesde'),
-              etiqueta: 'Desde',
-              controlador: _desdeController,
-              alCambiar: (texto) => setState(() {
-                aplicarMascaraFecha(_desdeController, texto);
-              }),
-            ),
-            const SizedBox(height: 12),
-            _CampoFechaDialogo(
-              keyDialogo: const Key('campoFechaHasta'),
-              etiqueta: 'Hasta',
-              controlador: _hastaController,
-              alCambiar: (texto) => setState(() {
-                aplicarMascaraFecha(_hastaController, texto);
-              }),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 10),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Paleta.error,
-                ),
-              ),
-            ],
-            const SizedBox(height: 22),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Paleta.textoSecundario,
-                      side: const BorderSide(color: Paleta.bordeTarjeta),
-                      minimumSize: const Size(0, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      textStyle: GoogleFonts.nunito(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    child: const Text('Cancelar'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _aplicar,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Paleta.doradoOscuro,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      minimumSize: const Size(0, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      textStyle: GoogleFonts.nunito(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    child: const Text('Aplicar'),
-                  ),
-                ),
-              ],
-            ),
-          ],
+    return DialogoTarjeta(
+      icono: Icons.date_range_rounded,
+      colores: const [Paleta.doradoMedio, Paleta.doradoOscuro],
+      colorSombra: Paleta.doradoOscuro,
+      titulo: 'Filtrar por fecha',
+      hijos: [
+        const SizedBox(height: 6),
+        Text(
+          'Escribe la fecha y las barras se agregan solas '
+          '(DD/MM/AAAA). Deja vacío para no limitar.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.nunito(
+            fontSize: 12.5,
+            height: 1.4,
+            color: Paleta.textoSecundario,
+          ),
         ),
-      ),
+        const SizedBox(height: 18),
+        _CampoFechaDialogo(
+          keyDialogo: const Key('campoFechaDesde'),
+          etiqueta: 'Desde',
+          controlador: _desdeController,
+          alCambiar: (texto) => setState(() {
+            aplicarMascaraFecha(_desdeController, texto);
+          }),
+        ),
+        const SizedBox(height: 12),
+        _CampoFechaDialogo(
+          keyDialogo: const Key('campoFechaHasta'),
+          etiqueta: 'Hasta',
+          controlador: _hastaController,
+          alCambiar: (texto) => setState(() {
+            aplicarMascaraFecha(_hastaController, texto);
+          }),
+        ),
+        if (_error != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            _error!,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.nunito(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Paleta.error,
+            ),
+          ),
+        ],
+        const SizedBox(height: 22),
+        BotonesDialogo(
+          alCancelar: () => Navigator.of(context).pop(),
+          alConfirmar: _aplicar,
+          textoConfirmar: 'Aplicar',
+        ),
+      ],
     );
   }
 }

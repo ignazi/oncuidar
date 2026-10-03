@@ -16,8 +16,61 @@ Future<bool?> mostrarDialogoConfirmacion(
 }) {
   return showDialog<bool>(
     context: context,
-    builder: (dialogCtx) => Dialog(
+    builder: (dialogCtx) => DialogoTarjeta(
       key: key,
+      icono: icono,
+      colores: [
+        colorConfirmar,
+        Color.lerp(colorConfirmar, Colors.black, 0.18)!,
+      ],
+      colorSombra: colorConfirmar,
+      titulo: titulo,
+      hijos: [
+        const SizedBox(height: 8),
+        Text(
+          mensaje,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.nunito(
+            fontSize: 13.5,
+            height: 1.45,
+            color: Paleta.textoSecundario,
+          ),
+        ),
+        const SizedBox(height: 22),
+        BotonesDialogo(
+          alCancelar: () => Navigator.of(dialogCtx).pop(false),
+          textoCancelar: textoCancelar,
+          alConfirmar: () => Navigator.of(dialogCtx).pop(true),
+          textoConfirmar: textoConfirmar,
+          colorConfirmar: colorConfirmar,
+          iconoConfirmar: iconoConfirmar,
+          keyConfirmar: keyConfirmar,
+        ),
+      ],
+    ),
+  );
+}
+
+/// Diálogo centrado con ícono destacado, título y contenido.
+class DialogoTarjeta extends StatelessWidget {
+  const DialogoTarjeta({
+    super.key,
+    required this.icono,
+    required this.colores,
+    required this.colorSombra,
+    required this.titulo,
+    required this.hijos,
+  });
+
+  final IconData icono;
+  final List<Color> colores;
+  final Color colorSombra;
+  final String titulo;
+  final List<Widget> hijos;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       backgroundColor: Paleta.tarjeta,
       insetPadding: const EdgeInsets.symmetric(horizontal: 28),
@@ -35,15 +88,12 @@ Future<bool?> mostrarDialogoConfirmacion(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      colorConfirmar,
-                      Color.lerp(colorConfirmar, Colors.black, 0.18)!,
-                    ],
+                    colors: colores,
                   ),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: colorConfirmar.withValues(alpha: 0.35),
+                      color: colorSombra.withValues(alpha: 0.35),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -62,82 +112,84 @@ Future<bool?> mostrarDialogoConfirmacion(
                 color: Paleta.textoPrincipal,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              mensaje,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
-                fontSize: 13.5,
-                height: 1.45,
-                color: Paleta.textoSecundario,
-              ),
-            ),
-            const SizedBox(height: 22),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(dialogCtx).pop(false),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Paleta.textoSecundario,
-                      side: const BorderSide(color: Paleta.bordeTarjeta),
-                      minimumSize: const Size(0, 48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      textStyle: GoogleFonts.nunito(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    child: Text(textoCancelar),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: iconoConfirmar == null
-                      ? ElevatedButton(
-                          key: keyConfirmar,
-                          onPressed: () => Navigator.of(dialogCtx).pop(true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorConfirmar,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            minimumSize: const Size(0, 48),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            textStyle: GoogleFonts.nunito(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          child: Text(textoConfirmar),
-                        )
-                      : ElevatedButton.icon(
-                          onPressed: () => Navigator.of(dialogCtx).pop(true),
-                          icon: Icon(iconoConfirmar, size: 18),
-                          label: Text(textoConfirmar),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorConfirmar,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            minimumSize: const Size(0, 48),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            textStyle: GoogleFonts.nunito(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                ),
-              ],
-            ),
+            ...hijos,
           ],
         ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+/// Botones «Cancelar» y de confirmación al pie de un diálogo.
+class BotonesDialogo extends StatelessWidget {
+  const BotonesDialogo({
+    super.key,
+    required this.alCancelar,
+    required this.alConfirmar,
+    required this.textoConfirmar,
+    this.textoCancelar = 'Cancelar',
+    this.colorConfirmar = Paleta.doradoOscuro,
+    this.iconoConfirmar,
+    this.keyConfirmar,
+  });
+
+  final VoidCallback alCancelar;
+  final VoidCallback alConfirmar;
+  final String textoConfirmar;
+  final String textoCancelar;
+  final Color colorConfirmar;
+  final IconData? iconoConfirmar;
+  final Key? keyConfirmar;
+
+  @override
+  Widget build(BuildContext context) {
+    final textoBoton = GoogleFonts.nunito(
+      fontSize: 14,
+      fontWeight: FontWeight.w700,
+    );
+    final estiloConfirmar = ElevatedButton.styleFrom(
+      backgroundColor: colorConfirmar,
+      foregroundColor: Colors.white,
+      elevation: 0,
+      minimumSize: const Size(0, 48),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      textStyle: textoBoton,
+    );
+    final icono = iconoConfirmar;
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: alCancelar,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Paleta.textoSecundario,
+              side: const BorderSide(color: Paleta.bordeTarjeta),
+              minimumSize: const Size(0, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              textStyle: textoBoton,
+            ),
+            child: Text(textoCancelar),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: icono == null
+              ? ElevatedButton(
+                  key: keyConfirmar,
+                  onPressed: alConfirmar,
+                  style: estiloConfirmar,
+                  child: Text(textoConfirmar),
+                )
+              : ElevatedButton.icon(
+                  onPressed: alConfirmar,
+                  icon: Icon(icono, size: 18),
+                  label: Text(textoConfirmar),
+                  style: estiloConfirmar,
+                ),
+        ),
+      ],
+    );
+  }
 }
