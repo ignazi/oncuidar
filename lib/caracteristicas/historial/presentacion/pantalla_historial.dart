@@ -117,80 +117,58 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final altoBarra = MediaQuery.of(context).padding.top;
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _regresar();
-      },
-      child: Scaffold(
-        backgroundColor: Paleta.crema,
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20, altoBarra + 100 + 20, 20, 24),
-                child: _contenido(),
+    return PantallaConEncabezado(
+      alRegresar: _regresar,
+      encabezado: EncabezadoGradiente(
+        titulo: 'Historial',
+        subtitulo: 'Tus registros clínicos',
+        logo: const AssetImage('assets/images/OnCuidar.png'),
+        tamanoTitulo: 20,
+        reservaDerecha: 140,
+        alTocarLogo: () => context.go('/dashboard'),
+        accionDerecha: Tooltip(
+          message: 'Nuevo registro',
+          child: GestureDetector(
+            key: const Key('botonNuevoRegistro'),
+            onTap: () => context.push('/registro-clinico'),
+            child: Container(
+              height: 36,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Paleta.doradoOscuro.withValues(alpha: 0.25),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: EncabezadoGradiente(
-                titulo: 'Historial',
-                subtitulo: 'Tus registros clínicos',
-                logo: const AssetImage('assets/images/OnCuidar.png'),
-                tamanoTitulo: 20,
-                reservaDerecha: 140,
-                alTocarLogo: () => context.go('/dashboard'),
-                accionDerecha: Tooltip(
-                  message: 'Nuevo registro',
-                  child: GestureDetector(
-                    key: const Key('botonNuevoRegistro'),
-                    onTap: () => context.push('/registro-clinico'),
-                    child: Container(
-                      height: 36,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Paleta.doradoOscuro.withValues(alpha: 0.25),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.add_rounded,
-                            color: Paleta.doradoOscuro,
-                            size: 17,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Nuevo registro',
-                            style: GoogleFonts.nunito(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: Paleta.doradoOscuro,
-                            ),
-                          ),
-                        ],
-                      ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.add_rounded,
+                    color: Paleta.doradoOscuro,
+                    size: 17,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Nuevo registro',
+                    style: GoogleFonts.nunito(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Paleta.doradoOscuro,
                     ),
                   ),
-                ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
+      contenido: _contenido(),
     );
   }
 

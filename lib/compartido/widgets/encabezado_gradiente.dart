@@ -219,3 +219,42 @@ class _ClipperOla extends CustomClipper<Path> {
   bool shouldReclip(covariant _ClipperOla oldClipper) =>
       oldClipper.profundidad != profundidad;
 }
+
+/// Pantalla con el encabezado dorado fijo arriba y el contenido desplazable debajo.
+class PantallaConEncabezado extends StatelessWidget {
+  const PantallaConEncabezado({
+    super.key,
+    required this.alRegresar,
+    required this.encabezado,
+    required this.contenido,
+  });
+
+  final VoidCallback alRegresar;
+  final Widget encabezado;
+  final Widget contenido;
+
+  @override
+  Widget build(BuildContext context) {
+    final altoBarra = MediaQuery.of(context).padding.top;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) alRegresar();
+      },
+      child: Scaffold(
+        backgroundColor: Paleta.crema,
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20, altoBarra + 100 + 20, 20, 24),
+                child: contenido,
+              ),
+            ),
+            Positioned(top: 0, left: 0, right: 0, child: encabezado),
+          ],
+        ),
+      ),
+    );
+  }
+}

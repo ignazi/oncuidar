@@ -98,72 +98,50 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final altoBarra = MediaQuery.of(context).padding.top;
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _regresar();
-      },
-      child: Scaffold(
-        backgroundColor: Paleta.crema,
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20, altoBarra + 100 + 20, 20, 24),
-                child: _contenido(),
-              ),
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: EncabezadoGradiente(
-                titulo: 'Recordatorios',
-                subtitulo: 'Programa avisos para el cuidado',
-                logo: const AssetImage('assets/images/OnCuidar.png'),
-                tamanoTitulo: 20,
-                reservaDerecha: 64,
-                alTocarLogo: () => context.go('/dashboard'),
-                accionDerecha: Tooltip(
-                  message: _silenciadas
-                      ? 'Activar notificaciones'
-                      : 'Silenciar notificaciones',
-                  child: GestureDetector(
-                    key: const Key('campanitaSilencio'),
-                    onTap: _alternarSilencio,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Paleta.doradoOscuro.withValues(alpha: 0.25),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _silenciadas
-                            ? Icons.notifications_off
-                            : Icons.notifications_active,
-                        color: _silenciadas
-                            ? Paleta.textoSecundario
-                            : Paleta.doradoOscuro,
-                        size: 22,
-                      ),
-                    ),
+    return PantallaConEncabezado(
+      alRegresar: _regresar,
+      encabezado: EncabezadoGradiente(
+        titulo: 'Recordatorios',
+        subtitulo: 'Programa avisos para el cuidado',
+        logo: const AssetImage('assets/images/OnCuidar.png'),
+        tamanoTitulo: 20,
+        reservaDerecha: 64,
+        alTocarLogo: () => context.go('/dashboard'),
+        accionDerecha: Tooltip(
+          message: _silenciadas
+              ? 'Activar notificaciones'
+              : 'Silenciar notificaciones',
+          child: GestureDetector(
+            key: const Key('campanitaSilencio'),
+            onTap: _alternarSilencio,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Paleta.doradoOscuro.withValues(alpha: 0.25),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
-                ),
+                ],
+              ),
+              child: Icon(
+                _silenciadas
+                    ? Icons.notifications_off
+                    : Icons.notifications_active,
+                color: _silenciadas
+                    ? Paleta.textoSecundario
+                    : Paleta.doradoOscuro,
+                size: 22,
               ),
             ),
-          ],
+          ),
         ),
       ),
+      contenido: _contenido(),
     );
   }
 
