@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:oncuidar/nucleo/notificaciones/calendario_avisos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -107,76 +108,8 @@ class ServicioNotificaciones {
   /// Convierte un docId en un id positivo seguro para Android.
   static int idSeguro(String docId) => docId.hashCode & 0x7FFFFFFF;
 
-  static const _diasPorSemana = {
-    'lun': DateTime.monday,
-    'mar': DateTime.tuesday,
-    'mie': DateTime.wednesday,
-    'jue': DateTime.thursday,
-    'vie': DateTime.friday,
-    'sab': DateTime.saturday,
-    'dom': DateTime.sunday,
-  };
-
   int _idRepetido(int idBase, int diaSemana) =>
       (idBase + diaSemana) & 0x7FFFFFFF;
-
-  tz.TZDateTime _proximaCoincidencia(
-    DateTime horaProgramada,
-    List<String> diasRepeticion,
-  ) {
-    final ahora = tz.TZDateTime.now(tz.local);
-    // Se parte de hoy: un recordatorio semanal antiguo no debe quedar en el pasado.
-    final candidato = tz.TZDateTime(
-      tz.local,
-      ahora.year,
-      ahora.month,
-      ahora.day,
-      horaProgramada.hour,
-      horaProgramada.minute,
-    );
-    final objetivos =
-        (diasRepeticion.map((d) => _diasPorSemana[d]).toList()
-              ..removeWhere((d) => d == null))
-            .toSet();
-
-    for (var i = 0; i <= 7; i++) {
-      final prueba = candidato.add(Duration(days: i));
-      if (objetivos.contains(prueba.weekday) && prueba.isAfter(ahora)) {
-        return prueba;
-      }
-    }
-    return candidato.add(const Duration(days: 1));
-  }
-
-  /// Próxima coincidencia del mismo día del mes (clamp a los días del mes)
-  /// con la hora programada, siempre en el futuro. Se usa para repetición
-  /// mensual con [DateTimeComponents.dayOfMonthAndTime].
-  tz.TZDateTime _proximaMensual(DateTime horaProgramada) {
-    final ahora = tz.TZDateTime.now(tz.local);
-    var anio = ahora.year;
-    var mes = ahora.month;
-    for (var i = 0; i < 13; i++) {
-      final diasEnMes = DateTime(anio, mes + 1, 0).day;
-      final dia = horaProgramada.day > diasEnMes
-          ? diasEnMes
-          : horaProgramada.day;
-      final candidato = tz.TZDateTime(
-        tz.local,
-        anio,
-        mes,
-        dia,
-        horaProgramada.hour,
-        horaProgramada.minute,
-      );
-      if (candidato.isAfter(ahora)) return candidato;
-      mes++;
-      if (mes > 12) {
-        mes = 1;
-        anio++;
-      }
-    }
-    return ahora.add(const Duration(days: 32));
-  }
 
   /// ¿El cuidador silenció globalmente las notificaciones? Se lee de
   /// SharedPreferences; ante cualquier fallo se asume no silenciado.
@@ -210,7 +143,7 @@ class ServicioNotificaciones {
 
     if (mensual) {
       await cancelar(id);
-      final momento = _proximaMensual(fechaHora);
+      final momento = proximaMensual(tz.TZDateTime.now(tz.local), fechaHora);
       await _programarUna(
         id: id,
         titulo: titulo,
@@ -224,11 +157,12 @@ class ServicioNotificaciones {
     if (diasRepeticion != null && diasRepeticion.isNotEmpty) {
       await cancelar(id);
       for (final dia in diasRepeticion) {
-        final diaSemana = _diasPorSemana[dia];
+        final diaSemana = diasPorSemana[dia];
         if (diaSemana == null) continue;
-        final momento = _proximaCoincidencia(
+        final momento = proximaCoincidenciaSemanal(
+          tz.TZDateTime.now(tz.local),
           fechaHora,
-          _diasPorSemana.entries
+          diasPorSemana.entries
               .where((e) => e.value == diaSemana)
               .map((e) => e.key)
               .toList(),
@@ -244,17 +178,7 @@ class ServicioNotificaciones {
       return;
     }
 
-    var momento = tz.TZDateTime(
-      tz.local,
-      fechaHora.year,
-      fechaHora.month,
-      fechaHora.day,
-      fechaHora.hour,
-      fechaHora.minute,
-    );
-    if (momento.isBefore(tz.TZDateTime.now(tz.local))) {
-      momento = momento.add(const Duration(days: 1));
-    }
+    final momento = momentoUnaVez(tz.TZDateTime.now(tz.local), fechaHora);
     await _programarUna(
       id: id,
       titulo: titulo,
@@ -306,7 +230,7 @@ class ServicioNotificaciones {
   /// Cancela la notificación base y todas sus variantes por día de semana.
   Future<void> cancelar(int id) async {
     await _plugin.cancel(id: id);
-    for (final diaSemana in _diasPorSemana.values) {
+    for (final diaSemana in diasPorSemana.values) {
       await _plugin.cancel(id: _idRepetido(id, diaSemana));
     }
     log('Cancelada notificación $id');
