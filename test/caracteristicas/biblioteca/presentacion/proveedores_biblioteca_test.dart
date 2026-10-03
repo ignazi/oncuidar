@@ -334,6 +334,40 @@ void main() {
       expect(cache.descargados, isNot(contains(_urlImagen)));
     });
 
+    test(
+      'lo que falló se descarga en el siguiente inicio de sesión (CA-18.3)',
+      () async {
+        final base = await _baseConContenido([_videoConImagenes(), _guia()]);
+        final cache = _CacheFalso()..fallar.add(_urlImagen);
+        final metadata = ServicioCacheMetadata();
+        Future<SincronizacionEstado> iniciarSesion() async {
+          final container = ProviderContainer(
+            overrides: [
+              baseDatosSeguraProvider.overrideWith((_) => base),
+              servicioCacheContenidoProvider.overrideWithValue(cache),
+              servicioCacheMetadataProvider.overrideWithValue(metadata),
+            ],
+          );
+          addTearDown(container.dispose);
+          await container
+              .read(sincronizacionBibliotecaProvider.notifier)
+              .sincronizarAlIniciarSesion();
+          return container.read(sincronizacionBibliotecaProvider);
+        }
+
+        final primera = await iniciarSesion();
+        expect(primera.fallidas, 1);
+        expect(cache.descargados, isNot(contains(_urlImagen)));
+
+        // La red vuelve: el siguiente inicio de sesión completa lo pendiente.
+        cache.fallar.clear();
+        final segunda = await iniciarSesion();
+        expect(segunda.fallidas, 0);
+        expect(segunda.conErrores, isFalse);
+        expect(cache.descargados, contains(_urlImagen));
+      },
+    );
+
     test('sin contenido marca el sincronizado y no descarga', () async {
       final base = await _baseConContenido(const []);
       final cache = _CacheFalso();

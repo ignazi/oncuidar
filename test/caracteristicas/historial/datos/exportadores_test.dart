@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
+import 'package:excel/excel.dart' as xlsx;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/historial/datos/exportador_excel.dart';
 import 'package:oncuidar/caracteristicas/historial/datos/exportador_pdf.dart';
@@ -169,5 +170,39 @@ void main() {
 
     expect(bytes, isNotEmpty);
     expect(String.fromCharCodes(bytes.sublist(0, 2)), 'PK');
+  });
+
+  test('la hoja Historial tiene las columnas legibles (CA-11.3)', () {
+    final bytes = generarExcelHistorial(
+      registros: [_registroConSignos('r1')],
+      paciente: _paciente(),
+      nombreCuidador: 'Ana',
+      fechaInicio: null,
+      fechaFin: null,
+      generadoEn: DateTime(2026, 9, 18, 20, 54),
+    );
+
+    final filas = xlsx.Excel.decodeBytes(bytes)['Historial'].rows;
+    final encabezado = filas.firstWhere(
+      (f) => f.isNotEmpty && f.first?.value.toString() == 'Fecha',
+    );
+    expect(
+      [
+        for (final celda in encabezado)
+          if (celda != null) celda.value.toString(),
+      ],
+      [
+        'Fecha',
+        'Hora',
+        'Tipo',
+        'Estado',
+        'Temp.',
+        'F.C.',
+        'Sat. O₂',
+        'F.R.',
+        'Síntomas',
+        'Observaciones',
+      ],
+    );
   });
 }
