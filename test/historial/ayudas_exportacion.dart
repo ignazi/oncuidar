@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
@@ -56,10 +57,10 @@ baseConDosPacientes() async {
     'address': 'Av. Siempre Viva 742',
   });
   // El id lo genera Firestore, así que se usan los que devuelve.
-  final activo = await base.crearPaciente(
+  final activo = await RepositorioPacientes(base.bd).crearPaciente(
     Paciente(id: '', fullName: 'Paciente A', createdAt: DateTime(2026, 1, 1)),
   );
-  final otro = await base.crearPaciente(
+  final otro = await RepositorioPacientes(base.bd).crearPaciente(
     Paciente(id: '', fullName: 'Paciente B', createdAt: DateTime(2026, 1, 2)),
   );
   return (base, cifrado, activo, otro);

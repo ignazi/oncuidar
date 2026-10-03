@@ -1,5 +1,6 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -84,7 +85,9 @@ void main() {
     }
 
     test('crearPaciente guarda campos sensibles cifrados', () async {
-      final id = await servicio.crearPaciente(await paciente('Ana Torres'));
+      final id = await RepositorioPacientes(
+        servicio.bd,
+      ).crearPaciente(await paciente('Ana Torres'));
 
       final doc = await base
           .collection('users')
@@ -113,9 +116,13 @@ void main() {
     });
 
     test('pacientesEnTiempoReal descifra de vuelta', () async {
-      final id = await servicio.crearPaciente(await paciente('Ana Torres'));
+      final id = await RepositorioPacientes(
+        servicio.bd,
+      ).crearPaciente(await paciente('Ana Torres'));
 
-      final pacientes = await servicio.pacientesEnTiempoReal().first;
+      final pacientes = await RepositorioPacientes(
+        servicio.bd,
+      ).pacientesEnTiempoReal().first;
       expect(pacientes, hasLength(1));
       expect(pacientes.first.id, id);
       expect(pacientes.first.fullName, 'Ana Torres');

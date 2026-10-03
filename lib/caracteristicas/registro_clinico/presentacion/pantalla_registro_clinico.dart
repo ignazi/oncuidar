@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/catalogo_sintomas.dart';
@@ -227,9 +228,10 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
       valorInicial: paciente.maximoRegistrosDia,
     );
     if (valor == null || !mounted) return;
-    await ref.read(servicioBaseDatosProvider).actualizarPaciente(paciente.id, {
-      'maximo_registros_dia': valor,
-    });
+    await ref.read(repositorioPacientesProvider).actualizarPaciente(
+      paciente.id,
+      {'maximo_registros_dia': valor},
+    );
     if (mounted) {
       _mostrarSnack(
         'Tope actualizado a $valor',

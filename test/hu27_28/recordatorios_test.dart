@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
@@ -20,6 +21,8 @@ import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../ayudas/ciclo_de_vida.dart';
 
 const _clavePrueba = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
 const _uid = 'uid27';
@@ -91,7 +94,7 @@ Future<(ServicioBaseDatos, FakeFirebaseFirestore)> _baseDatos() async {
 }
 
 Future<String> _sembrarPaciente(ServicioBaseDatos base) async {
-  return base.crearPaciente(
+  return RepositorioPacientes(base.bd).crearPaciente(
     Paciente(id: 'auto', fullName: 'Paciente Test', createdAt: DateTime.now()),
   );
 }
@@ -306,7 +309,7 @@ void main() {
           ),
         );
         final notif = _FakeNotificaciones();
-        await base.reagendarNotificaciones(notif);
+        await cicloDeVida(base.bd, notif).reagendarNotificaciones();
 
         expect(notif.canceladasTodas, 1);
         expect(notif.programados, hasLength(2));

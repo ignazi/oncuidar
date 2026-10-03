@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
@@ -211,7 +212,7 @@ Future<String> _prepararRegistro(
     'relationship': 'Madre',
     'address': 'Av. Siempre Viva 742',
   });
-  final idPaciente = await ServicioBaseDatos.sobre(registros.bd).crearPaciente(
+  final idPaciente = await RepositorioPacientes(registros.bd).crearPaciente(
     Paciente(
       id: 'ignorado',
       fullName: 'Paciente Test',

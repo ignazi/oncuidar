@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/proveedores_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/compartido/estilos.dart';
@@ -723,8 +724,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
         );
       }
     } else {
-      final base = ref.read(servicioBaseDatosProvider);
-      await base.reagendarNotificaciones(notif);
+      await ref.read(cicloDeVidaPacienteProvider).reagendarNotificaciones();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Notificaciones reactivadas')),

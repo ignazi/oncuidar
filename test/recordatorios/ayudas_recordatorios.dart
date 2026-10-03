@@ -1,6 +1,7 @@
 // Ayudas compartidas por las pruebas de recordatorios y avisos locales.
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
@@ -87,7 +88,7 @@ Future<String> crearPacienteRecordatorios(
   ServicioBaseDatos base, {
   String nombre = 'Paciente Test',
 }) {
-  return base.crearPaciente(
+  return RepositorioPacientes(base.bd).crearPaciente(
     Paciente(id: 'auto', fullName: nombre, createdAt: DateTime.now()),
   );
 }

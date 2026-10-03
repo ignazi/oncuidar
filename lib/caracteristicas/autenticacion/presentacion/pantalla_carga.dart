@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
 import 'package:oncuidar/compartido/widgets/marca.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
@@ -97,10 +98,7 @@ class _SplashState extends ConsumerState<Splash>
   /// Reprograma los avisos locales con la sesión ya activa, sin bloquear el arranque.
   void _reagendarAvisos() {
     try {
-      reagendarAvisosEnSegundoPlano(
-        ref.read(servicioBaseDatosProvider),
-        ref.read(servicioNotificacionesProvider),
-      );
+      reagendarAvisosEnSegundoPlano(ref.read(cicloDeVidaPacienteProvider));
     } catch (_) {
       // Sin servicios disponibles el arranque continúa sin avisos reprogramados.
     }

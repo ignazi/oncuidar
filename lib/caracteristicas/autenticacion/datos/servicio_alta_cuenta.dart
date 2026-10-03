@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 
 class DatosRegistro {
   const DatosRegistro({
@@ -47,13 +47,13 @@ class ServicioRegistro {
   ServicioRegistro({
     FirebaseAuth? auth,
     required ServicioCifrado cifrado,
-    required ServicioBaseDatos baseDatos,
+    required RepositorioPacientes repositorioPacientes,
     required RepositorioCuidador repositorioCuidador,
     VoidCallback? alDesbloquear,
     RegistrarCorreoRespaldo? registrarCorreoRespaldo,
   }) : _auth = auth ?? FirebaseAuth.instance {
     _cifrado = cifrado;
-    _baseDatos = baseDatos;
+    _repositorioPacientes = repositorioPacientes;
     _repositorioCuidador = repositorioCuidador;
     _alDesbloquear = alDesbloquear;
     _registrarCorreoRespaldo = registrarCorreoRespaldo ?? _viaCallable;
@@ -61,7 +61,7 @@ class ServicioRegistro {
 
   final FirebaseAuth _auth;
   late final ServicioCifrado _cifrado;
-  late final ServicioBaseDatos _baseDatos;
+  late final RepositorioPacientes _repositorioPacientes;
   late final RepositorioCuidador _repositorioCuidador;
   late final VoidCallback? _alDesbloquear;
   late final RegistrarCorreoRespaldo _registrarCorreoRespaldo;
@@ -107,7 +107,7 @@ class ServicioRegistro {
           await _registrarCorreoRespaldo(respaldo.trim().toLowerCase());
         }
 
-        await _baseDatos.crearPaciente(datos.paciente);
+        await _repositorioPacientes.crearPaciente(datos.paciente);
       } catch (_) {
         // Rollback: primero el doc Firestore (las reglas exigen sesión activa).
         await _repositorioCuidador.limpiarRegistro(uid);

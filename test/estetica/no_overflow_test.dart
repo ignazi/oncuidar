@@ -8,6 +8,7 @@ import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuent
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
@@ -90,7 +91,7 @@ Widget _pantalla(
         (ref) => ServicioRegistro(
           auth: auth,
           cifrado: cifrado,
-          baseDatos: base,
+          repositorioPacientes: RepositorioPacientes(base.bd),
           repositorioCuidador: RepositorioCuidador(base.bd),
           alDesbloquear: () =>
               ref.read(bloqueoCifradoProvider.notifier).fijarDesbloqueado(true),
@@ -188,7 +189,7 @@ void main() {
         'relationship': 'Madre',
         'address': 'Av. Siempre Viva 742',
       });
-      await base.crearPaciente(
+      await RepositorioPacientes(base.bd).crearPaciente(
         Paciente(
           id: 'auto',
           fullName: 'Anastasia Margarita Constanza del Carmen de los Andes',
@@ -218,7 +219,7 @@ void main() {
     final auth = _authConSesion();
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
-    await base.crearPaciente(
+    await RepositorioPacientes(base.bd).crearPaciente(
       Paciente(
         id: 'auto',
         fullName: 'Paciente Test',
@@ -308,7 +309,7 @@ void main() {
     final auth = _authConSesion();
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
-    await base.crearPaciente(
+    await RepositorioPacientes(base.bd).crearPaciente(
       Paciente(
         id: 'auto',
         fullName: 'Paciente Test',
@@ -338,7 +339,7 @@ void main() {
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
     final fecha = DateTime.now();
-    final idPaciente = await base.crearPaciente(
+    final idPaciente = await RepositorioPacientes(base.bd).crearPaciente(
       Paciente(id: 'auto', fullName: 'Paciente Test', createdAt: fecha),
     );
     await RepositorioRegistrosClinicos(base.bd).guardarRegistroClinico(
@@ -387,7 +388,7 @@ void main() {
     final auth = _authConSesion();
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
-    final idPaciente = await base.crearPaciente(
+    final idPaciente = await RepositorioPacientes(base.bd).crearPaciente(
       Paciente(
         id: 'auto',
         fullName: 'Paciente Test',
@@ -425,7 +426,7 @@ void main() {
     final auth = _authConSesion();
     final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
     final base = await _baseConCuidador(cifrado);
-    await base.crearPaciente(
+    await RepositorioPacientes(base.bd).crearPaciente(
       Paciente(
         id: 'auto',
         fullName: 'Paciente Test',

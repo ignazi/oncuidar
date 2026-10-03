@@ -3,12 +3,14 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../ayudas/ciclo_de_vida.dart';
 import 'ayudas_recordatorios.dart';
 
 void main() {
@@ -116,7 +118,7 @@ void main() {
         recordatorioDe(idPaciente, titulo: 'Vigente'),
       );
       final notif = NotificacionesFalsas();
-      await base.reagendarNotificaciones(notif);
+      await cicloDeVida(base.bd, notif).reagendarNotificaciones();
       expect(notif.programados.map((p) => p['cuerpo']), ['Vigente']);
     });
 
@@ -133,7 +135,7 @@ void main() {
         ),
       );
       final notif = NotificacionesFalsas();
-      await base.reagendarNotificaciones(notif);
+      await cicloDeVida(base.bd, notif).reagendarNotificaciones();
       expect(notif.programados.single['cuerpo'], 'Control · Llevar exámenes');
       expect(notif.programados.single['titulo'], 'Cuidador · Medicamento');
     });
@@ -152,7 +154,7 @@ void main() {
         recordatorioDe(idPaciente, titulo: 'Dos'),
       );
       final notif = NotificacionesFalsas();
-      await base.archivarPaciente(idPaciente, notif: notif);
+      await cicloDeVida(base.bd, notif).archivar(idPaciente);
       expect(
         notif.cancelados,
         containsAll([
@@ -173,7 +175,7 @@ void main() {
         base.bd,
       ).agregarRecordatorio(b, recordatorioDe(b, titulo: 'De B'));
       final notif = NotificacionesFalsas();
-      await base.archivarPaciente(a, notif: notif);
+      await cicloDeVida(base.bd, notif).archivar(a);
       expect(
         notif.cancelados,
         isNot(contains(ServicioNotificaciones.idSeguro(idB))),
@@ -187,9 +189,9 @@ void main() {
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Jarabe'),
       );
-      await base.archivarPaciente(idPaciente);
+      await RepositorioPacientes(base.bd).archivarPaciente(idPaciente);
       final notif = NotificacionesFalsas();
-      await base.desarchivarPaciente(idPaciente, notif: notif);
+      await cicloDeVida(base.bd, notif).desarchivar(idPaciente);
       expect(notif.programados.map((p) => p['cuerpo']), ['Jarabe']);
     });
 
@@ -200,9 +202,9 @@ void main() {
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Jarabe'),
       );
-      await base.archivarPaciente(idPaciente);
+      await RepositorioPacientes(base.bd).archivarPaciente(idPaciente);
       final notif = NotificacionesFalsas();
-      await base.reagendarNotificaciones(notif);
+      await cicloDeVida(base.bd, notif).reagendarNotificaciones();
       expect(notif.programados, isEmpty);
     });
 
@@ -213,9 +215,12 @@ void main() {
         base.bd,
       ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
       final notif = NotificacionesFalsas();
-      await base.eliminarPaciente(idPaciente, notif: notif);
+      await cicloDeVida(base.bd, notif).eliminar(idPaciente);
       expect(notif.cancelados, contains(ServicioNotificaciones.idSeguro(id)));
-      expect(await base.pacientesEnTiempoReal().first, isEmpty);
+      expect(
+        await RepositorioPacientes(base.bd).pacientesEnTiempoReal().first,
+        isEmpty,
+      );
     });
   });
 }

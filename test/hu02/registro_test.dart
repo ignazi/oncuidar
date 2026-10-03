@@ -7,9 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
+import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
@@ -58,7 +60,7 @@ Widget _pantalla(
         (ref) => ServicioRegistro(
           auth: auth,
           cifrado: cifrado,
-          baseDatos: base,
+          repositorioPacientes: RepositorioPacientes(base.bd),
           repositorioCuidador:
               repositorioCuidador ?? RepositorioCuidador(base.bd),
           alDesbloquear: () =>
@@ -345,7 +347,7 @@ void main() {
       final servicio = ServicioRegistro(
         auth: auth,
         cifrado: cifrado,
-        baseDatos: baseDatos,
+        repositorioPacientes: RepositorioPacientes(baseDatos.bd),
         repositorioCuidador: RepositorioCuidador(baseDatos.bd),
         registrarCorreoRespaldo: (email) async => emailRegistrado = email,
       );
@@ -396,16 +398,17 @@ void main() {
       final eventos = <String>[];
       final auth = _AuthQueRegistra(eventos);
       final firestore = FakeFirebaseFirestore();
-      final base = _BaseQueFallaAlCrearPaciente(
-        firestore: firestore,
+      final bd = BaseDatosSegura(
+        base: firestore,
         auth: auth,
+        cifrado: _cifradoListo(),
       );
       final servicio = ServicioRegistro(
         auth: auth,
         cifrado: _cifradoListo(),
-        baseDatos: base,
+        repositorioPacientes: _RepositorioPacientesQueFalla(bd),
         repositorioCuidador: _RepositorioCuidadorQueRegistra(
-          base.bd,
+          bd,
           auth: auth,
           eventos: eventos,
         ),
@@ -500,11 +503,8 @@ class _AuthQueRegistra extends MockFirebaseAuth {
 }
 
 // Falla al crear el paciente.
-class _BaseQueFallaAlCrearPaciente extends ServicioBaseDatos {
-  _BaseQueFallaAlCrearPaciente({
-    required FakeFirebaseFirestore firestore,
-    required FirebaseAuth auth,
-  }) : super(base: firestore, auth: auth, cifrado: _cifradoListo());
+class _RepositorioPacientesQueFalla extends RepositorioPacientes {
+  _RepositorioPacientesQueFalla(super.bd);
 
   @override
   Future<String> crearPaciente(Paciente paciente) async {

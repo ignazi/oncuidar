@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/historial/datos/exportador_excel.dart';
 import 'package:oncuidar/caracteristicas/historial/datos/exportador_pdf.dart';
 import 'package:oncuidar/caracteristicas/historial/dominio/orden_registros.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
@@ -43,10 +44,10 @@ Future<(ServicioBaseDatos, String, String)> _baseConDosPacientes() async {
     'relationship': 'Madre',
     'address': 'Av. Siempre Viva 742',
   });
-  final a = await base.crearPaciente(
+  final a = await RepositorioPacientes(base.bd).crearPaciente(
     Paciente(id: 'a', fullName: 'Paciente A', createdAt: DateTime.now()),
   );
-  final b = await base.crearPaciente(
+  final b = await RepositorioPacientes(base.bd).crearPaciente(
     Paciente(id: 'b', fullName: 'Paciente B', createdAt: DateTime.now()),
   );
   return (base, a, b);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/widgets/dialogo_archivados.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/widgets/dialogo_cambiar_paciente.dart';
@@ -112,12 +113,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
   Future<void> _desarchivarPaciente(Paciente paciente) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref
-          .read(servicioBaseDatosProvider)
-          .desarchivarPaciente(
-            paciente.id,
-            notif: ref.read(servicioNotificacionesProvider),
-          );
+      await ref.read(cicloDeVidaPacienteProvider).desarchivar(paciente.id);
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
@@ -167,7 +163,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
     return mostrarDialogoPaciente(
       context,
       paciente: paciente,
-      servicio: ref.read(servicioBaseDatosProvider),
+      repositorio: ref.read(repositorioPacientesProvider),
     );
   }
 
@@ -188,12 +184,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
     if (confirmar != true || !mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref
-          .read(servicioBaseDatosProvider)
-          .archivarPaciente(
-            paciente.id,
-            notif: ref.read(servicioNotificacionesProvider),
-          );
+      await ref.read(cicloDeVidaPacienteProvider).archivar(paciente.id);
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(
@@ -234,12 +225,7 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
     final messenger = ScaffoldMessenger.of(context);
     final eraActivo = ref.read(currentPatientProvider).value?.id == paciente.id;
     try {
-      await ref
-          .read(servicioBaseDatosProvider)
-          .eliminarPaciente(
-            paciente.id,
-            notif: ref.read(servicioNotificacionesProvider),
-          );
+      await ref.read(cicloDeVidaPacienteProvider).eliminar(paciente.id);
       if (eraActivo) {
         final restantes =
             (ref.read(patientsListProvider).value ?? const <Paciente>[])

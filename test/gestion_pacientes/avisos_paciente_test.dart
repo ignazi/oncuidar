@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/gestion_pacientes.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
@@ -71,7 +72,10 @@ void main() {
         ServicioNotificaciones.idSeguro(id2),
       ]),
     );
-    expect(await base.pacientesEnTiempoReal().first, isEmpty);
+    expect(
+      await RepositorioPacientes(base.bd).pacientesEnTiempoReal().first,
+      isEmpty,
+    );
   });
 
   testWidgets('eliminar desde el perfil cancela los avisos antes de borrar', (
@@ -91,7 +95,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(notif.cancelados, contains(ServicioNotificaciones.idSeguro(id)));
-    expect(await base.pacientesEnTiempoReal().first, isEmpty);
+    expect(
+      await RepositorioPacientes(base.bd).pacientesEnTiempoReal().first,
+      isEmpty,
+    );
   });
 
   testWidgets('restaurar desde el perfil vuelve a programar los avisos', (
@@ -106,7 +113,7 @@ void main() {
       idPaciente,
       recordatorioDe(idPaciente, titulo: 'Jarabe'),
     );
-    await base.archivarPaciente(idPaciente);
+    await RepositorioPacientes(base.bd).archivarPaciente(idPaciente);
     final notif = NotificacionesFalsas();
     await _montar(tester, _pantalla(base, notif));
 
@@ -116,6 +123,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(notif.programados.map((p) => p['cuerpo']), ['Jarabe']);
-    expect((await base.pacientesEnTiempoReal().first).single.id, idPaciente);
+    expect(
+      (await RepositorioPacientes(
+        base.bd,
+      ).pacientesEnTiempoReal().first).single.id,
+      idPaciente,
+    );
   });
 }

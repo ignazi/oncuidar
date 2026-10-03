@@ -11,6 +11,8 @@ import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadat
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
+import 'package:oncuidar/caracteristicas/pacientes/dominio/ciclo_de_vida_paciente.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/proveedores_perfil.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/proveedores_recordatorios.dart';
@@ -135,7 +137,7 @@ final servicioRegistroProvider = Provider<ServicioRegistro>((ref) {
   return ServicioRegistro(
     auth: ref.watch(firebaseAuthProvider),
     cifrado: ref.watch(servicioCifradoProvider),
-    baseDatos: ref.watch(servicioBaseDatosProvider),
+    repositorioPacientes: ref.watch(repositorioPacientesProvider),
     repositorioCuidador: ref.watch(repositorioCuidadorProvider),
     alDesbloquear: () =>
         ref.read(bloqueoCifradoProvider.notifier).fijarDesbloqueado(true),
@@ -145,13 +147,13 @@ final servicioRegistroProvider = Provider<ServicioRegistro>((ref) {
 const _clavePacienteSeleccionado = 'selected_patient_id';
 
 final patientsListProvider = StreamProvider.autoDispose<List<Paciente>>((ref) {
-  return ref.watch(servicioBaseDatosProvider).pacientesEnTiempoReal();
+  return ref.watch(repositorioPacientesProvider).pacientesEnTiempoReal();
 });
 
 final archivedPatientsListProvider = StreamProvider.autoDispose<List<Paciente>>(
   (ref) {
     return ref
-        .watch(servicioBaseDatosProvider)
+        .watch(repositorioPacientesProvider)
         .pacientesArchivadosEnTiempoReal();
   },
 );
@@ -482,13 +484,10 @@ final servicioNotificacionesProvider = Provider<ServicioNotificaciones>((ref) {
 });
 
 /// Reprograma los avisos locales sin bloquear la UI ni fallar sin red o permiso.
-void reagendarAvisosEnSegundoPlano(
-  ServicioBaseDatos base,
-  ServicioNotificaciones notificaciones,
-) {
+void reagendarAvisosEnSegundoPlano(CicloDeVidaPaciente cicloDeVida) {
   unawaited(
-    base
-        .reagendarNotificaciones(notificaciones)
+    cicloDeVida
+        .reagendarNotificaciones()
         .timeout(const Duration(seconds: 20), onTimeout: () {})
         .catchError((_) {}),
   );

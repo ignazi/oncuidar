@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
@@ -56,7 +57,7 @@ Future<(ServicioBaseDatos, FakeFirebaseFirestore, String)> _baseConPaciente(
     'relationship': 'Madre',
     'address': 'Av. Siempre Viva 742',
   });
-  final idPaciente = await base.crearPaciente(
+  final idPaciente = await RepositorioPacientes(base.bd).crearPaciente(
     Paciente(
       id: 'paciente',
       fullName: 'Paciente Test',
@@ -382,7 +383,9 @@ void main() {
     expect(find.textContaining('· Registro extra'), findsOneWidget);
 
     // El cuidador sube el tope a 4: el historial debe renumerarse en vivo.
-    await base.actualizarPaciente(idPaciente, {'maximo_registros_dia': 4});
+    await RepositorioPacientes(
+      base.bd,
+    ).actualizarPaciente(idPaciente, {'maximo_registros_dia': 4});
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Registro 3/4'), findsOneWidget);

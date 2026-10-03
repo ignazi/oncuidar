@@ -10,6 +10,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadat
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/chat/datos/repositorio_conversaciones.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
@@ -40,9 +41,10 @@ void main() {
   late String idA;
   late String idB;
 
-  Future<String> crearPaciente(String nombre) => base.crearPaciente(
-    Paciente(id: '', fullName: nombre, createdAt: DateTime.now()),
-  );
+  Future<String> crearPaciente(String nombre) =>
+      RepositorioPacientes(base.bd).crearPaciente(
+        Paciente(id: '', fullName: nombre, createdAt: DateTime.now()),
+      );
 
   Future<void> sembrarPorPaciente(String id, String etiqueta) async {
     final ahora = DateTime.now();

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -53,10 +54,7 @@ class _IniciarSesionState extends ConsumerState<IniciarSesion> {
             .sincronizarAlIniciarSesion(),
       );
       try {
-        reagendarAvisosEnSegundoPlano(
-          ref.read(servicioBaseDatosProvider),
-          ref.read(servicioNotificacionesProvider),
-        );
+        reagendarAvisosEnSegundoPlano(ref.read(cicloDeVidaPacienteProvider));
       } catch (_) {
         // Los avisos se reprograman en el próximo arranque; no frenan el ingreso.
       }

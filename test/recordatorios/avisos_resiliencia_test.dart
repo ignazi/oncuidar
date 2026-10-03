@@ -19,6 +19,7 @@ import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../ayudas/ciclo_de_vida.dart';
 import 'ayudas_recordatorios.dart';
 
 /// Simula un dispositivo sin permiso de notificaciones: el plugin lanza.
@@ -78,7 +79,10 @@ void main() {
       ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
       final notif = _AvisosQueFallan();
 
-      await expectLater(base.reagendarNotificaciones(notif), completes);
+      await expectLater(
+        cicloDeVida(base.bd, notif).reagendarNotificaciones(),
+        completes,
+      );
       // Llegó a la fase de programación: el fallo viene del plugin, no antes.
       expect(notif.canceladasTodas, 1);
       expect(notif.programados, isEmpty);
@@ -101,7 +105,10 @@ void main() {
       );
       final notif = NotificacionesFalsas();
 
-      await expectLater(baseSinClave.reagendarNotificaciones(notif), completes);
+      await expectLater(
+        cicloDeVida(baseSinClave.bd, notif).reagendarNotificaciones(),
+        completes,
+      );
       expect(notif.programados, isEmpty);
     });
   });
@@ -114,15 +121,17 @@ void main() {
         base.bd,
       ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
 
-      reagendarAvisosEnSegundoPlano(base, _AvisosQueFallan());
+      reagendarAvisosEnSegundoPlano(cicloDeVida(base.bd, _AvisosQueFallan()));
       await Future<void>.delayed(const Duration(milliseconds: 10));
       // Si el futuro no traguera el error, flutter_test lo reportaría aquí.
     });
 
     test('traga el fallo de la base de datos', () async {
       reagendarAvisosEnSegundoPlano(
-        _BaseSinDocumentos(firestore: FakeFirebaseFirestore()),
-        NotificacionesFalsas(),
+        cicloDeVida(
+          _BaseSinDocumentos(firestore: FakeFirebaseFirestore()).bd,
+          NotificacionesFalsas(),
+        ),
       );
       await Future<void>.delayed(const Duration(milliseconds: 10));
     });

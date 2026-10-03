@@ -3,17 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/compartido/widgets/titulo_seccion.dart';
-import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/utilidades/rut.dart';
 
 Future<void> mostrarDialogoPaciente(
   BuildContext context, {
   Paciente? paciente,
-  required ServicioBaseDatos servicio,
+  required RepositorioPacientes repositorio,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -23,16 +23,16 @@ Future<void> mostrarDialogoPaciente(
     backgroundColor: Colors.transparent,
     builder: (ctx) => PopScope(
       canPop: false,
-      child: _DialogoPaciente(paciente: paciente, servicio: servicio),
+      child: _DialogoPaciente(paciente: paciente, repositorio: repositorio),
     ),
   );
 }
 
 class _DialogoPaciente extends StatefulWidget {
-  const _DialogoPaciente({required this.paciente, required this.servicio});
+  const _DialogoPaciente({required this.paciente, required this.repositorio});
 
   final Paciente? paciente;
-  final ServicioBaseDatos servicio;
+  final RepositorioPacientes repositorio;
 
   @override
   State<_DialogoPaciente> createState() => _DialogoPacienteState();
@@ -128,14 +128,14 @@ class _DialogoPacienteState extends State<_DialogoPaciente> {
       'contactoEmergenciaNombre': _emergenciaNombreController.text.trim(),
       'contactoEmergenciaTelefono': _emergenciaTelefonoController.text.trim(),
     };
-    final servicio = widget.servicio;
+    final repositorio = widget.repositorio;
     final esEdicion = _esEdicion;
     final paciente = widget.paciente;
     nav.pop();
     unawaited(
       _guardarEnBackground(
         messenger,
-        servicio: servicio,
+        repositorio: repositorio,
         datos: datos,
         esEdicion: esEdicion,
         paciente: paciente,
@@ -145,16 +145,16 @@ class _DialogoPacienteState extends State<_DialogoPaciente> {
 
   Future<void> _guardarEnBackground(
     ScaffoldMessengerState messenger, {
-    required ServicioBaseDatos servicio,
+    required RepositorioPacientes repositorio,
     required Map<String, dynamic> datos,
     required bool esEdicion,
     required Paciente? paciente,
   }) async {
     try {
       if (esEdicion && paciente != null) {
-        await servicio.actualizarPaciente(paciente.id, datos);
+        await repositorio.actualizarPaciente(paciente.id, datos);
       } else {
-        await servicio.crearPaciente(
+        await repositorio.crearPaciente(
           Paciente(
             id: '',
             fullName: datos['fullName'] as String,
