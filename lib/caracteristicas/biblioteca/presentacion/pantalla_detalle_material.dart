@@ -4,15 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/parseo_contenido.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_material.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/checklist_interactivo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
-import 'package:open_filex/open_filex.dart';
 
 class PantallaDetalleMaterial extends ConsumerStatefulWidget {
   const PantallaDetalleMaterial({super.key, required this.id});
@@ -40,57 +39,9 @@ class _PantallaDetalleMaterialState
     if (material == null || material.fileUrl == null) return;
     setState(() => _descargando = true);
     try {
-      final cache = ref.read(servicioCacheContenidoProvider);
-      final archivo = await cache.descargar(material.fileUrl!);
-      ref
-          .read(contenidosDescargadosProvider.notifier)
-          .marcarDescargado(material.fileUrl!);
-      if (!mounted) return;
-      final resultado = await OpenFilex.open(archivo.path);
-      if (resultado.type != ResultType.done && mounted) {
-        _mostrarAviso(
-          resultado.message.isNotEmpty
-              ? resultado.message
-              : 'No hay una aplicación para abrir este tipo de archivo.',
-        );
-      }
-    } catch (e) {
-      if (mounted) _mostrarAviso('Error al abrir el archivo: $e');
+      await abrirArchivoMaterial(ref, context, material.fileUrl!);
     } finally {
       if (mounted) setState(() => _descargando = false);
-    }
-  }
-
-  void _mostrarAviso(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje, style: GoogleFonts.nunito(fontSize: 14)),
-        backgroundColor: Paleta.error,
-      ),
-    );
-  }
-
-  Future<void> _alternarFavorito(String materialId) async {
-    final repositorio = ref.read(repositorioBibliotecaProvider);
-    final ids = ref.read(idsFavoritosProvider).value ?? const <String>[];
-    final eraFavorito = ids.contains(materialId);
-    try {
-      await repositorio.alternarFavorito(materialId);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              eraFavorito ? 'Quitado de favoritos' : 'Añadido a favoritos',
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Paleta.doradoPrincipal,
-          ),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        _mostrarAviso('No se pudo actualizar el favorito. Revisa tu conexión.');
-      }
     }
   }
 
@@ -131,7 +82,8 @@ class _PantallaDetalleMaterialState
             subtitulo: materialActual?.topic,
             reservaDerecha: 48,
             accionDerecha: GestureDetector(
-              onTap: () => unawaited(_alternarFavorito(widget.id)),
+              onTap: () =>
+                  unawaited(alternarFavoritoMaterial(ref, context, widget.id)),
               child: Padding(
                 padding: const EdgeInsets.all(6),
                 child: Icon(

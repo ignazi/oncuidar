@@ -9,6 +9,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/parseo_contenido.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_material.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_video.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/checklist_interactivo.dart';
@@ -16,7 +17,6 @@ import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 import 'package:oncuidar/compartido/estilos.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
-import 'package:open_filex/open_filex.dart';
 
 class BibliotecaScreen extends ConsumerStatefulWidget {
   const BibliotecaScreen({super.key});
@@ -162,21 +162,12 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
       ),
     );
     try {
-      final cache = ref.read(servicioCacheContenidoProvider);
-      final archivo = await cache.descargar(url);
-      ref.read(contenidosDescargadosProvider.notifier).marcarDescargado(url);
-      if (!mounted) return;
-      aviso.hideCurrentSnackBar();
-      final resultado = await OpenFilex.open(archivo.path);
-      if (resultado.type != ResultType.done && mounted) {
-        _mostrarAviso(
-          resultado.message.isNotEmpty
-              ? resultado.message
-              : 'No hay una aplicación para abrir este tipo de archivo.',
-        );
-      }
-    } catch (e) {
-      if (mounted) _mostrarAviso('Error al abrir el archivo: $e');
+      await abrirArchivoMaterial(
+        ref,
+        context,
+        url,
+        alDescargar: aviso.hideCurrentSnackBar,
+      );
     } finally {
       if (mounted) setState(() => _urlsDescargando.remove(url));
     }
@@ -194,15 +185,6 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
         items: parsearItemsChecklist(material.body),
         textoIntro: textoInformativoChecklist(material.body),
         enHoja: true,
-      ),
-    );
-  }
-
-  void _mostrarAviso(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje, style: GoogleFonts.nunito(fontSize: 14)),
-        backgroundColor: Paleta.error,
       ),
     );
   }
@@ -465,33 +447,9 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
       descargado: url != null && descargados.contains(url),
       alTocar: () => _abrirMaterial(material),
       alAlternarFavorito: () {
-        unawaited(_alternarFavorito(material.id));
+        unawaited(alternarFavoritoMaterial(ref, context, material.id));
       },
     );
-  }
-
-  Future<void> _alternarFavorito(String materialId) async {
-    final repositorio = ref.read(repositorioBibliotecaProvider);
-    final ids = ref.read(idsFavoritosProvider).value ?? const <String>[];
-    final eraFavorito = ids.contains(materialId);
-    try {
-      await repositorio.alternarFavorito(materialId);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              eraFavorito ? 'Quitado de favoritos' : 'Añadido a favoritos',
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Paleta.doradoPrincipal,
-          ),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        _mostrarAviso('No se pudo actualizar el favorito. Revisa tu conexión.');
-      }
-    }
   }
 }
 
