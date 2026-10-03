@@ -1,0 +1,91 @@
+import 'package:flutter/material.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
+import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+
+/// Estado del formulario de alta: campos de texto y opciones elegidas.
+class FormularioRegistro {
+  // Cuidador
+  final nombre = TextEditingController();
+  final telefono = TextEditingController();
+  final direccion = TextEditingController();
+  final correo = TextEditingController();
+  final correoRespaldo = TextEditingController();
+  final contrasena = TextEditingController();
+  final confirmar = TextEditingController();
+
+  // Paciente
+  final nombrePaciente = TextEditingController();
+  final rut = TextEditingController();
+  final edad = TextEditingController();
+  final diagnostico = TextEditingController();
+  final contactoEmergenciaNombre = TextEditingController();
+
+  // Apoyo
+  final centroNombre = TextEditingController();
+  final centroDireccion = TextEditingController();
+  final centroTelefono = TextEditingController();
+  final urgenciaTelefono = TextEditingController();
+
+  // Texto libre cuando se elige «Otro»
+  final relacionOtro = TextEditingController();
+  final faseOtro = TextEditingController();
+
+  String? relacion;
+  String? faseTratamiento;
+
+  late final List<TextEditingController> _todos = [
+    nombre,
+    telefono,
+    direccion,
+    correo,
+    correoRespaldo,
+    contrasena,
+    confirmar,
+    nombrePaciente,
+    rut,
+    edad,
+    diagnostico,
+    contactoEmergenciaNombre,
+    centroNombre,
+    centroDireccion,
+    centroTelefono,
+    urgenciaTelefono,
+    relacionOtro,
+    faseOtro,
+  ];
+
+  void dispose() {
+    for (final controlador in _todos) {
+      controlador.dispose();
+    }
+  }
+
+  /// Datos para el alta; «Otro» se reemplaza por lo escrito.
+  DatosRegistro aDatos() {
+    return DatosRegistro(
+      nombre: nombre.text.trim(),
+      correo: correo.text.trim(),
+      telefono: telefono.text.trim(),
+      relacion: relacion == 'Otro' ? relacionOtro.text.trim() : relacion,
+      correoRespaldo: correoRespaldo.text.trim(),
+      direccion: direccion.text.trim(),
+      contrasena: contrasena.text,
+      paciente: Paciente(
+        id: 'auto',
+        fullName: nombrePaciente.text.trim(),
+        rut: rut.text.trim(),
+        age: int.tryParse(edad.text.trim()),
+        diagnosis: diagnostico.text.trim(),
+        tratamientoFase: faseTratamiento == 'Otro'
+            ? faseOtro.text.trim()
+            : faseTratamiento,
+        contactoEmergenciaNombre: contactoEmergenciaNombre.text.trim(),
+        centroSaludNombre: centroNombre.text.trim(),
+        centroSaludDireccion: centroDireccion.text.trim(),
+        centroSaludTelefono: centroTelefono.text.trim(),
+        contactoEmergenciaTelefono: urgenciaTelefono.text.trim(),
+        createdAt: DateTime.now(),
+      ),
+    );
+  }
+}

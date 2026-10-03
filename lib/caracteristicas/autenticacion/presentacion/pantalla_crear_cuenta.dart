@@ -1,44 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/proveedores_autenticacion.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/dominio/validaciones_registro.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/formulario_registro.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/widgets/botones_acceso.dart';
-import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/widgets/campos_registro.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
-import 'package:oncuidar/nucleo/utilidades/rut.dart';
-import 'package:oncuidar/nucleo/utilidades/validacion_correo.dart';
-
-const _relaciones = ['Madre', 'Padre', 'Tutor', 'Otro'];
-
-const _fasesTratamiento = [
-  'Diagnóstico',
-  'Tratamiento',
-  'Remisión',
-  'Cuidados paliativos',
-  'No aplica',
-  'Otro',
-];
-
-String? _validarObligatorio(String? v, String mensaje) =>
-    v == null || v.trim().isEmpty ? mensaje : null;
-
-String? _validarCorreo(String? v, {bool opcional = false}) {
-  final valor = v?.trim() ?? '';
-  if (valor.isEmpty) return opcional ? null : 'Ingresa tu correo';
-  return regexCorreo.hasMatch(valor) ? null : 'Ingresa un correo válido';
-}
-
-String? _validarContrasena(String? v) {
-  if (v == null || v.isEmpty) return 'Ingresa una contraseña';
-  if (v.length < 6) return 'Mínimo 6 caracteres';
-  return null;
-}
 
 class Registro extends ConsumerStatefulWidget {
   const Registro({super.key});
@@ -49,65 +21,14 @@ class Registro extends ConsumerStatefulWidget {
 
 class _RegistroState extends ConsumerState<Registro> {
   final _formKey = GlobalKey<FormState>();
-
-  // Controllers Cuidador
-  final _nombreController = TextEditingController();
-  final _telefonoController = TextEditingController();
-  final _direccionController = TextEditingController();
-  final _correoController = TextEditingController();
-  final _correoRespaldoController = TextEditingController();
-  final _contrasenaController = TextEditingController();
-  final _confirmarController = TextEditingController();
-
-  // Controllers Paciente
-  final _nombrePacienteController = TextEditingController();
-  final _rutController = TextEditingController();
-  final _edadController = TextEditingController();
-  final _diagnosticoController = TextEditingController();
-  final _contactoEmergenciaNombreController = TextEditingController();
-
-  // Controllers Apoyo
-  final _centroNombreController = TextEditingController();
-  final _centroDireccionController = TextEditingController();
-  final _centroTelefonoController = TextEditingController();
-  final _urgenciaTelefonoController = TextEditingController();
-
-  // Controllers "Otro"
-  final _relacionOtroController = TextEditingController();
-  final _faseOtroController = TextEditingController();
-
-  String? _relacion;
-  String? _faseTratamiento;
+  final _formulario = FormularioRegistro();
   bool _ocultarContrasena = true;
   bool _ocultarConfirmar = true;
   bool _cargando = false;
 
-  late final List<TextEditingController> _controllers = [
-    _nombreController,
-    _telefonoController,
-    _direccionController,
-    _correoController,
-    _correoRespaldoController,
-    _contrasenaController,
-    _confirmarController,
-    _nombrePacienteController,
-    _rutController,
-    _edadController,
-    _diagnosticoController,
-    _contactoEmergenciaNombreController,
-    _centroNombreController,
-    _centroDireccionController,
-    _centroTelefonoController,
-    _urgenciaTelefonoController,
-    _relacionOtroController,
-    _faseOtroController,
-  ];
-
   @override
   void dispose() {
-    for (final controlador in _controllers) {
-      controlador.dispose();
-    }
+    _formulario.dispose();
     super.dispose();
   }
 
@@ -117,37 +38,7 @@ class _RegistroState extends ConsumerState<Registro> {
 
     final resultado = await ref
         .read(servicioRegistroProvider)
-        .registrar(
-          DatosRegistro(
-            nombre: _nombreController.text.trim(),
-            correo: _correoController.text.trim(),
-            telefono: _telefonoController.text.trim(),
-            relacion: _relacion == 'Otro'
-                ? _relacionOtroController.text.trim()
-                : _relacion,
-            correoRespaldo: _correoRespaldoController.text.trim(),
-            direccion: _direccionController.text.trim(),
-            contrasena: _contrasenaController.text,
-            paciente: Paciente(
-              id: 'auto',
-              fullName: _nombrePacienteController.text.trim(),
-              rut: _rutController.text.trim(),
-              age: int.tryParse(_edadController.text.trim()),
-              diagnosis: _diagnosticoController.text.trim(),
-              tratamientoFase: _faseTratamiento == 'Otro'
-                  ? _faseOtroController.text.trim()
-                  : _faseTratamiento,
-              contactoEmergenciaNombre: _contactoEmergenciaNombreController.text
-                  .trim(),
-              centroSaludNombre: _centroNombreController.text.trim(),
-              centroSaludDireccion: _centroDireccionController.text.trim(),
-              centroSaludTelefono: _centroTelefonoController.text.trim(),
-              contactoEmergenciaTelefono: _urgenciaTelefonoController.text
-                  .trim(),
-              createdAt: DateTime.now(),
-            ),
-          ),
-        );
+        .registrar(_formulario.aDatos());
 
     switch (resultado) {
       case RegistroExitoso():
@@ -161,354 +52,211 @@ class _RegistroState extends ConsumerState<Registro> {
           );
           context.go(EstadoArranque.consumirDestino());
         }
-        break;
       case RegistroFallido(:final mensaje):
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(mensaje), backgroundColor: Paleta.error),
           );
         }
-        break;
     }
 
     if (mounted) setState(() => _cargando = false);
   }
 
-  String? _validarConfirmacion(String? v) {
-    if (v == null || v.isEmpty) return 'Confirma tu contraseña';
-    if (v != _contrasenaController.text) return 'Las contraseñas no coinciden';
-    return null;
-  }
-
-  Widget _campoEtiquetado({
-    required String etiqueta,
-    required TextEditingController controlador,
-    required String textoAyuda,
-    required IconData icono,
-    TextInputType? tipoTeclado,
-    TextInputAction? accionTeclado,
-    bool oculto = false,
-    Widget? iconoSufijo,
-    String? Function(String?)? validador,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        EtiquetaCampo(texto: etiqueta),
-        const SizedBox(height: 8),
-        CampoFormulario(
-          controlador: controlador,
-          textoAyuda: textoAyuda,
-          icono: icono,
-          tipoTeclado: tipoTeclado,
-          accionTeclado: accionTeclado,
-          oculto: oculto,
-          iconoSufijo: iconoSufijo,
-          validador: validador,
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _dropdownEtiquetado({
-    required String etiqueta,
-    required String? valor,
-    required List<String> opciones,
-    required IconData icono,
-    required ValueChanged<String?> alCambiar,
-    required String mensajeValidacion,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        EtiquetaCampo(texto: etiqueta),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          initialValue: valor,
-          isExpanded: true,
-          decoration: decoracionEntrada(
-            textoAyuda: 'Seleccionar',
-            icono: icono,
-          ),
-          items: opciones
-              .map(
-                (opcion) => DropdownMenuItem(
-                  value: opcion,
-                  child: Text(opcion, style: GoogleFonts.nunito(fontSize: 14)),
-                ),
-              )
-              .toList(),
-          onChanged: alCambiar,
-          validator: (v) => v == null ? mensajeValidacion : null,
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _campoRut() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const EtiquetaCampo(texto: 'RUT del paciente'),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _rutController,
-          keyboardType: TextInputType.number,
-          textInputAction: TextInputAction.next,
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9kK]')),
-            LengthLimitingTextInputFormatter(9),
-            TextInputFormatter.withFunction((valorAnterior, valorNuevo) {
-              final formateado = formatearRut(valorNuevo.text);
-              if (formateado == valorNuevo.text) return valorNuevo;
-              return TextEditingValue(
-                text: formateado,
-                selection: TextSelection.collapsed(offset: formateado.length),
-              );
-            }),
-          ],
-          validator: (v) {
-            final valor = (v ?? '').trim();
-            if (valor.isEmpty) return 'Ingresa el RUT del paciente';
-            if (!validarRut(valor)) return 'RUT no válido';
-            return null;
-          },
-          style: GoogleFonts.nunito(fontSize: 14, color: Paleta.textoPrincipal),
-          decoration: decoracionEntrada(
-            textoAyuda: '12.345.678-9',
-            icono: Icons.badge_outlined,
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
   List<Widget> _camposCuidador() {
+    final f = _formulario;
     return [
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Nombre completo',
-        controlador: _nombreController,
+        controlador: f.nombre,
         textoAyuda: 'Nombre completo',
         icono: Icons.badge_outlined,
         accionTeclado: TextInputAction.next,
-        validador: (v) => _validarObligatorio(v, 'Ingresa tu nombre'),
+        validador: (v) => validarObligatorio(v, 'Ingresa tu nombre'),
       ),
-      _dropdownEtiquetado(
+      DesplegableEtiquetado(
         etiqueta: 'Relación con el paciente',
-        valor: _relacion,
-        opciones: _relaciones,
+        valor: f.relacion,
+        opciones: relacionesCuidador,
         icono: Icons.family_restroom_outlined,
-        alCambiar: (v) => setState(() => _relacion = v),
+        alCambiar: (v) => setState(() => f.relacion = v),
         mensajeValidacion: 'Selecciona una relación',
       ),
-      if (_relacion == 'Otro')
-        _campoEtiquetado(
+      if (f.relacion == 'Otro')
+        CampoEtiquetado(
           etiqueta: 'Especifica la relación',
-          controlador: _relacionOtroController,
+          controlador: f.relacionOtro,
           textoAyuda: 'Ej: Madrastra, Abuelo(a), Hermano(a)',
           icono: Icons.edit_outlined,
           accionTeclado: TextInputAction.next,
-          validador: (v) => _validarObligatorio(v, 'Especifica la relación'),
+          validador: (v) => validarObligatorio(v, 'Especifica la relación'),
         ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Teléfono',
-        controlador: _telefonoController,
+        controlador: f.telefono,
         textoAyuda: '+56 9 0000 0000',
         icono: Icons.phone_outlined,
         tipoTeclado: TextInputType.phone,
         accionTeclado: TextInputAction.next,
-        validador: (v) => _validarObligatorio(v, 'Ingresa un teléfono'),
+        validador: (v) => validarObligatorio(v, 'Ingresa un teléfono'),
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Dirección',
-        controlador: _direccionController,
+        controlador: f.direccion,
         textoAyuda: 'Dirección del cuidador',
         icono: Icons.location_on_outlined,
         accionTeclado: TextInputAction.next,
-        validador: (v) => _validarObligatorio(v, 'Ingresa la dirección'),
+        validador: (v) => validarObligatorio(v, 'Ingresa la dirección'),
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Correo electrónico',
-        controlador: _correoController,
+        controlador: f.correo,
         textoAyuda: 'correo@ejemplo.com',
         icono: Icons.email_outlined,
         tipoTeclado: TextInputType.emailAddress,
         accionTeclado: TextInputAction.next,
-        validador: _validarCorreo,
+        validador: validarCorreo,
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Correo de respaldo',
-        controlador: _correoRespaldoController,
+        controlador: f.correoRespaldo,
         textoAyuda: 'Para recuperar tu contraseña',
         icono: Icons.lock_reset_outlined,
         tipoTeclado: TextInputType.emailAddress,
         accionTeclado: TextInputAction.next,
-        validador: _validarCorreo,
+        validador: validarCorreo,
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Contraseña',
-        controlador: _contrasenaController,
+        controlador: f.contrasena,
         textoAyuda: 'Mínimo 6 caracteres',
         icono: Icons.lock_outlined,
         oculto: _ocultarContrasena,
-        iconoSufijo: IconButton(
-          icon: Icon(
-            _ocultarContrasena
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            size: 20,
-          ),
-          onPressed: () =>
+        iconoSufijo: BotonVerContrasena(
+          oculta: _ocultarContrasena,
+          alPulsar: () =>
               setState(() => _ocultarContrasena = !_ocultarContrasena),
         ),
         accionTeclado: TextInputAction.next,
-        validador: _validarContrasena,
+        validador: validarContrasena,
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Confirmar contraseña',
-        controlador: _confirmarController,
+        controlador: f.confirmar,
         textoAyuda: 'Repite tu contraseña',
         icono: Icons.lock_outlined,
         oculto: _ocultarConfirmar,
-        iconoSufijo: IconButton(
-          icon: Icon(
-            _ocultarConfirmar
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            size: 20,
-          ),
-          onPressed: () =>
+        iconoSufijo: BotonVerContrasena(
+          oculta: _ocultarConfirmar,
+          alPulsar: () =>
               setState(() => _ocultarConfirmar = !_ocultarConfirmar),
         ),
         accionTeclado: TextInputAction.next,
-        validador: _validarConfirmacion,
+        validador: (v) => validarConfirmacion(v, f.contrasena.text),
       ),
     ];
   }
 
   List<Widget> _camposPaciente() {
+    final f = _formulario;
     return [
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Nombre del paciente',
-        controlador: _nombrePacienteController,
+        controlador: f.nombrePaciente,
         textoAyuda: 'Nombre completo',
         icono: Icons.person_outline,
         accionTeclado: TextInputAction.next,
         validador: (v) =>
-            _validarObligatorio(v, 'Ingresa el nombre del paciente'),
+            validarObligatorio(v, 'Ingresa el nombre del paciente'),
       ),
-      _campoRut(),
-      _campoEtiquetado(
+      CampoRut(controlador: f.rut),
+      CampoEtiquetado(
         etiqueta: 'Edad',
-        controlador: _edadController,
+        controlador: f.edad,
         textoAyuda: 'Años',
         icono: Icons.cake_outlined,
         tipoTeclado: TextInputType.number,
         accionTeclado: TextInputAction.next,
-        validador: (v) {
-          if (v == null || v.trim().isEmpty) return 'Ingresa la edad';
-          final edad = int.tryParse(v.trim());
-          if (edad == null || edad < 0 || edad > 120) return 'Edad no válida';
-          return null;
-        },
+        validador: validarEdad,
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Diagnóstico',
-        controlador: _diagnosticoController,
+        controlador: f.diagnostico,
         textoAyuda: 'Tipo de cáncer / diagnóstico',
         icono: Icons.medical_information_outlined,
         accionTeclado: TextInputAction.next,
-        validador: (v) => _validarObligatorio(v, 'Ingresa el diagnóstico'),
+        validador: (v) => validarObligatorio(v, 'Ingresa el diagnóstico'),
       ),
-      _dropdownEtiquetado(
+      DesplegableEtiquetado(
         etiqueta: 'Fase de tratamiento',
-        valor: _faseTratamiento,
-        opciones: _fasesTratamiento,
+        valor: f.faseTratamiento,
+        opciones: fasesTratamiento,
         icono: Icons.healing_outlined,
-        alCambiar: (v) => setState(() => _faseTratamiento = v),
+        alCambiar: (v) => setState(() => f.faseTratamiento = v),
         mensajeValidacion: 'Selecciona la fase',
       ),
-      if (_faseTratamiento == 'Otro')
-        _campoEtiquetado(
+      if (f.faseTratamiento == 'Otro')
+        CampoEtiquetado(
           etiqueta: 'Especifica la fase',
-          controlador: _faseOtroController,
+          controlador: f.faseOtro,
           textoAyuda: 'Ej: Terapia de mantención, Control',
           icono: Icons.healing_outlined,
           accionTeclado: TextInputAction.done,
-          validador: (v) => _validarObligatorio(v, 'Especifica la fase'),
+          validador: (v) => validarObligatorio(v, 'Especifica la fase'),
         ),
     ];
   }
 
   List<Widget> _camposApoyo() {
+    final f = _formulario;
     return [
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Centro de salud',
-        controlador: _centroNombreController,
+        controlador: f.centroNombre,
         textoAyuda: 'Nombre del centro',
         icono: Icons.apartment_outlined,
         accionTeclado: TextInputAction.next,
-        validador: (v) =>
-            _validarObligatorio(v, 'Ingresa el nombre del centro'),
+        validador: (v) => validarObligatorio(v, 'Ingresa el nombre del centro'),
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Dirección del centro',
-        controlador: _centroDireccionController,
+        controlador: f.centroDireccion,
         textoAyuda: 'Dirección del centro',
         icono: Icons.location_on_outlined,
         accionTeclado: TextInputAction.next,
         validador: (v) =>
-            _validarObligatorio(v, 'Ingresa la dirección del centro'),
+            validarObligatorio(v, 'Ingresa la dirección del centro'),
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Tel. contacto del centro',
-        controlador: _centroTelefonoController,
+        controlador: f.centroTelefono,
         textoAyuda: '+56 2 0000 0000',
         icono: Icons.phone_outlined,
         tipoTeclado: TextInputType.phone,
         accionTeclado: TextInputAction.next,
         validador: (v) =>
-            _validarObligatorio(v, 'Ingresa un teléfono del centro'),
+            validarObligatorio(v, 'Ingresa un teléfono del centro'),
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Contacto de emergencia',
-        controlador: _contactoEmergenciaNombreController,
+        controlador: f.contactoEmergenciaNombre,
         textoAyuda: 'Nombre de la persona',
         icono: Icons.contact_emergency_outlined,
         accionTeclado: TextInputAction.next,
         validador: (v) =>
-            _validarObligatorio(v, 'Ingresa un nombre de contacto'),
+            validarObligatorio(v, 'Ingresa un nombre de contacto'),
       ),
-      _campoEtiquetado(
+      CampoEtiquetado(
         etiqueta: 'Tel. de urgencia',
-        controlador: _urgenciaTelefonoController,
+        controlador: f.urgenciaTelefono,
         textoAyuda: '+56 2 0000 0000',
         icono: Icons.emergency_outlined,
         tipoTeclado: TextInputType.phone,
         accionTeclado: TextInputAction.done,
         validador: (v) =>
-            _validarObligatorio(v, 'Ingresa un teléfono de urgencia'),
+            validarObligatorio(v, 'Ingresa un teléfono de urgencia'),
       ),
     ];
-  }
-
-  Widget _botonGuardar() {
-    return BotonDegradado(
-      etiqueta: 'Guardar y continuar',
-      cargando: _cargando,
-      alPulsar: _guardar,
-    );
-  }
-
-  Widget _enlaceIniciarSesion() {
-    return EnlaceAcceso(
-      pregunta: '¿Ya tienes cuenta? ',
-      accion: 'Iniciar sesión',
-      alPulsar: () => context.go('/iniciar-sesion'),
-    );
   }
 
   @override
@@ -553,16 +301,23 @@ class _RegistroState extends ConsumerState<Registro> {
                         hijos: _camposApoyo(),
                       ),
                       const SizedBox(height: 28),
-                      _botonGuardar(),
+                      BotonDegradado(
+                        etiqueta: 'Guardar y continuar',
+                        cargando: _cargando,
+                        alPulsar: _guardar,
+                      ),
                       const SizedBox(height: 16),
-                      _enlaceIniciarSesion(),
+                      EnlaceAcceso(
+                        pregunta: '¿Ya tienes cuenta? ',
+                        accion: 'Iniciar sesión',
+                        alPulsar: () => context.go('/iniciar-sesion'),
+                      ),
                       const SizedBox(height: 32),
                     ],
                   ),
                 ),
               ),
             ),
-
             const Positioned(
               top: 0,
               left: 0,
