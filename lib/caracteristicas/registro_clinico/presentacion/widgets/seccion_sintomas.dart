@@ -111,7 +111,7 @@ class SeccionSintomas extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const TituloSeccion(
+        const TituloSeccionRegistro(
           'Síntomas observados',
           icono: Icons.healing_rounded,
         ),

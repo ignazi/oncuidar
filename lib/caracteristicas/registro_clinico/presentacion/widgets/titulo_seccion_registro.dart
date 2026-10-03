@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 
 /// Encabezado de sección con ícono en cuadro de degradado dorado.
-class TituloSeccion extends StatelessWidget {
-  const TituloSeccion(
+class TituloSeccionRegistro extends StatelessWidget {
+  const TituloSeccionRegistro(
     this.texto, {
     super.key,
     this.icono = Icons.info_outline,

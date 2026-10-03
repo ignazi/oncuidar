@@ -534,7 +534,10 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const TituloSeccion('Observaciones', icono: Icons.edit_note_rounded),
+        const TituloSeccionRegistro(
+          'Observaciones',
+          icono: Icons.edit_note_rounded,
+        ),
         const SizedBox(height: 12),
         CampoObservaciones(controlador: _observacionesController),
       ],

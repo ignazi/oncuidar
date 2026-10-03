@@ -31,7 +31,7 @@ class SeccionTipoRegistro extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const TituloSeccion(
+        const TituloSeccionRegistro(
           'Tipo de registro',
           icono: Icons.event_note_rounded,
         ),
