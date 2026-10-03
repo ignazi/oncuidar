@@ -2,15 +2,36 @@ import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clini
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
 /// Registros programados del día: son los únicos que consumen el tope diario.
+Iterable<RegistroClinico> programadosDelDia(
+  Iterable<RegistroClinico> registros,
+  DateTime dia,
+) => registros.where(
+  (r) => r.tipoRegistro == 'programado' && mismoDia(r.fecha, dia),
+);
+
+/// Cantidad de registros programados del día.
 int contarProgramadosDelDia(
   Iterable<RegistroClinico> registros,
   DateTime dia,
-) => registros
-    .where((r) => r.tipoRegistro == 'programado' && mismoDia(r.fecha, dia))
-    .length;
+) => programadosDelDia(registros, dia).length;
 
 /// Registros extra del día: se informan aparte y no cuentan para el tope.
 int contarExtrasDelDia(Iterable<RegistroClinico> registros, DateTime dia) =>
     registros
         .where((r) => r.tipoRegistro == 'extra' && mismoDia(r.fecha, dia))
         .length;
+
+/// Etiqueta «Registro n/tope» según el orden de creación de los programados del día.
+String etiquetaNumeroRegistro(
+  RegistroClinico registro,
+  Iterable<RegistroClinico> todos,
+  int tope,
+) {
+  if (registro.tipoRegistro == 'extra') return 'Registro extra';
+  final delDia = programadosDelDia(todos, registro.fecha).toList()
+    ..sort((a, b) => a.creadoEn.compareTo(b.creadoEn));
+  final posicion = delDia.indexWhere((r) => r.id == registro.id);
+  if (posicion == -1) return 'Registro 1/$tope';
+  final numero = posicion + 1;
+  return numero <= tope ? 'Registro $numero/$tope' : 'Registro extra';
+}

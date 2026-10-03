@@ -17,6 +17,7 @@ import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/tarjeta_
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/proveedores_perfil.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/dominio/conteo_registros.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/proveedores_registro_clinico.dart';
 import 'package:oncuidar/compartido/config_alerta.dart';
@@ -753,16 +754,6 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
   ) {
     final tope =
         ref.read(currentPatientProvider).value?.maximoRegistrosDia ?? 3;
-    if (registro.tipoRegistro == 'extra') return 'Registro extra';
-    // La numeración n/tope solo considera los programados del mismo día.
-    final delDia = [
-      for (final r in todos)
-        if (r.tipoRegistro == 'programado' && mismoDia(r.fecha, registro.fecha))
-          r,
-    ]..sort((a, b) => a.creadoEn.compareTo(b.creadoEn));
-    final posicion = delDia.indexWhere((r) => r.id == registro.id);
-    if (posicion == -1) return 'Registro 1/$tope';
-    final numero = posicion + 1;
-    return numero <= tope ? 'Registro $numero/$tope' : 'Registro extra';
+    return etiquetaNumeroRegistro(registro, todos, tope);
   }
 }
