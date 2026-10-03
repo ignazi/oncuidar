@@ -53,14 +53,12 @@ class TarjetaMaterial extends StatelessWidget {
     super.key,
     required this.material,
     required this.esFavorito,
-    required this.descargado,
     required this.alTocar,
     required this.alAlternarFavorito,
   });
 
   final MaterialEducativo material;
   final bool esFavorito;
-  final bool descargado;
   final VoidCallback alTocar;
   final VoidCallback alAlternarFavorito;
 
@@ -152,23 +150,6 @@ class TarjetaMaterial extends StatelessWidget {
                   Icons.play_arrow_rounded,
                   color: Colors.white,
                   size: 30,
-                ),
-              ),
-            ),
-          if (descargado && material.urlArchivo != null)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Paleta.doradoOscuro,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check_circle_rounded,
-                  color: Colors.white,
-                  size: 16,
                 ),
               ),
             ),

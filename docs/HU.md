@@ -466,7 +466,7 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 
 | ID | En palabras simples | Formal (Dado / Cuando / Entonces) |
 | -- | ------------------- | --------------------------------- |
-| CA-17.1 | Veo el catálogo de materiales y los que tienen archivo y ya están descargados muestran una marca. | **Dado** que abro la biblioteca, **cuando** carga, **entonces** veo el catálogo de materiales y cada material con archivo adjunto que ya está descargado muestra una marca de verificación. |
+| CA-17.1 | Veo el catálogo de materiales y los archivos que ya descargué se abren sin conexión. | **Dado** que abro la biblioteca, **cuando** carga, **entonces** veo el catálogo de materiales y los archivos adjuntos que ya están en el teléfono se abren aunque no tenga conexión. |
 | CA-17.2 | Puedo buscar por título, elegir una categoría o ver solo mis favoritos, y la lista se filtra. | **Dado** que escribo en el buscador, elijo una categoría o activo los favoritos, **cuando** hay coincidencias, **entonces** la lista se filtra. |
 | CA-17.3 | Si marco un material como favorito, sigue marcado cuando vuelva. | **Dado** que marco un material como favorito, **cuando** vuelvo más tarde, **entonces** sigue marcado. |
 

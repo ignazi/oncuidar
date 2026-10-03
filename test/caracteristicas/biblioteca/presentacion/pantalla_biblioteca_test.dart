@@ -384,7 +384,7 @@ void main() {
     expect(find.textContaining('No se pudo preparar el video'), findsOneWidget);
   });
 
-  testWidgets('el catálogo marca solo lo que ya está descargado (CA-17.1)', (
+  testWidgets('el catálogo lista todo sin marca de descargado (CA-17.1)', (
     tester,
   ) async {
     final (base, _) = await _baseConContenido([_video(), _guia()]);
@@ -396,16 +396,7 @@ void main() {
 
     expect(find.text(_video().titulo), findsOneWidget);
     expect(find.text(_guia().titulo), findsOneWidget);
-    final marca = find.byIcon(Icons.check_circle_rounded);
-    expect(marca, findsOneWidget);
-    expect(
-      find.ancestor(of: marca, matching: find.byType(TarjetaMaterial)),
-      findsOneWidget,
-    );
-    final tarjeta = tester.widget<TarjetaMaterial>(
-      find.ancestor(of: marca, matching: find.byType(TarjetaMaterial)),
-    );
-    expect(tarjeta.material.id, _guia().id);
+    expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
   });
 
   testWidgets(

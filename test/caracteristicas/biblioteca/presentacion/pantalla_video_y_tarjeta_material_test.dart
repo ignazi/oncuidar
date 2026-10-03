@@ -65,7 +65,6 @@ MaterialEducativo _material({
 Widget _tarjeta(
   MaterialEducativo material, {
   bool esFavorito = false,
-  bool descargado = false,
   VoidCallback? alTocar,
   VoidCallback? alAlternarFavorito,
   _CacheFalso? cache,
@@ -79,7 +78,6 @@ Widget _tarjeta(
         body: TarjetaMaterial(
           material: material,
           esFavorito: esFavorito,
-          descargado: descargado,
           alTocar: alTocar ?? () {},
           alAlternarFavorito: alAlternarFavorito ?? () {},
         ),
@@ -245,22 +243,12 @@ void main() {
       expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
     });
 
-    testWidgets(
-      'muestra el indicador de descarga solo cuando está descargado',
-      (tester) async {
-        final material = _material(id: 'g', categoria: 'Guías');
-        await tester.pumpWidget(_tarjeta(material));
-        expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
-
-        final descargado = _material(
-          id: 'g',
-          categoria: 'Guías',
-          esDescargado: true,
-        );
-        await tester.pumpWidget(_tarjeta(descargado, descargado: true));
-        expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
-      },
-    );
+    testWidgets('un material descargado no muestra marca', (tester) async {
+      await tester.pumpWidget(
+        _tarjeta(_material(id: 'g', categoria: 'Guías', esDescargado: true)),
+      );
+      expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
+    });
 
     testWidgets('el favorito alterna el ícono y llama al callback', (
       tester,

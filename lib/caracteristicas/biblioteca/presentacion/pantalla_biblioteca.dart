@@ -30,7 +30,6 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
   String _filtro = 'Todos';
   bool _soloFavoritos = false;
   bool _buscando = false;
-  final Set<String> _urlsVerificadas = {};
   final Set<String> _urlsDescargando = {};
   final _controladorBusqueda = TextEditingController();
 
@@ -58,25 +57,6 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
         _controladorBusqueda.clear();
       }
     });
-  }
-
-  Future<void> _verificarDescargas(List<MaterialEducativo> items) async {
-    try {
-      final cache = ref.read(servicioCacheContenidoProvider);
-      for (final material in items) {
-        final url = material.urlArchivo;
-        if (url == null || url.isEmpty || _urlsVerificadas.contains(url)) {
-          continue;
-        }
-        _urlsVerificadas.add(url);
-        final descargado = await cache.archivoDescargado(url);
-        if (descargado) {
-          ref
-              .read(contenidosDescargadosProvider.notifier)
-              .marcarDescargado(url);
-        }
-      }
-    } catch (_) {}
   }
 
   Future<void> _abrirMaterial(MaterialEducativo material) async {
@@ -179,7 +159,6 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
   Widget build(BuildContext context) {
     final contenidosAsync = ref.watch(contenidosEducativosProvider);
     final favoritosAsync = ref.watch(idsFavoritosProvider);
-    final descargados = ref.watch(contenidosDescargadosProvider);
     final favoritos = favoritosAsync.value ?? <String>[];
 
     return Scaffold(
@@ -209,7 +188,6 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
                 mensaje: 'No se pudieron cargar los materiales.',
               ),
               data: (items) {
-                _verificarDescargas(items);
                 final filtrados = _filtrar(items, favoritos.toSet());
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -220,7 +198,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
                       const SizedBox(height: 10),
                       _filaFiltros(),
                       const SizedBox(height: 6),
-                      Expanded(child: _lista(filtrados, descargados)),
+                      Expanded(child: _lista(filtrados)),
                     ],
                   ),
                 );
@@ -345,7 +323,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
     );
   }
 
-  Widget _lista(List<MaterialEducativo> filtrados, Set<String> descargados) {
+  Widget _lista(List<MaterialEducativo> filtrados) {
     if (filtrados.isEmpty) {
       return _EstadoVacio(
         mensaje: _soloFavoritos
@@ -366,20 +344,17 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
               titulo: seccion.titulo,
               cantidad: seccion.materiales.length,
             ),
-          for (final material in seccion.materiales)
-            _tarjetaMaterial(material, descargados),
+          for (final material in seccion.materiales) _tarjetaMaterial(material),
         ],
       ],
     );
   }
 
-  Widget _tarjetaMaterial(MaterialEducativo material, Set<String> descargados) {
-    final url = material.urlArchivo;
+  Widget _tarjetaMaterial(MaterialEducativo material) {
     return TarjetaMaterial(
       material: material,
       esFavorito:
           ref.read(idsFavoritosProvider).value?.contains(material.id) ?? false,
-      descargado: url != null && descargados.contains(url),
       alTocar: () => _abrirMaterial(material),
       alAlternarFavorito: () {
         unawaited(alternarFavoritoMaterial(ref, context, material.id));
