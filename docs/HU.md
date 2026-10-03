@@ -79,7 +79,7 @@ Una historia se considera hecha solo si cumple todo lo siguiente:
 3. El análisis estático no reporta errores y la suite de pruebas completa pasa.
 4. Todo dato sensible nuevo se guarda cifrado y toda escritura clínica declara su paciente.
 
-**Verificación al 3-oct-2026:** `flutter analyze` sin errores (2 avisos informativos preexistentes de estilo) · `flutter test` **324/324** · reglas de Firestore **19/19** contra el emulador. Además, cada criterio de este documento se contrastó con el código y las pruebas; los resultados están en las fichas y en la sección 8.
+**Verificación al 3-oct-2026 (tras el refactor por capas):** `flutter analyze` sin errores ni avisos · `flutter test` **400/400** · reglas de Firestore **19/19** contra el emulador. Además, cada criterio de este documento se contrastó con el código y las pruebas; los resultados están en las fichas y en la sección 8.
 
 ---
 
@@ -94,7 +94,7 @@ El desarrollo se organiza en tres sprints. Cada uno termina con una versión ins
 | 3 | 21 oct – 13 nov 2026 | Integración: datos por paciente y funcionamiento sin conexión | HU-20 y HU-21 | 13 | ⏳ Planificado; su alcance ya está implementado |
 | **Total** | 26 ago – 13 nov 2026 | | **21 historias** | **99** | |
 
-**Avance real.** El alcance de las cinco semanas del sprint 2 quedó implementado por adelantado (commits del 20 y 22 de septiembre) y el alcance del sprint 3 se adelantó el 30 de septiembre. Lo que resta antes de cerrar el sprint 2 es validar en dispositivo, escribir las pruebas pendientes (sección 8) y corregir los defectos conocidos.
+**Avance real.** El alcance de las cinco semanas del sprint 2 quedó implementado por adelantado (commits del 20 y 22 de septiembre) y el alcance del sprint 3 se adelantó el 30 de septiembre. Los defectos conocidos se corrigieron y las pruebas pendientes se escribieron el 3 de octubre (sección 8). Lo que resta antes de cerrar el sprint 2 es validar en dispositivo el modo sin conexión (HU-21) y ejecutar el plan de certificación (sección 5).
 
 ### 2.1 Semanas del sprint 2
 
@@ -129,15 +129,15 @@ El informe fija las fechas de cada sprint y reparte el trabajo del sprint 2 en c
 
 | Estado | Historias |
 | ------ | --------- |
-| ✅ Hecha | HU-01, HU-05, HU-13, HU-20 |
-| 🟡 Implementada, con pruebas pendientes | HU-02, HU-04, HU-06, HU-07, HU-08, HU-09, HU-10, HU-11, HU-12, HU-14, HU-15, HU-16, HU-17, HU-18, HU-19, HU-21 |
-| 🔴 Con defecto conocido | HU-03 |
+| ✅ Hecha | HU-01 a HU-20 |
+| 🟡 Implementada, falta validar en dispositivo | HU-21 |
+| 🔴 Con defecto conocido | — |
 
 ### 3.2 Equivalencia con la numeración anterior
 
-El informe de título y las carpetas `test/hu*` usan la numeración de la primera versión de las historias (30 historias en tres sprints). Esa numeración no coincide con la de este documento. Para ubicar las pruebas de una historia use siempre su campo «Evidencia»; para cruzar con el informe, esta tabla.
+El informe de título usa la numeración de la primera versión de las historias (30 historias en tres sprints), que no coincide con la de este documento. Las pruebas ya no siguen ninguna numeración: están ordenadas igual que el código (`test/caracteristicas/<funcionalidad>/…`), y cada ficha las cita en su campo «Evidencia». Para cruzar con el informe, use esta tabla.
 
-| Este documento | Numeración anterior (informe y carpetas de prueba) |
+| Este documento | Numeración anterior (informe) |
 | -------------- | -------------------------------------------------- |
 | HU-01 Conocer la aplicación | HU-01 |
 | HU-02 Crear mi cuenta | HU-02 |
@@ -179,11 +179,11 @@ El informe de título y las carpetas `test/hu*` usan la numeración de la primer
 | CA-01.1 | Si abro la aplicación sin haber iniciado sesión, después de una breve carga veo la bienvenida con el logo, lo que ofrece la aplicación y los botones «Iniciar Sesión» y «Crear Cuenta». | **Dado** que abro la aplicación sin sesión, **cuando** termina la carga animada, **entonces** veo la bienvenida con el logo, la propuesta de valor y los botones «Iniciar Sesión» y «Crear Cuenta». |
 | CA-01.2 | Si ya tenía la sesión iniciada, la aplicación me lleva directo al panel principal. | **Dado** que tengo una sesión activa, **cuando** abro la aplicación, **entonces** llego directamente al panel principal. |
 
-*Evidencia: `lib/caracteristicas/onboarding/splash.dart`, `bienvenida.dart`; `test/hu01/widget_test.dart`, `test/hu05/login_test.dart`.*
+*Evidencia: `lib/caracteristicas/autenticacion/presentacion/pantalla_carga.dart`, `lib/caracteristicas/autenticacion/presentacion/pantalla_bienvenida.dart`; `test/app/arranque_test.dart`, `test/caracteristicas/autenticacion/presentacion/pantalla_carga_test.dart`, `test/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion_test.dart`.*
 *Cobertura: la prueba de la bienvenida solo comprueba el texto de saludo; no verifica el logo ni los botones.*
 
 ### HU-02 · Crear mi cuenta
-**Sprint:** 1 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Crítica · **Puntos:** 5 · **Depende de:** —
+**Sprint:** 1 · **Estado:** ✅ Hecha · **Prioridad:** Crítica · **Puntos:** 5 · **Depende de:** —
 
 **Como** cuidador, **quiero** crear mi cuenta completando un formulario por secciones, **para** registrar mis datos y los de mi paciente en un solo proceso.
 
@@ -193,12 +193,12 @@ El informe de título y las carpetas `test/hu*` usan la numeración de la primer
 | CA-02.2 | Si dejo un campo obligatorio vacío, o escribo un correo o un RUT con formato inválido, veo el error y no puedo continuar. | **Dado** que un campo obligatorio está vacío o el correo o el RUT tienen un formato inválido, **cuando** intento guardar, **entonces** veo el error y la cuenta no se crea. |
 | CA-02.3 | Si algo falla al guardar mis datos, la cuenta no queda creada a medias. | **Dado** que falla el guardado de mis datos, **cuando** se está creando la cuenta, **entonces** se deshace el alta y la cuenta no queda creada a medias. |
 
-*Evidencia: `onboarding/registro.dart`, `core/servicios/servicio_registro.dart`; `test/hu02/registro_test.dart`.*
-*Cobertura pendiente: CA-02.2 no tiene prueba (ninguna ejercita un campo vacío ni un formato inválido). CA-02.3 solo verifica que no se navega y que aparece el error; no comprueba que se borre el usuario creado.*
+*Evidencia: `lib/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta.dart`, `lib/caracteristicas/autenticacion/presentacion/formulario_registro.dart`, `lib/caracteristicas/autenticacion/dominio/validaciones_registro.dart`, `lib/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart`; `test/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta_test.dart`, `test/caracteristicas/autenticacion/dominio/validaciones_registro_test.dart`.*
+*Cobertura: CA-02.3 se prueba con el orden del deshacer (primero los datos, después la cuenta de acceso).*
 *Nota: el teléfono solo se valida como obligatorio, sin comprobar su formato. El deshacer del alta es completo para la cuenta de acceso y de mejor esfuerzo para los datos guardados.*
 
 ### HU-03 · Iniciar sesión, cerrar sesión y recuperar el acceso
-**Sprint:** 1 · **Estado:** 🔴 Defecto conocido en CA-03.1 y CA-03.4 · **Prioridad:** Alta · **Puntos:** 4 · **Depende de:** HU-02
+**Sprint:** 1 · **Estado:** ✅ Hecha · **Prioridad:** Alta · **Puntos:** 4 · **Depende de:** HU-02
 
 **Como** cuidador, **quiero** entrar y salir de mi cuenta y recuperar el acceso si olvido mi contraseña, **para** proteger mi información sin quedar fuera de ella.
 
@@ -209,12 +209,11 @@ El informe de título y las carpetas `test/hu*` usan la numeración de la primer
 | CA-03.3 | Puedo cerrar sesión (la aplicación me pide confirmar) y vuelvo a la bienvenida. | **Dado** que cierro sesión, **cuando** confirmo, **entonces** vuelvo a la bienvenida. |
 | CA-03.4 | Si olvido mi contraseña, puedo pedir un correo para restablecerla, a mi correo principal o al de respaldo. | **Dado** que olvidé mi contraseña, **cuando** solicito la recuperación, **entonces** recibo un correo para restablecerla, en el correo principal o en el de respaldo. |
 
-*Evidencia: `onboarding/iniciar_sesion.dart`, `recuperar_acceso.dart`; `test/hu05/login_test.dart`, `test/caracteristicas/onboarding/recuperar_acceso_test.dart`.*
-*Defecto CA-03.1: el código solo reconoce los errores `user-not-found`, `wrong-password`, `invalid-email`, `user-disabled` y `too-many-requests`. Con `firebase_auth` 6.x una contraseña o un correo errados devuelven `invalid-credential`, que cae en el mensaje genérico «Error al iniciar sesión. Intenta de nuevo.». La prueba simula `wrong-password`, por eso no lo detecta.*
-*Defecto CA-03.4: el correo de respaldo sí se envía, pero la pantalla de recuperación espera `found == true` y el servidor responde siempre `{ ok: true }` (a propósito, para no revelar si una cuenta existe). Con el servidor real la pantalla siempre muestra «Ese correo de respaldo no está asociado a ninguna cuenta». Las pruebas inyectan la respuesta, por eso no lo detectan.*
+*Evidencia: `lib/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion.dart`, `lib/caracteristicas/autenticacion/presentacion/pantalla_recuperar_acceso.dart`, `lib/caracteristicas/perfil/presentacion/perfil_cuidador.dart`; `test/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion_test.dart`, `test/caracteristicas/autenticacion/presentacion/pantalla_recuperar_acceso_test.dart`, `test/caracteristicas/perfil/presentacion/pantalla_perfil_test.dart`.*
+*Corregido el 3-oct-2026: el error `invalid-credential` de `firebase_auth` 6.x muestra «Correo o contraseña incorrectos.» (CA-03.1) y la recuperación por correo de respaldo acepta la respuesta `{ ok: true }` del servidor (CA-03.4). Ambos casos tienen prueba.*
 
 ### HU-04 · Gestionar mi perfil y mis correos
-**Sprint:** 1 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-03
+**Sprint:** 1 · **Estado:** ✅ Hecha · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-03
 
 **Como** cuidador, **quiero** ver y editar mis datos personales y cambiar mis correos confirmando mi contraseña, **para** mantener mi cuenta actualizada sin que nadie más pueda alterarla desde mi sesión.
 
@@ -225,8 +224,8 @@ El informe de título y las carpetas `test/hu*` usan la numeración de la primer
 | CA-04.3 | Mientras un cambio de correo (principal o de respaldo) espera confirmación, veo «Pendiente de confirmar» junto al correo nuevo. | **Dado** que hay un cambio de correo pendiente de confirmar, **cuando** veo mi perfil, **entonces** aparece «Pendiente de confirmar» junto al correo nuevo. |
 | CA-04.4 | Si el servidor no registró mi correo de respaldo, la aplicación lo vuelve a intentar al abrir mi perfil. | **Dado** que el servidor no confirmó mi correo de respaldo, **cuando** abro el perfil, **entonces** la aplicación reintenta registrarlo. |
 
-*Evidencia: `perfil/perfil_cuidador.dart`, `perfil/widgets/tarjeta_perfil_cuidador.dart`; `test/hu05/editar_perfil_test.dart`, `test/perfil_respaldo/correo_respaldo_pendiente_test.dart`.*
-*Cobertura pendiente: CA-04.3 no tiene prueba. CA-04.2 solo verifica que aparece el campo «Contraseña actual», no que una contraseña errónea bloquee el cambio. CA-04.4 se prueba en el servicio, no al abrir la pantalla.*
+*Evidencia: `lib/caracteristicas/perfil/presentacion/perfil_cuidador.dart`, `lib/caracteristicas/perfil/presentacion/widgets/tarjeta_perfil_cuidador.dart`, `lib/caracteristicas/perfil/presentacion/widgets/dialogo_correos.dart`, `lib/caracteristicas/perfil/datos/repositorio_cuidador.dart`; `test/caracteristicas/perfil/presentacion/pantalla_perfil_test.dart`, `test/caracteristicas/perfil/datos/repositorio_cuidador_test.dart`.*
+*Cobertura: CA-04.2 solo verifica que aparece el campo «Contraseña actual», no que una contraseña errónea bloquee el cambio. CA-04.4 se prueba en el repositorio, no al abrir la pantalla.*
 
 ---
 
@@ -243,7 +242,7 @@ El informe de título y las carpetas `test/hu*` usan la numeración de la primer
 | CA-05.2 | Si alguien mira la base de datos desde su consola, no puede leer el contenido clínico ni personal; solo quedan a la vista datos como la fecha, el tipo y el nivel de alerta del registro. | **Dado** que reviso la base de datos desde su consola, **cuando** abro un documento sensible, **entonces** el contenido clínico y personal (nombre, RUT, diagnóstico, signos vitales, síntomas, observaciones, título y descripción del recordatorio) es ilegible; solo quedan en claro metadatos como la fecha, el tipo y el nivel de alerta del registro. |
 | CA-05.3 | Al cerrar sesión la clave se bloquea y nadie puede descifrar hasta que yo vuelva a entrar; la clave se conserva en el almacenamiento seguro del teléfono para poder guardar datos sin conexión. | **Dado** que cierro sesión, **cuando** termina el cierre, **entonces** la clave se bloquea en memoria y no se puede descifrar hasta volver a entrar; se conserva en el almacenamiento seguro del dispositivo para poder guardar datos sin conexión. |
 
-*Evidencia: `core/servicios/servicio_cifrado.dart`; `test/hu04/cifrado_test.dart`.*
+*Evidencia: `lib/nucleo/cifrado/servicio_cifrado.dart`, `lib/nucleo/datos/base_datos_segura.dart`; `test/nucleo/cifrado/servicio_cifrado_test.dart`, `test/integracion/sin_conexion/clave_sin_red_test.dart`.*
 *Cobertura: la prueba de bloqueo comprueba que no se puede cifrar tras bloquear; no hay prueba de la conservación en el almacenamiento seguro ni del flujo completo de cierre de sesión.*
 
 ---
@@ -251,7 +250,7 @@ El informe de título y las carpetas `test/hu*` usan la numeración de la primer
 ## E3. Pacientes
 
 ### HU-06 · Gestionar mis pacientes
-**Sprint:** 1 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Crítica · **Puntos:** 6 · **Depende de:** HU-03
+**Sprint:** 1 · **Estado:** ✅ Hecha · **Prioridad:** Crítica · **Puntos:** 6 · **Depende de:** HU-03
 
 **Como** cuidador, **quiero** registrar, editar, archivar, restaurar y eliminar a mis pacientes, **para** que mi lista solo muestre a quienes atiendo y sus expedientes estén al día.
 
@@ -263,11 +262,11 @@ El informe de título y las carpetas `test/hu*` usan la numeración de la primer
 | CA-06.4 | Al eliminar a un paciente (confirmando) también se borran sus registros clínicos y recordatorios. | **Dado** que elimino un paciente, **cuando** confirmo el aviso, **entonces** se borran también sus registros clínicos y recordatorios. |
 | CA-06.5 | Si archivo o elimino a un paciente, sus avisos de recordatorio dejan de sonar; si lo restauro, vuelven a programarse. | **Dado** que archivo o elimino un paciente, **cuando** termina la acción, **entonces** sus avisos de recordatorio dejan de sonar; al restaurarlo se programan de nuevo. |
 
-*Evidencia: `perfil/gestion_pacientes.dart`, `core/servicios/servicio_base_datos.dart`; `test/gestion_pacientes/avisos_paciente_test.dart`, `test/hu04/cifrado_test.dart` (creación), `test/recordatorios/modelo_y_servicio_test.dart`.*
-*Cobertura pendiente: CA-06.4 no tiene prueba que verifique que las subcolecciones quedan vacías (las pruebas existentes solo comprueban que se cancelan los avisos y que el paciente desaparece). CA-06.1 prueba la creación en el servicio, pero no el diálogo ni la edición de los campos.*
+*Evidencia: `lib/caracteristicas/pacientes/presentacion/gestion_pacientes.dart`, `lib/caracteristicas/pacientes/presentacion/widgets/dialogo_paciente.dart`, `lib/caracteristicas/pacientes/datos/repositorio_pacientes.dart`, `lib/caracteristicas/pacientes/dominio/ciclo_de_vida_paciente.dart`; `test/caracteristicas/pacientes/presentacion/gestion_pacientes_test.dart`, `test/caracteristicas/pacientes/datos/repositorio_pacientes_test.dart`, `test/caracteristicas/recordatorios/dominio/recordatorio_test.dart`, `test/nucleo/cifrado/servicio_cifrado_test.dart`.*
+*Cobertura: CA-06.1 prueba la creación en el repositorio, pero no el diálogo ni la edición de los campos.*
 
 ### HU-07 · Elegir el paciente activo
-**Sprint:** 1 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Crítica · **Puntos:** 2 · **Depende de:** HU-06
+**Sprint:** 1 · **Estado:** ✅ Hecha · **Prioridad:** Crítica · **Puntos:** 2 · **Depende de:** HU-06
 
 **Como** cuidador, **quiero** elegir con qué paciente trabajo en cada momento, **para** ver y registrar la información del paciente correcto.
 
@@ -277,15 +276,15 @@ El informe de título y las carpetas `test/hu*` usan la numeración de la primer
 | CA-07.2 | Al cerrar y volver a abrir la aplicación, sigue elegido el mismo paciente. | **Dado** que elegí un paciente, **cuando** cierro y vuelvo a abrir la aplicación, **entonces** sigue seleccionado. |
 | CA-07.3 | Si no tengo pacientes, el panel me invita a registrar uno. | **Dado** que no tengo pacientes, **cuando** abro el panel principal, **entonces** veo una invitación a registrar uno. |
 
-*Evidencia: `perfil/widgets/tarjeta_paciente_activo.dart`, `core/proveedores/proveedores.dart`; `test/transversales/cambio_de_paciente_test.dart`, `test/hu08/dashboard_test.dart`.*
-*Cobertura pendiente: CA-07.2 no tiene prueba (ninguna recarga la selección desde las preferencias). Si no hay selección guardada, o el paciente guardado ya no existe, se activa el primero de la lista.*
+*Evidencia: `lib/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart`, `lib/caracteristicas/pacientes/presentacion/widgets/tarjeta_paciente_activo.dart`, `lib/caracteristicas/pacientes/presentacion/widgets/dialogo_cambiar_paciente.dart`; `test/caracteristicas/pacientes/presentacion/proveedores_pacientes_test.dart`, `test/integracion/cambio_de_paciente_test.dart`, `test/caracteristicas/panel_principal/presentacion/pantalla_panel_principal_test.dart`.*
+*Nota: si no hay selección guardada, o el paciente guardado ya no existe, se activa el primero de la lista.*
 
 ---
 
 ## E4. Registro y seguimiento clínico
 
 ### HU-08 · Registrar signos vitales y síntomas con alerta automática
-**Sprint:** 1 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Crítica · **Puntos:** 5 · **Depende de:** HU-07
+**Sprint:** 1 · **Estado:** ✅ Hecha · **Prioridad:** Crítica · **Puntos:** 5 · **Depende de:** HU-07
 
 **Como** cuidador, **quiero** registrar los signos vitales, síntomas y observaciones del paciente activo y que la aplicación evalúe su gravedad, **para** documentar su evolución y detectar con rapidez una situación preocupante.
 
@@ -311,12 +310,12 @@ El informe de título y las carpetas `test/hu*` usan la numeración de la primer
 
 Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíaca 20 a 250 lpm, saturación 50 a 100 % y frecuencia respiratoria 4 a 60 rpm. El máximo diario de registros programados es configurable por paciente entre 1 y 10.
 
-*Evidencia: `registro_clinico/registro_clinico.dart`, `modelos/registro_clinico.dart`, `core/servicios/motor_reglas_clinicas.dart`, `core/servicios/rangos_signos.dart`, `dashboard/widgets/tarjeta_signos_vitales.dart`; `test/hu09/registro_clinico_test.dart`, `test/hu09/motor_reglas_test.dart`, `test/hu08/dashboard_test.dart`.*
-*Cobertura pendiente: CA-08.3 no tiene una prueba directa de las categorías leve, moderado e insoportable (solo se comprueban «Sin síntoma» y «Severo»). CA-08.5 prueba el nivel crítico, no el normal ni el de alerta. Los valores exactamente en el límite de varios umbrales (35,0 °C, 130, 100, 40, 50, 90, 28, 20, 8 y 12) no tienen prueba.*
+*Evidencia: `lib/caracteristicas/registro_clinico/presentacion/pantalla_registro_clinico.dart`, `lib/caracteristicas/registro_clinico/dominio/registro_clinico.dart`, `lib/caracteristicas/registro_clinico/dominio/motor_reglas_clinicas.dart`, `lib/caracteristicas/registro_clinico/dominio/rangos_signos.dart`, `lib/caracteristicas/registro_clinico/dominio/conteo_registros.dart`, `lib/caracteristicas/panel_principal/presentacion/widgets/tarjeta_signos_vitales.dart`; `test/caracteristicas/registro_clinico/presentacion/pantalla_registro_clinico_test.dart`, `test/caracteristicas/registro_clinico/dominio/motor_reglas_clinicas_test.dart`, `test/caracteristicas/registro_clinico/dominio/registro_clinico_test.dart`, `test/caracteristicas/panel_principal/presentacion/pantalla_panel_principal_test.dart`.*
+*Cobertura: CA-08.5 prueba el nivel crítico, no el normal ni el de alerta. Los valores exactamente en el límite de varios umbrales (35,0 °C, 130, 100, 40, 50, 90, 28, 20, 8 y 12) no tienen prueba.*
 *Nota: el nivel de alerta, el tipo de registro y las fechas se guardan en claro; el resto del contenido, cifrado.*
 
 ### HU-09 · Consultar el historial de registros
-**Sprint:** 1 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-08
+**Sprint:** 1 · **Estado:** ✅ Hecha · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-08
 
 **Como** cuidador, **quiero** consultar y filtrar el historial del paciente activo, **para** revisar cómo ha evolucionado su salud y encontrar un episodio concreto.
 
@@ -327,12 +326,12 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-09.3 | Puedo filtrar por nivel de alerta o por fecha y la lista muestra solo lo que coincide. | **Dado** que aplico un filtro por nivel de alerta o por fecha, **cuando** hay coincidencias, **entonces** la lista muestra solo esos registros. |
 | CA-09.4 | Si hay más registros que los cargados, «Cargar más» trae los 50 siguientes, aunque el filtro no tenga coincidencias entre los ya cargados. | **Dado** que existen más registros que los cargados, **cuando** pulso «Cargar más», **entonces** se cargan los siguientes 50, aunque el filtro no tenga coincidencias entre los ya cargados. |
 
-*Evidencia: `historial/historial.dart`; `test/hu10/historial_test.dart` (la carpeta `test/historial/` contiene solo pruebas de exportación).*
-*Cobertura pendiente: CA-09.4 no tiene ninguna prueba. La paginación contra Firestore real tampoco se pudo comprobar con el Firestore simulado de las pruebas.*
+*Evidencia: `lib/caracteristicas/historial/presentacion/pantalla_historial.dart`, `lib/caracteristicas/historial/presentacion/controlador_historial.dart`, `lib/caracteristicas/historial/dominio/filtro_historial.dart`, `lib/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart`; `test/caracteristicas/historial/presentacion/pantalla_historial_test.dart`.*
+*Cobertura: CA-09.4 se prueba con una página inyectada; el Firestore simulado no pagina, así que la consulta real de la página siguiente no está comprobada.*
 *Nota: el filtro de fecha se aplica sobre la fecha del registro; el orden y la paginación, sobre el momento en que se creó.*
 
 ### HU-10 · Corregir o eliminar los registros del día
-**Sprint:** 1 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Media · **Puntos:** 3 · **Depende de:** HU-09
+**Sprint:** 1 · **Estado:** ✅ Hecha · **Prioridad:** Media · **Puntos:** 3 · **Depende de:** HU-09
 
 **Como** cuidador, **quiero** editar o eliminar los registros que hice hoy, **para** corregir un error sin alterar el historial anterior.
 
@@ -342,8 +341,8 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-10.2 | En un registro de un día anterior esas opciones no aparecen. | **Dado** que veo un registro de un día anterior, **cuando** abro su menú, **entonces** no se ofrecen esas opciones. |
 | CA-10.3 | Al eliminar un registro (confirmando) desaparece al instante del historial y del panel principal. | **Dado** que elimino un registro, **cuando** confirmo el aviso, **entonces** desaparece de inmediato del historial y del panel principal. |
 
-*Evidencia: `historial/widgets/cabecera_registro.dart`, `historial/historial.dart`; `test/offline/integridad_datos_test.dart` (borrado en el servicio).*
-*Cobertura pendiente: CA-10.1 y CA-10.2 no tienen prueba; CA-10.3 solo se prueba en el servicio, no el diálogo ni el panel. Faltan pruebas de interfaz para el menú de hoy y de ayer, la confirmación y la edición.*
+*Evidencia: `lib/caracteristicas/historial/presentacion/widgets/cabecera_tarjeta_registro.dart`, `lib/caracteristicas/historial/presentacion/pantalla_historial.dart`; `test/caracteristicas/historial/presentacion/pantalla_historial_test.dart`, `test/integracion/sin_conexion/integridad_datos_test.dart`.*
+*Cobertura: CA-10.3 comprueba que el registro desaparece del historial; el panel principal lee la misma fuente de datos, pero no tiene una prueba propia de este caso.*
 *Nota: «de hoy» se mide por el día calendario del registro. Al editar se conservan la fecha, la hora y el tipo, y se recalcula el nivel de alerta.*
 
 ---
@@ -351,7 +350,7 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 ## E5. Informes
 
 ### HU-11 · Exportar el historial a PDF o Excel
-**Sprint:** 2 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Alta · **Puntos:** 6 · **Depende de:** HU-09
+**Sprint:** 2 · **Estado:** ✅ Hecha · **Prioridad:** Alta · **Puntos:** 6 · **Depende de:** HU-09
 
 **Como** cuidador, **quiero** exportar el historial del paciente a un informe PDF o a una planilla Excel, **para** compartirlo con médicos o familiares o analizarlo en otro formato.
 
@@ -362,8 +361,8 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-11.3 | El Excel tiene una hoja «Historial» con columnas legibles: fecha, hora, tipo, estado, temperatura, frecuencia cardíaca, saturación, frecuencia respiratoria, síntomas y observaciones. | **Dado** que se genera el Excel, **cuando** reviso la hoja «Historial», **entonces** veo una tabla con las columnas Fecha, Hora, Tipo, Estado, Temp., F.C., Sat. O₂, F.R., Síntomas y Observaciones. |
 | CA-11.4 | Cuando el archivo está listo puedo abrirlo o compartirlo. | **Dado** que el archivo está listo, **cuando** lo recibo, **entonces** puedo abrirlo o compartirlo directamente. |
 
-*Evidencia: `historial/exportadores/exportador_pdf.dart`, `exportador_excel.dart`, `orden_registros.dart`; `test/hu12_13/exportacion_test.dart`, `test/historial/exportacion_rango_orden_test.dart`, `test/historial/exportacion_historico_test.dart`.*
-*Cobertura pendiente: CA-11.2 solo se prueba que el PDF es un documento válido; CA-11.3 solo comprueba el nombre de la hoja, no las columnas. Abrir y compartir reales no están probados (se usan canales simulados).*
+*Evidencia: `lib/caracteristicas/historial/datos/exportador_pdf.dart`, `lib/caracteristicas/historial/datos/exportador_excel.dart`, `lib/caracteristicas/historial/datos/formato_exportacion.dart`, `lib/caracteristicas/historial/datos/archivo_exportacion.dart`, `lib/caracteristicas/historial/dominio/orden_registros.dart`, `lib/caracteristicas/historial/presentacion/controlador_historial.dart`; `test/caracteristicas/historial/datos/exportadores_test.dart`, `test/caracteristicas/historial/datos/orden_y_rango_exportacion_test.dart`, `test/caracteristicas/historial/presentacion/exportar_desde_historial_test.dart`.*
+*Cobertura: de CA-11.2 solo se prueba que el PDF es un documento válido con los registros en orden. Abrir y compartir reales no están probados (se usan canales simulados).*
 *Nota: la exportación respeta el filtro de nivel de alerta activo. Si la consulta por rango falla, exporta solo lo que está cargado en pantalla.*
 
 ---
@@ -371,19 +370,19 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 ## E6. Panel y orientación
 
 ### HU-12 · Ver el resumen del paciente y moverme por la aplicación
-**Sprint:** 2 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-07
+**Sprint:** 2 · **Estado:** ✅ Hecha · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-07
 
 **Como** cuidador, **quiero** ver un resumen del paciente activo apenas entro y una barra para moverme entre las secciones, **para** conocer su estado sin buscarlo y llegar rápido a cada función.
 
 | ID | En palabras simples | Formal (Dado / Cuando / Entonces) |
 | -- | ------------------- | --------------------------------- |
-| CA-12.1 | El panel me saluda, muestra el paciente activo, la fecha y hora de su último registro, los signos vitales de ese registro y cuántos registros se hicieron hoy sobre una meta de 3. | **Dado** que abro el panel principal, **cuando** carga, **entonces** veo el saludo, el nombre del paciente activo, la fecha y hora del registro más reciente, los signos vitales de ese registro (o «--» si no los tiene) y cuántos registros se hicieron hoy sobre una meta de 3, contando programados y extra. |
+| CA-12.1 | El panel me saluda, muestra el paciente activo, la fecha y hora de su último registro, los signos vitales de ese registro y cuántos registros se hicieron hoy sobre su meta diaria. | **Dado** que abro el panel principal, **cuando** carga, **entonces** veo el saludo, el nombre del paciente activo, la fecha y hora del registro más reciente, los signos vitales de ese registro (o «--» si no los tiene) y cuántos registros programados se hicieron hoy sobre el máximo diario del paciente (3 por defecto); los extra se informan aparte. |
 | CA-12.2 | Desde el panel puedo ir directo a orientación, recordatorios, biblioteca, registro, historial y preguntas frecuentes. | **Dado** que estoy en el panel principal, **cuando** miro los accesos directos, **entonces** puedo ir a orientación, recordatorios, biblioteca, registros, historial y preguntas frecuentes. |
 | CA-12.3 | Desde cualquier sección principal la barra inferior me lleva a Inicio, Chat, Registro, Aprende o Perfil. | **Dado** que estoy en cualquier sección principal, **cuando** toco un destino de la barra inferior (Inicio, Chat, Registro, Aprende o Perfil), **entonces** llego a esa sección. |
 
-*Evidencia: `dashboard/dashboard.dart`, `dashboard/widgets/saludo_paciente.dart`, `dashboard/widgets/accesos_rapidos.dart`, `compartidos/widgets/navegacion_principal.dart`, `core/router/app_router.dart`; `test/hu08/dashboard_test.dart`.*
-*Cobertura pendiente: CA-12.3 no tiene prueba (ninguna monta la barra de navegación). De CA-12.2 solo se prueban los títulos y el acceso al historial.*
-*Nota: la meta de 3 registros al día es fija en el panel, aunque el paciente tenga configurado otro máximo en el formulario (véase la sección 8). Los signos vitales son los del último registro, no el último valor de cada signo.*
+*Evidencia: `lib/caracteristicas/panel_principal/presentacion/pantalla_panel_principal.dart`, `lib/caracteristicas/panel_principal/presentacion/widgets/saludo_paciente.dart`, `lib/caracteristicas/panel_principal/presentacion/widgets/accesos_rapidos.dart`, `lib/app/navegacion_principal.dart`, `lib/app/enrutador/enrutador.dart`; `test/caracteristicas/panel_principal/presentacion/pantalla_panel_principal_test.dart`, `test/app/navegacion_principal_test.dart`.*
+*Cobertura: de CA-12.2 solo se prueban los títulos y el acceso al historial.*
+*Nota: la meta es el máximo diario configurado para el paciente (corregido el 3-oct-2026). Los signos vitales son los del último registro, no el último valor de cada signo.*
 
 ### HU-13 · Conversar con el asistente de orientación
 **Sprint:** 2 · **Estado:** ✅ Hecha · **Prioridad:** Media · **Puntos:** 8 · **Depende de:** —
@@ -400,11 +399,11 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-13.6 | Puedo retomar una conversación anterior, cambiarle el nombre o eliminarla; al eliminar me pide confirmar. | **Dado** que abro una conversación anterior, **cuando** escribo, **entonces** puedo continuarla, y también renombrarla o eliminarla, pidiéndome confirmación al eliminar («Esta acción no se puede deshacer»). |
 | CA-13.7 | Mis conversaciones son las mismas aunque cambie de paciente, porque pertenecen a mi cuenta. | **Dado** que cambio de paciente activo, **cuando** abro mis conversaciones, **entonces** siguen siendo las mismas, porque pertenecen al cuidador. |
 
-*Evidencia: `chat/chat.dart`, `chat/widgets/hoja_conversaciones.dart`, `faq/datos_faq.dart`; `test/hu24/chat_test.dart`, `test/hu26/conversaciones_test.dart`, `test/transversales/cambio_de_paciente_test.dart`.*
-*Nota: el título se recorta a 40 caracteres. El mensaje de respaldo cuando no hay coincidencia («Aún no tengo una respuesta exacta…») no tiene prueba. Véase en la sección 8 el defecto del chat al cambiar de cuenta.*
+*Evidencia: `lib/caracteristicas/chat/presentacion/pantalla_chat.dart`, `lib/caracteristicas/chat/presentacion/controlador_chat.dart`, `lib/caracteristicas/chat/presentacion/proveedor_chat_activo.dart`, `lib/caracteristicas/chat/presentacion/widgets/hoja_conversaciones.dart`, `lib/caracteristicas/chat/dominio/respuestas_chat.dart`, `lib/caracteristicas/chat/datos/repositorio_conversaciones.dart`, `lib/caracteristicas/preguntas_frecuentes/dominio/catalogo_preguntas.dart`; `test/caracteristicas/chat/presentacion/pantalla_chat_test.dart`, `test/caracteristicas/chat/presentacion/widgets/hoja_conversaciones_test.dart`, `test/integracion/cambio_de_paciente_test.dart`.*
+*Nota: el título se recorta a 40 caracteres. El mensaje de respaldo cuando no hay coincidencia («Aún no tengo una respuesta exacta…») no tiene prueba. El chat activo se vacía al cambiar de cuenta (corregido el 3-oct-2026, con prueba).*
 
 ### HU-14 · Consultar las preguntas frecuentes
-**Sprint:** 2 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Baja · **Puntos:** 2 · **Depende de:** —
+**Sprint:** 2 · **Estado:** ✅ Hecha · **Prioridad:** Baja · **Puntos:** 2 · **Depende de:** —
 
 **Como** cuidador, **quiero** buscar respuestas rápidas a las dudas más comunes, **para** no depender de búsquedas externas.
 
@@ -414,8 +413,7 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-14.2 | Al escribir en el buscador la lista se filtra al instante, sin importar las tildes, y también puedo filtrar por categoría. | **Dado** que escribo una palabra en el buscador, **cuando** hay coincidencias, **entonces** la lista se filtra al instante, sin distinguir tildes; también puedo filtrar por categoría. |
 | CA-14.3 | Si una respuesta tiene material relacionado en la biblioteca, veo un enlace a él; si el material no existe, el enlace no aparece. | **Dado** que una respuesta tiene material relacionado en la biblioteca, **cuando** la expando, **entonces** veo un enlace a ese material; si el material no existe, el enlace no aparece. |
 
-*Evidencia: `faq/faq.dart`, `faq/datos_faq.dart`; `test/hu25/faq_test.dart`.*
-*Cobertura pendiente: CA-14.3 no tiene prueba (la única prueba de FAQ usa un catálogo vacío y no verifica el enlace).*
+*Evidencia: `lib/caracteristicas/preguntas_frecuentes/presentacion/pantalla_preguntas_frecuentes.dart`, `lib/caracteristicas/preguntas_frecuentes/dominio/catalogo_preguntas.dart`; `test/caracteristicas/preguntas_frecuentes/presentacion/pantalla_preguntas_frecuentes_test.dart`.*
 *Nota: la búsqueda compara con la pregunta, la respuesta y la categoría. El catálogo actual tiene tres preguntas y solo dos enlazan material. El enlace tampoco aparece mientras el catálogo de la biblioteca no ha cargado.*
 
 ---
@@ -423,7 +421,7 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 ## E7. Recordatorios
 
 ### HU-15 · Gestionar mis recordatorios
-**Sprint:** 2 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-07
+**Sprint:** 2 · **Estado:** ✅ Hecha · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-07
 
 **Como** cuidador, **quiero** programar, editar y eliminar recordatorios de medicamentos, controles y actividades, **para** no olvidar ninguna tarea del paciente.
 
@@ -437,12 +435,11 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-15.6 | Al editar un recordatorio conserva su fecha original, salvo que yo la cambie; si lo elimino (confirmando) desaparece de la lista. | **Dado** que edito un recordatorio, **cuando** guardo, **entonces** conserva su fecha original salvo que yo la cambie; y si lo elimino, desaparece de la lista tras confirmar. |
 | CA-15.7 | Con el interruptor de cada recordatorio puedo apagarlo sin borrarlo y volver a encenderlo. | **Dado** que tengo un recordatorio, **cuando** apago su interruptor, **entonces** deja de avisar sin borrarse, y **cuando** lo vuelvo a encender, se programa otra vez. |
 
-*Evidencia: `recordatorios/recordatorios.dart`; `test/hu27_28/recordatorios_test.dart`, `test/recordatorios/`.*
-*Cobertura pendiente: CA-15.2 no tiene prueba de pantalla (solo del servicio de notificaciones).*
+*Evidencia: `lib/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart`, `lib/caracteristicas/recordatorios/presentacion/controlador_recordatorios.dart`, `lib/caracteristicas/recordatorios/presentacion/widgets/dialogo_recordatorio.dart`, `lib/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart`; `test/caracteristicas/recordatorios/presentacion/pantalla_recordatorios_test.dart`, `test/caracteristicas/recordatorios/presentacion/widgets/dialogo_recordatorio_test.dart`, `test/caracteristicas/recordatorios/presentacion/reglas_recordatorio_test.dart`, `test/caracteristicas/recordatorios/dominio/recordatorio_test.dart`.*
 *Nota: el título es obligatorio. Una repetición semanal sin ningún día elegido se guarda como «una vez» con la fecha de hoy, sin avisar. No existe la acción «completar recordatorio»: solo se activa o se desactiva.*
 
 ### HU-16 · Recibir un aviso en el teléfono a la hora indicada
-**Sprint:** 2 · **Estado:** 🟡 Pruebas pendientes (probada en dispositivo) · **Prioridad:** Media · **Puntos:** 3 · **Depende de:** HU-15
+**Sprint:** 2 · **Estado:** ✅ Hecha (probada en dispositivo) · **Prioridad:** Media · **Puntos:** 3 · **Depende de:** HU-15
 
 **Como** cuidador, **quiero** recibir una notificación en mi teléfono cuando llega la hora de un recordatorio, **para** actuar a tiempo aunque no tenga la aplicación abierta.
 
@@ -454,8 +451,8 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-16.4 | Al cerrar sesión se cancelan los avisos. | **Dado** que cierro sesión, **cuando** termina el cierre, **entonces** se cancelan los avisos. |
 | CA-16.5 | Al volver a iniciar sesión, los avisos se programan otra vez sin que yo edite nada. | **Dado** que inicio sesión de nuevo, **cuando** entro a la aplicación, **entonces** los avisos se programan otra vez sin que yo edite nada. |
 
-*Evidencia: `core/servicios/servicio_notificaciones.dart`, `core/proveedores/proveedores.dart`, `core/router/destino_aviso.dart`, `main.dart`, `onboarding/splash.dart`, `onboarding/iniciar_sesion.dart`, `perfil/perfil_cuidador.dart`; `test/hu27_28/recordatorios_test.dart`, `test/recordatorios/avisos_arranque_test.dart`, `test/recordatorios/toque_aviso_test.dart`, `test/recordatorios/modelo_y_servicio_test.dart`.*
-*Cobertura pendiente: CA-16.2 no tiene prueba automática (las pruebas usan un doble del servicio); CA-16.4 no verifica la cancelación. Validada en un teléfono real por el equipo: el aviso llega y funciona.*
+*Evidencia: `lib/nucleo/notificaciones/servicio_notificaciones.dart`, `lib/nucleo/notificaciones/calendario_avisos.dart`, `lib/caracteristicas/pacientes/dominio/ciclo_de_vida_paciente.dart`, `lib/app/enrutador/destino_aviso.dart`, `lib/main.dart`, `lib/caracteristicas/autenticacion/presentacion/pantalla_carga.dart`, `lib/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion.dart`, `lib/caracteristicas/perfil/presentacion/perfil_cuidador.dart`; `test/nucleo/notificaciones/calendario_avisos_test.dart`, `test/integracion/avisos_al_entrar_test.dart`, `test/app/enrutador/destino_aviso_test.dart`, `test/caracteristicas/pacientes/dominio/ciclo_de_vida_paciente_test.dart`, `test/caracteristicas/perfil/presentacion/pantalla_perfil_test.dart`.*
+*Cobertura: CA-16.2 se prueba en el cálculo de la próxima fecha del aviso; que el teléfono muestre la notificación se validó en un teléfono real.*
 *Nota: el reagendado omite los recordatorios apagados, los de una sola vez ya vencidos y los de pacientes archivados. Si el usuario silenció las notificaciones, no se programa ninguna. La cancelación al cerrar sesión ocurre solo por el botón «Cerrar sesión».*
 
 ---
@@ -463,7 +460,7 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 ## E8. Biblioteca educativa
 
 ### HU-17 · Explorar la biblioteca educativa
-**Sprint:** 2 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Media · **Puntos:** 3 · **Depende de:** —
+**Sprint:** 2 · **Estado:** ✅ Hecha · **Prioridad:** Media · **Puntos:** 3 · **Depende de:** —
 
 **Como** cuidador, **quiero** explorar un catálogo de contenido educativo sobre el cuidado, **para** aprender y aplicar mejores prácticas.
 
@@ -473,12 +470,11 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-17.2 | Puedo buscar por título, elegir una categoría o ver solo mis favoritos, y la lista se filtra. | **Dado** que escribo en el buscador, elijo una categoría o activo los favoritos, **cuando** hay coincidencias, **entonces** la lista se filtra. |
 | CA-17.3 | Si marco un material como favorito, sigue marcado cuando vuelva. | **Dado** que marco un material como favorito, **cuando** vuelvo más tarde, **entonces** sigue marcado. |
 
-*Evidencia: `biblioteca/biblioteca.dart`, `biblioteca/categorias.dart`, `biblioteca/widgets/tarjeta_material.dart`; `test/hu19/biblioteca_test.dart`.*
-*Cobertura pendiente: ninguna prueba comprueba la marca de descargado (CA-17.1).*
+*Evidencia: `lib/caracteristicas/biblioteca/presentacion/pantalla_biblioteca.dart`, `lib/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart`, `lib/caracteristicas/biblioteca/dominio/categorias.dart`, `lib/caracteristicas/biblioteca/datos/repositorio_biblioteca.dart`; `test/caracteristicas/biblioteca/presentacion/pantalla_biblioteca_test.dart`, `test/caracteristicas/biblioteca/presentacion/pantalla_video_y_tarjeta_material_test.dart`.*
 *Nota: el buscador filtra solo por título. El catálogo se guarda 24 horas y se sirve desde esa copia si Firestore falla. La tarjeta no muestra un estado «pendiente» mientras se descarga.*
 
 ### HU-18 · Tener el contenido disponible sin conexión
-**Sprint:** 2 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-17
+**Sprint:** 2 · **Estado:** ✅ Hecha · **Prioridad:** Alta · **Puntos:** 5 · **Depende de:** HU-17
 
 **Como** cuidador, **quiero** que el contenido educativo se descargue solo la primera vez, **para** consultarlo después sin conexión y sin gastar datos.
 
@@ -488,12 +484,12 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-18.2 | Lo que ya se descargó no se vuelve a descargar al reabrir o actualizar la aplicación. | **Dado** que un archivo ya está descargado en el teléfono, **cuando** reabro o actualizo la aplicación, **entonces** no se vuelve a descargar. |
 | CA-18.3 | Si la red falla durante la descarga, la aplicación reintenta lo que faltó al abrirla de nuevo o al iniciar sesión. | **Dado** que la red falla durante la descarga, **cuando** vuelvo a abrir la aplicación o inicio sesión, **entonces** la aplicación reintenta lo que faltó. |
 
-*Evidencia: `core/proveedores/proveedores.dart`, `core/servicios/servicio_cache_contenido.dart`; `test/hu20/cache_y_sync_test.dart`, `test/cache_contenido/no_redescarga_test.dart`.*
-*Cobertura pendiente: CA-18.3 no tiene la prueba «falla y luego funciona». «Sin bloquear» (CA-18.1) tampoco se verifica.*
+*Evidencia: `lib/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart`, `lib/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart`, `lib/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart`; `test/caracteristicas/biblioteca/presentacion/proveedores_biblioteca_test.dart`, `test/caracteristicas/biblioteca/datos/servicio_cache_contenido_test.dart`.*
+*Cobertura: «sin bloquear» (CA-18.1) no se verifica.*
 *Nota: se descargan también las miniaturas e imágenes, de tres en tres. La copia local guarda como máximo 200 archivos y 365 días. El reintento ocurre en un arranque en frío y al iniciar sesión, no al volver del fondo.*
 
 ### HU-19 · Ver videos, guías e infografías
-**Sprint:** 2 · **Estado:** 🟡 Pruebas pendientes · **Prioridad:** Media · **Puntos:** 6 · **Depende de:** HU-17
+**Sprint:** 2 · **Estado:** ✅ Hecha · **Prioridad:** Media · **Puntos:** 6 · **Depende de:** HU-17
 
 **Como** cuidador, **quiero** ver videos, leer guías y consultar infografías dentro de la aplicación, **para** aprender de forma visual y tener recomendaciones prácticas a la mano.
 
@@ -505,8 +501,8 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-19.4 | El detalle de una guía muestra sus recomendaciones en secciones con título y, si tiene archivo adjunto, un botón para abrirlo. | **Dado** que abro el detalle de una guía (desde la biblioteca si no tiene archivo adjunto, o desde las preguntas frecuentes), **cuando** carga, **entonces** veo sus recomendaciones en secciones tituladas y un botón para abrir el archivo adjunto si lo tiene. |
 | CA-19.5 | Una imagen que ya vi sigue disponible sin conexión porque quedó guardada en el teléfono. | **Dado** que ya vi una imagen, **cuando** no tengo conexión, **entonces** la sigo viendo porque quedó guardada en el teléfono. |
 
-*Evidencia: `biblioteca/pantalla_video.dart`, `biblioteca/pantalla_detalle.dart`, `biblioteca/biblioteca.dart`, `biblioteca/widgets/imagen_cacheada.dart`; `test/hu21/video_y_tarjeta_test.dart`, `test/hu22/detalle_test.dart`.*
-*Cobertura pendiente: la pantalla del reproductor no tiene ninguna prueba (solo las funciones auxiliares de avance); el visor de infografías de la lista tampoco. CA-19.5 usa una caché simulada, no una prueba sin red real.*
+*Evidencia: `lib/caracteristicas/biblioteca/presentacion/pantalla_video.dart`, `lib/caracteristicas/biblioteca/presentacion/pantalla_detalle_material.dart`, `lib/caracteristicas/biblioteca/presentacion/pantalla_biblioteca.dart`, `lib/caracteristicas/biblioteca/presentacion/widgets/dialogo_imagen_ampliable.dart`, `lib/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart`; `test/caracteristicas/biblioteca/presentacion/pantalla_video_test.dart`, `test/caracteristicas/biblioteca/presentacion/pantalla_video_y_tarjeta_material_test.dart`, `test/caracteristicas/biblioteca/presentacion/pantalla_detalle_material_test.dart`, `test/caracteristicas/biblioteca/presentacion/pantalla_biblioteca_test.dart`.*
+*Cobertura: el reproductor se prueba con una plataforma de video simulada. CA-19.5 usa una caché simulada, no una prueba sin red real.*
 *Nota: no hay botón de pantalla completa; el video siempre se abre en horizontal e inmersivo. Si el material trae archivo adjunto (por ejemplo un PDF), la lista lo abre en otra aplicación en lugar del detalle o del visor. Los controles del video se ocultan a los 4 segundos. El material de categoría «Checklist» se abre como lista con marcas que valen solo durante la sesión.*
 
 ---
@@ -526,7 +522,7 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-20.4 | Otro cuidador no puede acceder a mis pacientes. | **Dado** que otro cuidador intenta acceder a mis pacientes, **cuando** lo intenta, **entonces** el servidor lo rechaza. |
 | CA-20.5 | Yo siempre puedo borrar mis propios documentos. | **Dado** que quiero borrar uno de mis documentos, **cuando** lo borro, **entonces** el servidor lo permite. |
 
-*Evidencia: `firestore.rules`, `core/proveedores/proveedores.dart`, `core/servicios/servicio_base_datos.dart`; `test/aislamiento/reglas_firestore.test.js` (19 casos contra el emulador), `test/aislamiento/paciente_en_documentos_test.dart`, `test/transversales/cambio_de_paciente_test.dart`.*
+*Evidencia: `firestore.rules`, `lib/nucleo/datos/base_datos_segura.dart`, `lib/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart`, `lib/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart`; `test/reglas_firestore/reglas_firestore.test.js` (19 casos contra el emulador), `test/integracion/aislamiento_paciente_test.dart`, `test/integracion/cambio_de_paciente_test.dart`.*
 *Cobertura: CA-20.4 prueba solo la escritura de otro cuidador, no la lectura ni otras colecciones. La biblioteca es contenido común; solo los favoritos pertenecen al cuidador.*
 *Nota: las reglas exigen el paciente declarado en cada actualización, también en documentos antiguos, y prohíben escribir en claro el título, la descripción, los síntomas y las observaciones.*
 
@@ -543,8 +539,8 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 | CA-21.4 | Sin internet puedo ver mis registros más recientes que ya estaban guardados en el teléfono. | **Dado** que no tengo conexión, **cuando** consulto los últimos registros, **entonces** veo los 50 más recientes que ya estaban guardados en el teléfono. |
 | CA-21.5 | Si pierdo la conexión, o abro o retomo la aplicación sin ella, aparece «Sin conexión» abajo durante 3 segundos, sin más detalles y sin repetirse al cambiar de pantalla. | **Dado** que no tengo conexión, **cuando** la pierdo, o abro o retomo la aplicación, **entonces** aparece durante 3 segundos el aviso «Sin conexión» en la parte inferior, sin más detalles y sin repetirse al cambiar de pantalla. |
 
-*Evidencia: `core/servicios/cola_escrituras.dart`, `orquestador_sincronizacion.dart`, `servicio_conectividad.dart`, `servicio_base_datos.dart`, `servicio_cifrado.dart`, `compartidos/widgets/banner_conexion.dart`, `registro_clinico/registro_clinico.dart`; `test/offline/`.*
-*Cobertura pendiente: CA-21.4 no tiene prueba. CA-21.1 prueba «se ve de inmediato» solo con recordatorios. CA-21.3 se prueba en el servicio, no el aviso de pantalla. CA-21.5 prueba los 3 segundos con una duración explícita, no con la constante por defecto, y no hay prueba de navegación entre pantallas.*
+*Evidencia: `lib/nucleo/sincronizacion/cola_escrituras.dart`, `lib/nucleo/sincronizacion/orquestador_sincronizacion.dart`, `lib/nucleo/conectividad/servicio_conectividad.dart`, `lib/nucleo/datos/base_datos_segura.dart`, `lib/nucleo/cifrado/servicio_cifrado.dart`, `lib/compartido/widgets/banner_conexion.dart`, `lib/caracteristicas/registro_clinico/presentacion/pantalla_registro_clinico.dart`; `test/integracion/sin_conexion/`, `test/nucleo/sincronizacion/cola_escrituras_test.dart`, `test/nucleo/conectividad/servicio_conectividad_test.dart`, `test/compartido/widgets/banner_conexion_test.dart`, `test/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos_test.dart`.*
+*Cobertura: CA-21.1 prueba «se ve de inmediato» solo con recordatorios. CA-21.3 se prueba en el servicio, no el aviso de pantalla. CA-21.5 prueba los 3 segundos con una duración explícita, no con la constante por defecto, y no hay prueba de navegación entre pantallas.*
 *Pendiente de dispositivo: caída y vuelta real de la red y el comportamiento de la conectividad en Android e iOS.*
 *Nota: «hay red» significa que existe una interfaz de red activa, no que haya internet. Cada escritura espera hasta 8 segundos; si vence, se encola. Los reintentos esperan de 2 a 60 segundos, hasta 8 veces; después pasan a «fallidas», igual que los errores permanentes. La cola es por cuidador y sobrevive al cierre de sesión.*
 
@@ -579,59 +575,65 @@ Desde la raíz del proyecto:
 ```powershell
 flutter analyze
 flutter test
-flutter test test/<carpeta>      # una sola carpeta
+flutter test test/caracteristicas/<funcionalidad>      # una sola funcionalidad
 ```
 
 Reglas de Firestore (solo si se modifica `firestore.rules` o lo que se escribe en las subcolecciones clínicas). Necesitan JDK 21 o superior; sirve el de Android Studio:
 
 ```bash
 export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"; export PATH="$JAVA_HOME/bin:$PATH"
-firebase emulators:exec --only firestore --project oncuidar-reglas-test "npm --prefix test/aislamiento test"
+firebase emulators:exec --only firestore --project oncuidar-reglas-test "npm --prefix test/reglas_firestore test"
 ```
 
-Resultado esperado al 3-oct-2026: análisis sin errores (2 avisos informativos), `flutter test` 324/324 y reglas 19/19.
+Resultado esperado al 3-oct-2026: análisis sin errores ni avisos, `flutter test` 400/400 y reglas 19/19.
 
 # 8. Defectos conocidos y pruebas pendientes
 
-## 8.1 Defectos conocidos
+## 8.1 Defectos corregidos
 
-| Dónde | Defecto | Efecto |
-| ----- | ------- | ------ |
-| HU-03 · `iniciar_sesion.dart` | No se maneja el error `invalid-credential` de `firebase_auth` 6.x | Una contraseña o un correo errados muestran «Error al iniciar sesión. Intenta de nuevo.» en vez de un mensaje claro (CA-03.1) |
-| HU-03 · `recuperar_acceso.dart` | La pantalla espera `found == true` y el servidor responde `{ ok: true }` | La recuperación por correo de respaldo siempre muestra «no está asociado a ninguna cuenta», aunque el correo sí se envió (CA-03.4) |
-| HU-13 · `chat_activo_provider.dart` | El chat activo no se reinicia al cerrar sesión ni se borra su clave en las preferencias | Si otro cuidador inicia sesión sin cerrar la aplicación, el chat muestra en memoria los mensajes del anterior. Deducido de la lectura del código; no hay prueba que lo reproduzca |
-| HU-12 · `saludo_paciente.dart` | La meta de registros al día está fija en 3 | Si el paciente tiene otro máximo configurado, el contador del panel no coincide (CA-12.1) |
-| HU-02 · `servicio_registro.dart` | Al fallar el alta, el borrado de los datos guardados es de mejor esfuerzo | Puede quedar un documento de usuario sin cuenta de acceso (CA-02.3) |
+No quedan defectos conocidos abiertos. Los cinco detectados al contrastar los criterios con el código se corrigieron el 3 de octubre de 2026 y cada uno tiene prueba:
 
-## 8.2 Pruebas automáticas pendientes
+| Dónde | Defecto | Corrección y prueba |
+| ----- | ------- | ------------------- |
+| HU-03 · inicio de sesión | El error `invalid-credential` de `firebase_auth` 6.x caía en un mensaje genérico | Muestra «Correo o contraseña incorrectos.» · `pantalla_iniciar_sesion_test.dart` |
+| HU-03 · recuperar acceso | La pantalla esperaba `found == true` y el servidor responde `{ ok: true }` | Acepta `{ ok: true }` como envío correcto · `pantalla_recuperar_acceso_test.dart` |
+| HU-13 · chat activo | El chat activo no se vaciaba al cambiar de cuenta | Se reinicia cuando cambia el usuario de la sesión · `pantalla_chat_test.dart` |
+| HU-12 · panel principal | La meta de registros del día estaba fija en 3 | Usa el máximo diario del paciente · `pantalla_panel_principal_test.dart` |
+| HU-02 · alta de cuenta | Al fallar el alta podía quedar el documento del usuario sin cuenta de acceso | Se borran primero los datos (con la sesión aún activa) y después la cuenta · `pantalla_crear_cuenta_test.dart` |
 
-| Criterio | Prueba que falta |
-| -------- | ---------------- |
-| CA-02.2 | Campo vacío, correo inválido y RUT inválido bloquean el avance |
-| CA-04.3 | «Pendiente de confirmar» junto al correo nuevo |
-| CA-06.4 | Eliminar un paciente deja vacías sus subcolecciones |
-| CA-07.2 | La selección del paciente se recupera tras reiniciar |
-| CA-08.3 | Las cinco categorías de intensidad |
-| CA-09.4 | «Cargar más» con más de 50 registros |
-| CA-10.1 a CA-10.3 | Menú de hoy y de ayer, confirmación y edición |
-| CA-11.3 | Columnas del Excel |
-| CA-12.3 | Barra de navegación con sus cinco destinos |
-| CA-14.3 | Enlace al material con y sin material en el catálogo |
-| CA-15.2 | Repetición semanal desde la pantalla |
-| CA-16.2 y CA-16.4 | Cálculo de la próxima fecha del aviso y cancelación al cerrar sesión |
-| CA-17.1 | Marca de descargado |
-| CA-18.3 | Descarga que falla y luego funciona |
-| CA-19.1 a CA-19.4 | Pantalla del reproductor, visor de infografías y detalle de guía |
-| CA-21.4 | Lectura de registros sin red |
+## 8.2 Pruebas agregadas
+
+Las pruebas que faltaban se escribieron el 3 de octubre de 2026 (`test/` replica la estructura de `lib/`):
+
+| Criterio | Prueba |
+| -------- | ------ |
+| CA-02.2 | `autenticacion/dominio/validaciones_registro_test.dart`, `autenticacion/presentacion/pantalla_crear_cuenta_test.dart` |
+| CA-04.3 | `perfil/presentacion/pantalla_perfil_test.dart` |
+| CA-06.4 | `pacientes/datos/repositorio_pacientes_test.dart` |
+| CA-07.2 | `pacientes/presentacion/proveedores_pacientes_test.dart` |
+| CA-08.3 | `registro_clinico/dominio/registro_clinico_test.dart` |
+| CA-09.4 y CA-10.1 a CA-10.3 | `historial/presentacion/pantalla_historial_test.dart` |
+| CA-11.3 | `historial/datos/exportadores_test.dart` |
+| CA-12.3 | `test/app/navegacion_principal_test.dart` |
+| CA-14.3 | `preguntas_frecuentes/presentacion/pantalla_preguntas_frecuentes_test.dart` |
+| CA-15.2 | `recordatorios/presentacion/widgets/dialogo_recordatorio_test.dart` |
+| CA-16.2 | `test/nucleo/notificaciones/calendario_avisos_test.dart` |
+| CA-16.4 | `perfil/presentacion/pantalla_perfil_test.dart` |
+| CA-17.1 y CA-19.3 | `biblioteca/presentacion/pantalla_biblioteca_test.dart` |
+| CA-18.3 | `biblioteca/presentacion/proveedores_biblioteca_test.dart` |
+| CA-19.1 | `biblioteca/presentacion/pantalla_video_test.dart` |
+| CA-19.4 | `biblioteca/presentacion/pantalla_detalle_material_test.dart` |
+| CA-21.4 | `registro_clinico/datos/repositorio_registros_clinicos_test.dart` |
+
+Las rutas sin prefijo están dentro de `test/caracteristicas/`.
 
 ## 8.3 Otros pendientes
 
 - **Validación en dispositivo.** HU-16 (avisos) se probó en un teléfono real. HU-21 (modo sin conexión) depende de la red real y sigue validada solo con pruebas automáticas; tampoco se simula el tiempo de espera de 8 s al enviar desde la cola.
-- **Paginación.** La carga de registros anteriores (HU-09) no pudo verificarse contra Firestore real: con el Firestore simulado devuelve una lista vacía.
+- **Paginación.** «Cargar más» (HU-09) se prueba con una página inyectada; la consulta real de la página siguiente no pudo verificarse, porque el Firestore simulado devuelve una lista vacía.
 - **Estado «pendiente» en la biblioteca.** La tarjeta de un material indica si está descargado, pero no muestra un estado «pendiente» mientras se descarga (HU-17).
 - **Material educativo tipo checklist.** Se abre como una lista con marcas y avance; las marcas valen solo durante la sesión y no hay pruebas automáticas dedicadas. No forma parte de ninguna historia.
 - **Datos antiguos en Firebase.** Los documentos que existieran en la subcolección `userChecklists` quedan sin uso y ya no se pueden leer ni borrar desde la aplicación; se limpian desde la consola de Firebase o con un script.
-- **Restos menores del código.** Las carpetas vacías `test/checklists/` y `test/hu23/`, y la palabra `items` en la lista de campos clínicos en claro de `cola_escrituras.dart`, quedaron de las listas de verificación.
 
 # 9. Limitaciones
 
@@ -643,6 +645,7 @@ Resultado esperado al 3-oct-2026: análisis sin errores (2 avisos informativos),
 
 | Fecha | Cambio |
 | ----- | ------ |
+| 3-oct-2026 | Refactor por capas. Las rutas de «Evidencia» apuntan a la estructura nueva (`lib/caracteristicas/<funcionalidad>/{dominio,datos,presentacion}` y `test/` como espejo de `lib/`). Se corrigieron los cinco defectos conocidos y se agregaron las pruebas pendientes: HU-01 a HU-20 quedan hechas y HU-21 solo espera la validación en dispositivo. CA-12.1 pasa a usar el máximo diario del paciente. |
 | 3-oct-2026 | Se agregaron los sprints con su calendario y su estado, los identificadores de criterios y la doble redacción (palabras simples y formal). Cada criterio se contrastó con el código y las pruebas: se corrigieron los criterios que no coincidían con la aplicación (historial del más reciente al más antiguo, video e infografía, meta del panel, reglas de alerta, formato de teléfono, columnas del Excel y otros), se quitó «completar recordatorio» (no existe) y se documentaron los defectos y las pruebas pendientes. |
 | 3-oct-2026 | Versión definitiva. Se eliminó la historia de listas de verificación del cuidador (de 22 a 21 historias y de 102 a 99 puntos) y se renumeraron las dos últimas. HU-08 incorpora la escala de intensidad de 0 a 10 y sus reglas de alerta. Reemplaza a V2, V3 y al diagnóstico de pendientes. |
 | 30-sep-2026 | V3: 22 historias en 9 épicas, plantilla «Como… quiero… para…», criterios Dado/Cuando/Entonces y fundamento metodológico. |
