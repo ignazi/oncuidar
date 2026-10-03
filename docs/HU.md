@@ -503,7 +503,7 @@ Rangos físicos válidos (CA-08.2): temperatura 30 a 45 °C, frecuencia cardíac
 
 *Evidencia: `lib/caracteristicas/biblioteca/presentacion/pantalla_video.dart`, `lib/caracteristicas/biblioteca/presentacion/pantalla_detalle_material.dart`, `lib/caracteristicas/biblioteca/presentacion/pantalla_biblioteca.dart`, `lib/caracteristicas/biblioteca/presentacion/widgets/dialogo_imagen_ampliable.dart`, `lib/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart`; `test/caracteristicas/biblioteca/presentacion/pantalla_video_test.dart`, `test/caracteristicas/biblioteca/presentacion/pantalla_video_y_tarjeta_material_test.dart`, `test/caracteristicas/biblioteca/presentacion/pantalla_detalle_material_test.dart`, `test/caracteristicas/biblioteca/presentacion/pantalla_biblioteca_test.dart`.*
 *Cobertura: el reproductor se prueba con una plataforma de video simulada. CA-19.5 usa una caché simulada, no una prueba sin red real.*
-*Nota: no hay botón de pantalla completa; el video siempre se abre en horizontal e inmersivo. Si el material trae archivo adjunto (por ejemplo un PDF), la lista lo abre en otra aplicación en lugar del detalle o del visor. Los controles del video se ocultan a los 4 segundos. El material de categoría «Checklist» se abre como lista con marcas que valen solo durante la sesión.*
+*Nota: no hay botón de pantalla completa; el video siempre se abre en horizontal e inmersivo. Si el material trae archivo adjunto (por ejemplo un PDF), la lista lo abre en otra aplicación en lugar del detalle o del visor. Los controles del video se ocultan a los 4 segundos.*
 
 ---
 
@@ -566,7 +566,7 @@ Estas decisiones ya están tomadas y condicionan varias historias. Cambiarlas ex
 - **Recuperación por correo de respaldo.** El servidor siempre responde `{ ok: true }` y espera 60 segundos entre envíos al mismo correo, para no revelar si una cuenta existe (HU-03).
 - **Nombres en español en Firebase.** Desde el 3 de octubre de 2026 colecciones, campos y funciones se nombran en español: `usuarios/{uid}` con `pacientes/{id}` (y sus `registrosClinicos` y `recordatorios`) y `conversaciones`; `materialEducativo`, `clavesRecuperacion` y `esperasRecuperacion` en la raíz; funciones `registrarCorreoRespaldo`, `recuperarPorCorreoRespaldo` y `obtenerClaveDatos`. Los datos guardados con los nombres anteriores en inglés no se migran: el proyecto se vuelve a poblar con datos ficticios.
 - **Navegación.** Barra inferior de cinco destinos (Inicio, Chat, Registro, Aprende y Perfil), sin botón flotante ni enlaces directos externos (HU-12). No se reimplementa sin pedido explícito.
-- **Listas de verificación del cuidador.** Se eliminaron del producto el 3 de octubre de 2026 por decisión de alcance. La biblioteca conserva los materiales educativos de categoría «Checklist», que son contenido compartido y no datos del cuidador.
+- **Listas de verificación del cuidador.** Se eliminaron del producto el 3 de octubre de 2026 por decisión de alcance. La categoría «Checklist» de la biblioteca también se eliminó el 3 de octubre de 2026.
 
 # 7. Cómo verificar
 
@@ -632,7 +632,6 @@ Las rutas sin prefijo están dentro de `test/caracteristicas/`.
 - **Validación en dispositivo.** HU-16 (avisos) se probó en un teléfono real. HU-21 (modo sin conexión) depende de la red real y sigue validada solo con pruebas automáticas; tampoco se simula el tiempo de espera de 8 s al enviar desde la cola.
 - **Paginación.** «Cargar más» (HU-09) se prueba con una página inyectada; la consulta real de la página siguiente no pudo verificarse, porque el Firestore simulado devuelve una lista vacía.
 - **Estado «pendiente» en la biblioteca.** La tarjeta de un material indica si está descargado, pero no muestra un estado «pendiente» mientras se descarga (HU-17).
-- **Material educativo tipo checklist.** Se abre como una lista con marcas y avance; las marcas valen solo durante la sesión y no hay pruebas automáticas dedicadas. No forma parte de ninguna historia.
 - **Datos antiguos en Firebase.** Los documentos que existieran en la subcolección `userChecklists` quedan sin uso y ya no se pueden leer ni borrar desde la aplicación; se limpian desde la consola de Firebase o con un script.
 
 # 9. Limitaciones

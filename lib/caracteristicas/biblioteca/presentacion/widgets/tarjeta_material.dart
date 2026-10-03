@@ -213,8 +213,6 @@ class TarjetaMaterial extends StatelessWidget {
         return Icons.menu_book_rounded;
       case 'infografías':
         return Icons.image_rounded;
-      case 'checklist':
-        return Icons.checklist_rounded;
       default:
         return Icons.article_rounded;
     }

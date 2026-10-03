@@ -8,11 +8,9 @@ import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/dominio/parseo_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_material.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_video.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/checklist_interactivo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/dialogo_imagen_ampliable.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 import 'package:oncuidar/compartido/widgets/buscador.dart';
@@ -82,10 +80,6 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
   Future<void> _abrirMaterial(MaterialEducativo material) async {
     if (material.esVideo) {
       await _reproducirVideo(material);
-      return;
-    }
-    if (material.esChecklist) {
-      _abrirChecklist(material);
       return;
     }
     final url = material.urlArchivo;
@@ -171,22 +165,6 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
     } finally {
       if (mounted) setState(() => _urlsDescargando.remove(url));
     }
-  }
-
-  void _abrirChecklist(MaterialEducativo material) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => ChecklistInteractivo(
-        titulo: material.titulo,
-        items: parsearItemsChecklist(material.cuerpo),
-        textoIntro: textoInformativoChecklist(material.cuerpo),
-        enHoja: true,
-      ),
-    );
   }
 
   @override

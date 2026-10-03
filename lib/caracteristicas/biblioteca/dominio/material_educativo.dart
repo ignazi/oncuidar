@@ -27,8 +27,6 @@ class MaterialEducativo {
 
   bool get esVideo => categoria.toLowerCase() == 'videos';
 
-  bool get esChecklist => categoria.toLowerCase() == 'checklist';
-
   Map<String, dynamic> toMap() => {
     if (id.isNotEmpty) 'id': id,
     'titulo': titulo,

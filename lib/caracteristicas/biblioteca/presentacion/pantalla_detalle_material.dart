@@ -9,7 +9,6 @@ import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.d
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/parseo_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_material.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/checklist_interactivo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/dialogo_imagen_ampliable.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
@@ -170,16 +169,8 @@ class _PantallaDetalleMaterialState
             ],
           ),
           if (material.cuerpo.isNotEmpty) ...[
-            if (material.esChecklist)
-              ChecklistInteractivo(
-                titulo: material.titulo,
-                items: parsearItemsChecklist(material.cuerpo),
-                textoIntro: textoInformativoChecklist(material.cuerpo),
-              )
-            else ...[
-              const SizedBox(height: 16),
-              ..._secciones(material.cuerpo),
-            ],
+            const SizedBox(height: 16),
+            ..._secciones(material.cuerpo),
           ],
           if (material.urlArchivo != null) ...[
             const SizedBox(height: 24),

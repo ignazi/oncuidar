@@ -176,13 +176,11 @@ void main() {
     testWidgets('un contenido de texto no muestra botón de reproducción', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _tarjeta(_material(id: 'c', categoria: 'Checklist')),
-      );
+      await tester.pumpWidget(_tarjeta(_material(id: 'c', categoria: 'Guías')));
 
-      expect(find.text('Checklist'), findsOneWidget);
+      expect(find.text('Guía'), findsOneWidget);
       expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
-      expect(find.byIcon(Icons.checklist_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.menu_book_rounded), findsOneWidget);
     });
 
     testWidgets(
@@ -208,7 +206,7 @@ void main() {
       var vezAlternado = 0;
       await tester.pumpWidget(
         _tarjeta(
-          _material(id: 'c', categoria: 'Checklist'),
+          _material(id: 'c', categoria: 'Guías'),
           alAlternarFavorito: () => vezAlternado++,
         ),
       );
@@ -230,7 +228,7 @@ void main() {
       var vezTocado = 0;
       await tester.pumpWidget(
         _tarjeta(
-          _material(id: 'c', categoria: 'Checklist'),
+          _material(id: 'c', categoria: 'Guías'),
           alTocar: () => vezTocado++,
         ),
       );
@@ -245,7 +243,7 @@ void main() {
       var vezTocado = 0;
       await tester.pumpWidget(
         _tarjeta(
-          _material(id: 'c', categoria: 'Checklist'),
+          _material(id: 'c', categoria: 'Guías'),
           alTocar: () => vezTocado++,
         ),
       );

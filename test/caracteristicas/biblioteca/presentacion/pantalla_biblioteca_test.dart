@@ -57,12 +57,12 @@ MaterialEducativo _guia() => MaterialEducativo(
   creadoEn: DateTime.utc(2026, 1, 2),
 );
 
-MaterialEducativo _checklist() => MaterialEducativo(
-  id: 'checklist-preparacion-para-consulta-oncologica',
-  titulo: 'Preparación para consulta oncológica',
-  categoria: 'Checklist',
-  tema: 'Consulta médica',
-  cuerpo: '- Traer carnet de salud',
+MaterialEducativo _infografia() => MaterialEducativo(
+  id: 'infografias-guia-de-seguimiento',
+  titulo: 'Guía de seguimiento',
+  categoria: 'Infografías',
+  tema: 'Seguimiento',
+  cuerpo: 'Infografía de controles.',
   creadoEn: DateTime.utc(2026, 1, 3),
 );
 
@@ -173,23 +173,21 @@ void main() {
     final (base, _) = await _baseConContenido([
       _video(),
       _guia(),
-      _checklist(),
+      _infografia(),
     ]);
     await _montar(tester, base, _CacheFalso());
 
     expect(find.text('Biblioteca educativa'), findsOneWidget);
     expect(find.text('Cómo medir la fiebre'), findsOneWidget);
     expect(find.text('Manual de Control de Síntomas'), findsOneWidget);
-    expect(find.text('Preparación para consulta oncológica'), findsOneWidget);
+    expect(find.text('Guía de seguimiento'), findsOneWidget);
     expect(find.text('Video'), findsOneWidget);
     expect(find.text('Guía'), findsOneWidget);
+    expect(find.text('Infografía'), findsOneWidget);
     expect(
-      find.descendant(
-        of: find.byType(TarjetaMaterial),
-        matching: find.text('Checklist'),
-      ),
-      findsOneWidget,
-      reason: 'la insignia de la tarjeta dice Checklist',
+      find.text('Checklist'),
+      findsNothing,
+      reason: 'la categoría Checklist ya no existe',
     );
   });
 
@@ -197,7 +195,7 @@ void main() {
     final (base, _) = await _baseConContenido([
       _video(),
       _guia(),
-      _checklist(),
+      _infografia(),
     ]);
     await _montar(tester, base, _CacheFalso());
 
@@ -208,7 +206,7 @@ void main() {
 
     expect(find.text('Cómo medir la fiebre'), findsOneWidget);
     expect(find.text('Manual de Control de Síntomas'), findsNothing);
-    expect(find.text('Preparación para consulta oncológica'), findsNothing);
+    expect(find.text('Guía de seguimiento'), findsNothing);
   });
 
   testWidgets('el filtro por categoría muestra solo esa categoría', (
@@ -217,7 +215,7 @@ void main() {
     final (base, _) = await _baseConContenido([
       _video(),
       _guia(),
-      _checklist(),
+      _infografia(),
     ]);
     await _montar(tester, base, _CacheFalso());
 
@@ -227,10 +225,10 @@ void main() {
     expect(find.text('Cómo medir la fiebre'), findsOneWidget);
     expect(find.text('Manual de Control de Síntomas'), findsNothing);
 
-    await tester.tap(find.text('Checklist'));
+    await tester.tap(find.text('Infografías'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Preparación para consulta oncológica'), findsOneWidget);
+    expect(find.text('Guía de seguimiento'), findsOneWidget);
     expect(find.text('Cómo medir la fiebre'), findsNothing);
   });
 
@@ -238,7 +236,7 @@ void main() {
     final (base, firestore) = await _baseConContenido([
       _video(),
       _guia(),
-      _checklist(),
+      _infografia(),
     ]);
     await _montar(tester, base, _CacheFalso());
 
@@ -264,14 +262,14 @@ void main() {
 
     expect(find.text('Manual de Control de Síntomas'), findsOneWidget);
     expect(find.text('Cómo medir la fiebre'), findsNothing);
-    expect(find.text('Preparación para consulta oncológica'), findsNothing);
+    expect(find.text('Guía de seguimiento'), findsNothing);
   });
 
   testWidgets('sin favoritos muestra estado vacío al filtrar', (tester) async {
     final (base, _) = await _baseConContenido([
       _video(),
       _guia(),
-      _checklist(),
+      _infografia(),
     ]);
     await _montar(tester, base, _CacheFalso());
 
@@ -290,7 +288,7 @@ void main() {
     final (base, _) = await _baseConContenido([
       _video(),
       _guia(),
-      _checklist(),
+      _infografia(),
     ]);
     await _montar(tester, base, _CacheFalso());
 
@@ -302,44 +300,11 @@ void main() {
     expect(find.text('No se encontraron materiales.'), findsOneWidget);
   });
 
-  testWidgets('tocar un checklist abre la hoja interactiva sin ir al detalle', (
-    tester,
-  ) async {
-    final (base, _) = await _baseConContenido([
-      _video(),
-      _guia(),
-      _checklist(),
-    ]);
-    String? detalleAbierto;
-    await _montar(
-      tester,
-      base,
-      _CacheFalso(),
-      alAbrirDetalle: (id) => detalleAbierto = id,
-    );
-
-    final tarjetaChecklist = find.byWidgetPredicate(
-      (w) =>
-          w is TarjetaMaterial &&
-          w.material.id == 'checklist-preparacion-para-consulta-oncologica',
-    );
-    await tester.tap(
-      find.descendant(
-        of: tarjetaChecklist,
-        matching: find.byKey(const Key('miniaturaTarjetaMaterial')),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(detalleAbierto, isNull);
-    expect(find.text('Traer carnet de salud'), findsOneWidget);
-  });
-
   testWidgets('tocar un video sin descarga avisa del error', (tester) async {
     final (base, _) = await _baseConContenido([
       _video(),
       _guia(),
-      _checklist(),
+      _infografia(),
     ]);
     final cache = _CacheFalso()
       ..fallar.add(
