@@ -168,7 +168,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('lista los materiales desde Firestore con su insignia', (
+  testWidgets('lista los materiales desde Firestore con su ícono de tipo', (
     tester,
   ) async {
     final (base, _) = await _baseConContenido([
@@ -182,9 +182,7 @@ void main() {
     expect(find.text('Cómo medir la fiebre'), findsOneWidget);
     expect(find.text('Manual de Control de Síntomas'), findsOneWidget);
     expect(find.text('Guía de seguimiento'), findsOneWidget);
-    expect(find.text('Video'), findsOneWidget);
-    expect(find.text('Guía'), findsOneWidget);
-    expect(find.text('Infografía'), findsOneWidget);
+    expect(find.byKey(const Key('iconoTipoMaterial')), findsNWidgets(3));
     expect(
       find.text('Checklist'),
       findsNothing,

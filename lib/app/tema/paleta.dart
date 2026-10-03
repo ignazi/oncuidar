@@ -27,6 +27,7 @@ class Paleta {
   static const verdeExito = Color(0xFF10B981);
 
   // Colores por tipo de material en la biblioteca.
+  static const categoriaVideo = Color(0xFFD1495B);
   static const categoriaGuia = Color(0xFFB7791F);
   static const categoriaInfografia = Color(0xFF2A8C82);
 }

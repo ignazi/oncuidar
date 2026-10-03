@@ -161,68 +161,78 @@ void main() {
   });
 
   group('TarjetaMaterial', () {
-    testWidgets('el video conserva su tarjeta vertical', (tester) async {
-      await tester.pumpWidget(
-        _tarjeta(_material(id: 'v', categoria: 'Videos')),
-      );
-      expect(find.byKey(const Key('tarjetaDocumento')), findsNothing);
-    });
+    /// Ícono que muestra el cuadrado de tipo de la tarjeta.
+    Icon iconoDeTipo(WidgetTester tester) => tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const Key('iconoTipoMaterial')),
+        matching: find.byType(Icon),
+      ),
+    );
 
-    testWidgets('guías, PDFs e infografías usan la tarjeta horizontal', (
+    testWidgets('todos los tipos comparten la tarjeta con ícono de tipo', (
       tester,
     ) async {
-      for (final categoria in ['Guías', 'PDFs', 'Infografías']) {
+      final esperados = {
+        'Videos': (Icons.smart_display_rounded, Paleta.categoriaVideo),
+        'Guías': (Icons.menu_book_rounded, Paleta.categoriaGuia),
+        'PDFs': (Icons.menu_book_rounded, Paleta.categoriaGuia),
+        'Infografías': (
+          Icons.insert_chart_outlined_rounded,
+          Paleta.categoriaInfografia,
+        ),
+      };
+      for (final MapEntry(key: categoria, value: (icono, color))
+          in esperados.entries) {
         await tester.pumpWidget(
           _tarjeta(_material(id: categoria, categoria: categoria)),
         );
-        expect(
-          find.byKey(const Key('tarjetaDocumento')),
-          findsOneWidget,
-          reason: categoria,
-        );
+        expect(find.byKey(const Key('iconoTipoMaterial')), findsOneWidget);
+        expect(iconoDeTipo(tester).icon, icono, reason: categoria);
+        expect(iconoDeTipo(tester).color, color, reason: categoria);
         expect(find.text('Material de prueba'), findsOneWidget);
         expect(find.text('Tema de prueba'), findsOneWidget);
         expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
       }
     });
 
-    testWidgets('guía e infografía se distinguen por ícono, color y etiqueta', (
+    testWidgets('no hay insignia de texto; el tipo queda para lectores', (
       tester,
     ) async {
-      Color colorDelIcono(IconData icono) =>
-          tester.widget<Icon>(find.byIcon(icono)).color!;
-
-      await tester.pumpWidget(_tarjeta(_material(id: 'g', categoria: 'Guías')));
-      expect(find.text('Guía'), findsOneWidget);
-      expect(colorDelIcono(Icons.menu_book_rounded), Paleta.categoriaGuia);
-      expect(find.byIcon(Icons.insert_chart_outlined_rounded), findsNothing);
-
+      final semantica = tester.ensureSemantics();
       await tester.pumpWidget(
         _tarjeta(_material(id: 'i', categoria: 'Infografías')),
       );
-      expect(find.text('Infografía'), findsOneWidget);
-      expect(
-        colorDelIcono(Icons.insert_chart_outlined_rounded),
-        Paleta.categoriaInfografia,
-      );
-      expect(find.byIcon(Icons.menu_book_rounded), findsNothing);
+      expect(find.text('Infografía'), findsNothing);
+      expect(find.bySemanticsLabel('Infografía'), findsOneWidget);
+      semantica.dispose();
     });
 
     testWidgets('un PDF se ve igual que una guía', (tester) async {
       await tester.pumpWidget(_tarjeta(_material(id: 'p', categoria: 'PDFs')));
-      expect(find.text('Guía'), findsOneWidget);
-      expect(find.byIcon(Icons.menu_book_rounded), findsOneWidget);
-      expect(estiloDocumento('PDFs'), estiloDocumento('Guías'));
+      expect(iconoDeTipo(tester).icon, Icons.menu_book_rounded);
+      expect(estiloTipoMaterial('PDFs'), estiloTipoMaterial('Guías'));
     });
 
-    testWidgets('un video muestra insignia y botón de reproducción', (
+    testWidgets('sin imagen el reemplazo muestra el ícono del tipo', (
       tester,
     ) async {
+      await tester.pumpWidget(
+        _tarjeta(_material(id: 'i', categoria: 'Infografías')),
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('reemplazoMiniatura')),
+          matching: find.byIcon(Icons.insert_chart_outlined_rounded),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('un video muestra el botón de reproducción', (tester) async {
       await tester.pumpWidget(
         _tarjeta(_material(id: 'v', categoria: 'Videos')),
       );
 
-      expect(find.text('Video'), findsOneWidget);
       expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
       expect(find.text('Material de prueba'), findsOneWidget);
       expect(find.text('Tema de prueba'), findsOneWidget);
@@ -232,10 +242,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(_tarjeta(_material(id: 'c', categoria: 'Guías')));
-
-      expect(find.text('Guía'), findsOneWidget);
       expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
-      expect(find.byIcon(Icons.menu_book_rounded), findsOneWidget);
     });
 
     testWidgets(
@@ -325,7 +332,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);
-      expect(find.byIcon(Icons.ondemand_video_rounded), findsOneWidget);
+      expect(find.byKey(const Key('reemplazoMiniatura')), findsOneWidget);
     });
 
     testWidgets('una miniatura por red se muestra desde la caché', (
