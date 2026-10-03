@@ -1,43 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:excel/excel.dart' as xlsx;
+import 'package:oncuidar/caracteristicas/historial/datos/formato_exportacion.dart';
 import 'package:oncuidar/caracteristicas/historial/dominio/orden_registros.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
-
-String _corta(DateTime fecha) {
-  final dia = fecha.day.toString().padLeft(2, '0');
-  final mes = fecha.month.toString().padLeft(2, '0');
-  return '$dia-$mes-${fecha.year}';
-}
-
-String _hora12(DateTime fecha) {
-  final hora = fecha.hour % 12 == 0 ? 12 : fecha.hour % 12;
-  final sufijo = fecha.hour >= 12 ? 'PM' : 'AM';
-  return '$hora:${fecha.minute.toString().padLeft(2, '0')} $sufijo';
-}
-
-String _estadoLabel(NivelAlerta nivel) {
-  switch (nivel) {
-    case NivelAlerta.normal:
-      return 'Normal';
-    case NivelAlerta.alerta:
-      return 'Alerta';
-    case NivelAlerta.critico:
-      return 'Crítico';
-  }
-}
-
-String _tipoLabel(String tipo) => tipo == 'extra' ? 'Extra' : 'Programado';
-
-String _sintomasTexto(List<EntradaSintoma> sintomas) {
-  return sintomas
-      .map(
-        (s) =>
-            '${s.name} (${EntradaSintoma.etiquetaPara(s.intensity)}) ${s.intensity}/10',
-      )
-      .join(', ');
-}
+import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
 void _celdaMergeFila(
   xlsx.Sheet hoja,
@@ -260,8 +228,8 @@ Uint8List generarExcelHistorial({
 
   _celdaMergeFila(hoja, fila, 0, 9, 'RESUMEN', estiloSeccion);
   fila++;
-  final inicio = fechaInicio != null ? _corta(fechaInicio) : 'sin inicio';
-  final fin = fechaFin != null ? _corta(fechaFin) : 'sin fin';
+  final inicio = fechaInicio != null ? fechacorta(fechaInicio) : 'sin inicio';
+  final fin = fechaFin != null ? fechacorta(fechaFin) : 'sin fin';
   _etiquetaValor(
     hoja,
     fila,
@@ -284,7 +252,7 @@ Uint8List generarExcelHistorial({
     hoja,
     fila,
     'Generado',
-    '${_corta(generadoEn)} ${_hora12(generadoEn)}',
+    '${fechacorta(generadoEn)} ${hora12(generadoEn)}',
     estiloEtiqueta,
     estiloValor,
   );
@@ -313,19 +281,7 @@ Uint8List generarExcelHistorial({
   fila++;
 
   for (final rec in ordenarCronologicamente(registros)) {
-    final vs = rec.signosVitales;
-    final celdas = [
-      _corta(rec.fecha),
-      _hora12(rec.creadoEn),
-      _tipoLabel(rec.tipoRegistro),
-      _estadoLabel(rec.nivelAlerta),
-      vs?.temperature != null ? '${vs!.temperature!.toStringAsFixed(1)}°C' : '',
-      vs?.heartRate != null ? '${vs!.heartRate} lpm' : '',
-      vs?.oxygenSaturation != null ? '${vs!.oxygenSaturation}%' : '',
-      vs?.respiratoryRate != null ? '${vs!.respiratoryRate} rpm' : '',
-      _sintomasTexto(rec.sintomas),
-      rec.observaciones ?? '',
-    ];
+    final celdas = celdasRegistro(rec, vacio: '');
     for (var i = 0; i < celdas.length; i++) {
       final celda = hoja.cell(
         xlsx.CellIndex.indexByColumnRow(columnIndex: i, rowIndex: fila),

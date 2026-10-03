@@ -1,46 +1,14 @@
 import 'dart:typed_data';
 
+import 'package:oncuidar/caracteristicas/historial/datos/formato_exportacion.dart';
 import 'package:oncuidar/caracteristicas/historial/dominio/orden_registros.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 PdfColor _hex(String valor) => PdfColor.fromHex(valor);
-
-String _corta(DateTime fecha) {
-  final dia = fecha.day.toString().padLeft(2, '0');
-  final mes = fecha.month.toString().padLeft(2, '0');
-  return '$dia-$mes-${fecha.year}';
-}
-
-String _hora12(DateTime fecha) {
-  final hora = fecha.hour % 12 == 0 ? 12 : fecha.hour % 12;
-  final sufijo = fecha.hour >= 12 ? 'PM' : 'AM';
-  return '$hora:${fecha.minute.toString().padLeft(2, '0')} $sufijo';
-}
-
-String _estadoLabel(NivelAlerta nivel) {
-  switch (nivel) {
-    case NivelAlerta.normal:
-      return 'Normal';
-    case NivelAlerta.alerta:
-      return 'Alerta';
-    case NivelAlerta.critico:
-      return 'Crítico';
-  }
-}
-
-String _tipoLabel(String tipo) => tipo == 'extra' ? 'Extra' : 'Programado';
-
-String _sintomasTexto(List<EntradaSintoma> sintomas) {
-  return sintomas
-      .map(
-        (s) =>
-            '${s.name} (${EntradaSintoma.etiquetaPara(s.intensity)}) ${s.intensity}/10',
-      )
-      .join(', ');
-}
 
 pw.Widget _encabezadoPagina(DateTime generadoEn, Paciente? paciente) {
   final nombre = paciente?.fullName.trim();
@@ -79,7 +47,7 @@ pw.Widget _encabezadoPagina(DateTime generadoEn, Paciente? paciente) {
             ),
             pw.SizedBox(height: 4),
             pw.Text(
-              'Generado: ${_corta(generadoEn)} ${_hora12(generadoEn)}',
+              'Generado: ${fechacorta(generadoEn)} ${hora12(generadoEn)}',
               style: pw.TextStyle(
                 fontSize: 8.5,
                 color: PdfColors.white.withAlpha(0.8),
@@ -263,7 +231,8 @@ pw.Widget _tablaRegistros(
   ];
 
   final datos = [
-    for (final rec in ordenarCronologicamente(registros)) _filaRegistro(rec),
+    for (final rec in ordenarCronologicamente(registros))
+      celdasRegistro(rec, vacio: '-'),
   ];
 
   return pw.TableHelper.fromTextArray(
@@ -321,22 +290,6 @@ pw.Widget _tablaRegistros(
   );
 }
 
-List<dynamic> _filaRegistro(RegistroClinico rec) {
-  final vs = rec.signosVitales;
-  return [
-    _corta(rec.fecha),
-    _hora12(rec.creadoEn),
-    _tipoLabel(rec.tipoRegistro),
-    _estadoLabel(rec.nivelAlerta),
-    vs?.temperature != null ? '${vs!.temperature!.toStringAsFixed(1)}°C' : '-',
-    vs?.heartRate != null ? '${vs!.heartRate} lpm' : '-',
-    vs?.oxygenSaturation != null ? '${vs!.oxygenSaturation}%' : '-',
-    vs?.respiratoryRate != null ? '${vs!.respiratoryRate} rpm' : '-',
-    _sintomasTexto(rec.sintomas),
-    rec.observaciones?.isNotEmpty == true ? rec.observaciones! : '-',
-  ];
-}
-
 Future<Uint8List> generarPdfHistorial({
   required List<RegistroClinico> registros,
   required Paciente? paciente,
@@ -371,8 +324,8 @@ Future<Uint8List> generarPdfHistorial({
   );
   final estiloCelda = pw.TextStyle(fontSize: 7.5, color: textoPrincipal);
 
-  final inicio = fechaInicio != null ? _corta(fechaInicio) : 'sin inicio';
-  final fin = fechaFin != null ? _corta(fechaFin) : 'sin fin';
+  final inicio = fechaInicio != null ? fechacorta(fechaInicio) : 'sin inicio';
+  final fin = fechaFin != null ? fechacorta(fechaFin) : 'sin fin';
 
   final documento = pw.Document(compress: comprimir);
 
@@ -531,7 +484,7 @@ Future<Uint8List> generarPdfHistorial({
         contenido.add(
           _filaEtiquetaValor(
             'Generado',
-            '${_corta(generadoEn)} ${_hora12(generadoEn)}',
+            '${fechacorta(generadoEn)} ${hora12(generadoEn)}',
             estiloEtiqueta,
             estiloValor,
           ),
