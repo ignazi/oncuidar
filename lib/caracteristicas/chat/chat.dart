@@ -249,12 +249,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (!mounted || _avisoGuardadoMostrado) return;
       _avisoGuardadoMostrado = true;
       messenger.showSnackBar(
-        SnackBar(
-          content: const Text(
+        const SnackBar(
+          content: Text(
             'No se pudo guardar la conversación. Revisa tu conexión.',
           ),
           backgroundColor: Paleta.doradoPrincipal,
-          duration: const Duration(seconds: 2),
+          duration: Duration(seconds: 2),
         ),
       );
     }
@@ -439,7 +439,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               suffixIcon: _busqueda.isNotEmpty
                   ? GestureDetector(
                       key: const Key('borrarBusquedaChat'),
-                      onTap: () => _controladorBusqueda.clear(),
+                      onTap: _controladorBusqueda.clear,
                       child: const Icon(
                         Icons.cancel_rounded,
                         color: Paleta.textoSecundario,

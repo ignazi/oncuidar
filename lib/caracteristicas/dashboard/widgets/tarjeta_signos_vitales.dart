@@ -102,7 +102,7 @@ class TarjetaSignosVitales extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.calendar_month_outlined,
                 size: 17,
                 color: Paleta.textoPrincipal,

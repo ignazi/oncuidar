@@ -4,7 +4,7 @@ final RegExp _soloDigitosK = RegExp(r'^[0-9kK]$');
 
 /// Formatea un RUT mientras se escribe: agrega puntos cada 3 digitos y el
 String formatearRut(String valor) {
-  var limpio = valor.replaceAll(RegExp(r'[^0-9kK]'), '').toUpperCase();
+  final limpio = valor.replaceAll(RegExp(r'[^0-9kK]'), '').toUpperCase();
   if (limpio.isEmpty) return '';
   // Un solo caracter es el primer digito del cuerpo: no lo borres ni lo
   // conviertas en digito verificador todavia.

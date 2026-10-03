@@ -110,7 +110,11 @@ class SaludoPaciente extends StatelessWidget {
           ),
           Row(
             children: [
-              Icon(Icons.schedule, size: 13, color: Paleta.textoTerciario),
+              const Icon(
+                Icons.schedule,
+                size: 13,
+                color: Paleta.textoTerciario,
+              ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(

@@ -440,10 +440,7 @@ class ServicioBaseDatos {
   }
 
   /// Subcolecciones que cuelgan de un paciente y se borran con él.
-  static const subcoleccionesPaciente = [
-    'clinicalRecords',
-    'recordatorios',
-  ];
+  static const subcoleccionesPaciente = ['clinicalRecords', 'recordatorios'];
 
   /// Borra una colección en lotes de 400 (el tope de Firestore es 500 por lote).
   Future<void> _borrarColeccionEnLotes(CollectionReference coleccion) async {
@@ -1072,7 +1069,7 @@ class ServicioBaseDatos {
     if (cifrado != null && cifrado.isNotEmpty) {
       try {
         final texto = await _cifrado.descifrar(_uid, cifrado);
-        return (jsonDecode(texto) as Map<String, dynamic>);
+        return jsonDecode(texto) as Map<String, dynamic>;
       } catch (e, pila) {
         // Devolver un mapa vacío aquí borraría el payload al re-cifrarlo.
         if (estricto) rethrow;

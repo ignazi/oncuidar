@@ -45,10 +45,7 @@ void main() {
       final idPaciente = await crearPacienteRecordatorios(base);
       final id = await base.agregarRecordatorio(
         idPaciente,
-        recordatorioDe(
-          idPaciente,
-          asignadoA: Recordatorio.asignadoACuidador,
-        ),
+        recordatorioDe(idPaciente, asignadoA: Recordatorio.asignadoACuidador),
       );
       final doc = await firestore
           .collection('users')
@@ -95,7 +92,6 @@ void main() {
       expect(r.diasRepeticion, ['lun']);
       expect(r.tipo, 'medicamento');
     });
-
   });
 
   group('reagendarNotificaciones', () {

@@ -228,7 +228,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     }
 
     if (visibles.isEmpty) {
-      return EstadoVacio(
+      return const EstadoVacio(
         Icons.history,
         'No hay registros aún',
         subtitulo: 'Crea el primer registro desde el botón de abajo.',
@@ -358,7 +358,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
       icono: Icons.picture_as_pdf,
       colores: const [Paleta.doradoPrincipal, Paleta.doradoOscuro],
       habilitado: habilitado && !_exportando,
-      onPulsar: () => _exportarPdf(),
+      onPulsar: _exportarPdf,
     );
   }
 
@@ -369,7 +369,7 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
       icono: Icons.table_chart,
       colores: const [Color(0xFF217346), Color(0xFF14401F)],
       habilitado: habilitado && !_exportando,
-      onPulsar: () => _exportarExcel(),
+      onPulsar: _exportarExcel,
     );
   }
 
@@ -726,8 +726,8 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
       if (mounted) {
         setState(() => _cargados.removeWhere((r) => r.id == registro.id));
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Registro eliminado'),
+          const SnackBar(
+            content: Text('Registro eliminado'),
             backgroundColor: Paleta.doradoPrincipal,
           ),
         );

@@ -194,7 +194,7 @@ final currentPatientProvider = StreamProvider.autoDispose<Paciente?>((
 final registrosClinicosProvider =
     StreamProvider.autoDispose<List<RegistroClinico>>((ref) {
       final pacienteAsync = ref.watch(currentPatientProvider);
-      if (pacienteAsync is AsyncLoading) return Stream.empty();
+      if (pacienteAsync is AsyncLoading) return const Stream.empty();
       final paciente = pacienteAsync.value;
       if (paciente == null) return Stream.value(const []);
       return ref
@@ -223,11 +223,6 @@ class DescargasContenidoNotifier extends Notifier<Set<String>> {
   void marcarDescargado(String url) {
     if (state.contains(url)) return;
     state = {...state, url};
-  }
-
-  void marcarEliminado(String url) {
-    if (!state.contains(url)) return;
-    state = {...state}..remove(url);
   }
 }
 
@@ -407,9 +402,11 @@ final contenidosEducativosProvider =
           try {
             await cacheMetadata.guardarCatalogo(contenidos);
           } catch (_) {}
-          ref
-              .read(sincronizacionBibliotecaProvider.notifier)
-              .sincronizar(contenidos);
+          unawaited(
+            ref
+                .read(sincronizacionBibliotecaProvider.notifier)
+                .sincronizar(contenidos),
+          );
           yield contenidos;
         }
       } catch (_) {
@@ -434,7 +431,7 @@ final recordatoriosProvider = StreamProvider.autoDispose<List<Recordatorio>>((
   ref,
 ) {
   final pacienteAsync = ref.watch(currentPatientProvider);
-  if (pacienteAsync is AsyncLoading) return Stream.empty();
+  if (pacienteAsync is AsyncLoading) return const Stream.empty();
   final paciente = pacienteAsync.value;
   if (paciente == null) return Stream.value(const []);
   return ref

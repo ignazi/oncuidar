@@ -31,7 +31,7 @@ class EstadoSinPacientes extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.child_care_outlined,
               size: 64,
               color: Paleta.doradoPrincipal,

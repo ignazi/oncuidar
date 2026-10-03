@@ -46,7 +46,9 @@ class Recordatorio {
 
   /// Título del aviso: a quién va dirigido y el tipo de recordatorio.
   String tituloAviso(String nombrePaciente, String etiquetaTipo) =>
-      esParaCuidador ? 'Cuidador · $etiquetaTipo' : '$nombrePaciente · $etiquetaTipo';
+      esParaCuidador
+      ? 'Cuidador · $etiquetaTipo'
+      : '$nombrePaciente · $etiquetaTipo';
 
   /// Cuerpo del aviso: título y, si existe, la descripción.
   String get cuerpoAviso =>

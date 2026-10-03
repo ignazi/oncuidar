@@ -30,7 +30,9 @@ Widget _pantalla() {
   // Catálogo vacío: la FAQ no depende de Firestore para listar sus preguntas.
   return ProviderScope(
     overrides: [
-      contenidosEducativosProvider.overrideWith((ref) => Stream.value(const [])),
+      contenidosEducativosProvider.overrideWith(
+        (ref) => Stream.value(const []),
+      ),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
