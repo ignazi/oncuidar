@@ -16,6 +16,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadat
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_imagen.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/encabezado_seccion.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -190,6 +191,54 @@ void main() {
     );
   });
 
+  testWidgets('Todos agrupa por tipo con encabezado y cantidad', (
+    tester,
+  ) async {
+    final (base, _) = await _baseConContenido([
+      _infografia(),
+      _guia(),
+      _video(),
+    ]);
+    await _montar(tester, base, _CacheFalso());
+
+    final secciones = ['Videos', 'Guías', 'Infografías'];
+    final alturas = [
+      for (final titulo in secciones)
+        tester.getTopLeft(find.byKey(Key('seccion_$titulo'))).dy,
+    ];
+    expect(alturas, orderedEquals([...alturas]..sort()));
+    for (final titulo in secciones) {
+      expect(
+        find.descendant(
+          of: find.byKey(Key('seccion_$titulo')),
+          matching: find.text('1'),
+        ),
+        findsOneWidget,
+      );
+    }
+    final video = tester.getTopLeft(find.text('Cómo medir la fiebre')).dy;
+    final guia = tester
+        .getTopLeft(find.text('Manual de Control de Síntomas'))
+        .dy;
+    expect(video, lessThan(alturas[1]));
+    expect(guia, greaterThan(alturas[1]));
+    expect(guia, lessThan(alturas[2]));
+  });
+
+  testWidgets('un filtro de tipo muestra la lista sin secciones', (
+    tester,
+  ) async {
+    final (base, _) = await _baseConContenido([_video(), _guia()]);
+    await _montar(tester, base, _CacheFalso());
+    expect(find.byType(EncabezadoSeccion), findsNWidgets(2));
+
+    await tester.tap(find.byKey(const Key('filtro_Guías')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EncabezadoSeccion), findsNothing);
+    expect(find.text('Manual de Control de Síntomas'), findsOneWidget);
+  });
+
   testWidgets('la búsqueda filtra por título', (tester) async {
     final (base, _) = await _baseConContenido([
       _video(),
@@ -218,13 +267,13 @@ void main() {
     ]);
     await _montar(tester, base, _CacheFalso());
 
-    await tester.tap(find.text('Videos'));
+    await tester.tap(find.byKey(const Key('filtro_Videos')));
     await tester.pumpAndSettle();
 
     expect(find.text('Cómo medir la fiebre'), findsOneWidget);
     expect(find.text('Manual de Control de Síntomas'), findsNothing);
 
-    await tester.tap(find.text('Infografías'));
+    await tester.tap(find.byKey(const Key('filtro_Infografías')));
     await tester.pumpAndSettle();
 
     expect(find.text('Guía de seguimiento'), findsOneWidget);

@@ -8,10 +8,12 @@ import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/dominio/secciones_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_material.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_video.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_imagen.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/encabezado_seccion.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
@@ -310,6 +312,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
           final etiqueta = etiquetasFiltro[i];
           final seleccionado = _filtro == etiqueta;
           return GestureDetector(
+            key: Key('filtro_$etiqueta'),
             onTap: () => setState(() => _filtro = etiqueta),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
@@ -350,11 +353,22 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
             : 'No se encontraron materiales.',
       );
     }
+    // En «Todos» la lista se agrupa por tipo; los demás filtros ya son de un tipo.
+    final secciones = _filtro == 'Todos'
+        ? agruparPorSeccion(filtrados)
+        : [SeccionBiblioteca(titulo: '', materiales: filtrados)];
     return ListView(
       padding: const EdgeInsets.only(top: 4),
       children: [
-        for (final material in filtrados)
-          _tarjetaMaterial(material, descargados),
+        for (final seccion in secciones) ...[
+          if (seccion.titulo.isNotEmpty)
+            EncabezadoSeccion(
+              titulo: seccion.titulo,
+              cantidad: seccion.materiales.length,
+            ),
+          for (final material in seccion.materiales)
+            _tarjetaMaterial(material, descargados),
+        ],
       ],
     );
   }
