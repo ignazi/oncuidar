@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
@@ -43,7 +44,7 @@ void main() {
     test('la asignación viaja dentro del payload cifrado', () async {
       final (base, firestore) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, asignadoA: Recordatorio.asignadoACuidador),
       );
@@ -70,7 +71,9 @@ void main() {
               as Map<String, dynamic>;
       expect(payload['asignadoA'], 'cuidador');
 
-      final leidos = await base.recordatoriosEnTiempoReal(idPaciente).first;
+      final leidos = await RepositorioRecordatorios(
+        base.bd,
+      ).recordatoriosEnTiempoReal(idPaciente).first;
       expect(leidos.single.asignadoA, Recordatorio.asignadoACuidador);
     });
 
@@ -78,16 +81,18 @@ void main() {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
       final fecha = DateTime.now().add(const Duration(days: 3));
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, fechaHora: fecha, dias: const ['lun']),
       );
-      await base.actualizarRecordatorio(
+      await RepositorioRecordatorios(base.bd).actualizarRecordatorio(
         idPaciente,
         id,
         asignadoA: Recordatorio.asignadoACuidador,
       );
-      final r = (await base.recordatoriosEnTiempoReal(idPaciente).first).single;
+      final r = (await RepositorioRecordatorios(
+        base.bd,
+      ).recordatoriosEnTiempoReal(idPaciente).first).single;
       expect(r.asignadoA, 'cuidador');
       expect(r.diasRepeticion, ['lun']);
       expect(r.tipo, 'medicamento');
@@ -98,7 +103,7 @@ void main() {
     test('no reprograma uno de una sola vez que ya venció', () async {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      await base.agregarRecordatorio(
+      await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(
           idPaciente,
@@ -106,7 +111,7 @@ void main() {
           fechaHora: DateTime.now().subtract(const Duration(days: 1)),
         ),
       );
-      await base.agregarRecordatorio(
+      await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Vigente'),
       );
@@ -118,7 +123,7 @@ void main() {
     test('el aviso incluye la descripción y nombra al cuidador', () async {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      await base.agregarRecordatorio(
+      await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(
           idPaciente,
@@ -138,11 +143,11 @@ void main() {
     test('archivar cancela los avisos de sus recordatorios', () async {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      final id1 = await base.agregarRecordatorio(
+      final id1 = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Uno'),
       );
-      final id2 = await base.agregarRecordatorio(
+      final id2 = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Dos'),
       );
@@ -161,11 +166,12 @@ void main() {
       final (base, _) = await baseRecordatorios();
       final a = await crearPacienteRecordatorios(base, nombre: 'Paciente A');
       final b = await crearPacienteRecordatorios(base, nombre: 'Paciente B');
-      await base.agregarRecordatorio(a, recordatorioDe(a, titulo: 'De A'));
-      final idB = await base.agregarRecordatorio(
-        b,
-        recordatorioDe(b, titulo: 'De B'),
-      );
+      await RepositorioRecordatorios(
+        base.bd,
+      ).agregarRecordatorio(a, recordatorioDe(a, titulo: 'De A'));
+      final idB = await RepositorioRecordatorios(
+        base.bd,
+      ).agregarRecordatorio(b, recordatorioDe(b, titulo: 'De B'));
       final notif = NotificacionesFalsas();
       await base.archivarPaciente(a, notif: notif);
       expect(
@@ -177,7 +183,7 @@ void main() {
     test('restaurar vuelve a programar los avisos', () async {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      await base.agregarRecordatorio(
+      await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Jarabe'),
       );
@@ -190,7 +196,7 @@ void main() {
     test('un paciente archivado no se reprograma al iniciar sesión', () async {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      await base.agregarRecordatorio(
+      await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Jarabe'),
       );
@@ -203,10 +209,9 @@ void main() {
     test('eliminar cancela los avisos antes de borrar al paciente', () async {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      final id = await base.agregarRecordatorio(
-        idPaciente,
-        recordatorioDe(idPaciente),
-      );
+      final id = await RepositorioRecordatorios(
+        base.bd,
+      ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
       final notif = NotificacionesFalsas();
       await base.eliminarPaciente(idPaciente, notif: notif);
       expect(notif.cancelados, contains(ServicioNotificaciones.idSeguro(id)));

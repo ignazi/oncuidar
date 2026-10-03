@@ -93,3 +93,11 @@ class Recordatorio {
     return DateTime.tryParse(valor?.toString() ?? '') ?? DateTime.now();
   }
 }
+
+/// Nombre legible del tipo de recordatorio.
+String etiquetaTipoRecordatorio(String tipo) => switch (tipo) {
+  'medicamento' => 'Medicamento',
+  'medicion' => 'Medición',
+  'cita' => 'Cita médica',
+  _ => 'Recordatorio',
+};

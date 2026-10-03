@@ -11,6 +11,7 @@ import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_histori
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
@@ -394,7 +395,7 @@ void main() {
       ),
     );
     final fecha = DateTime.now();
-    await base.agregarRecordatorio(
+    await RepositorioRecordatorios(base.bd).agregarRecordatorio(
       idPaciente,
       Recordatorio(
         id: '',

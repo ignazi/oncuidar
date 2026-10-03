@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
@@ -97,6 +98,7 @@ class _Entorno {
   final _BaseDrenaje base;
 
   ServicioBaseDatos get datos => ServicioBaseDatos.sobre(base);
+  RepositorioRecordatorios get recordatorios => RepositorioRecordatorios(base);
   RepositorioRegistrosClinicos get registros =>
       RepositorioRegistrosClinicos(base);
   final ServicioCifrado cifrado;
@@ -328,7 +330,7 @@ void main() {
   group('El payload de un recordatorio encolado no se pierde', () {
     test('editarlo sin red conserva tipo y días de repetición', () async {
       final ent = await _crearEntorno(enLinea: false);
-      final id = await ent.datos.agregarRecordatorio(
+      final id = await ent.recordatorios.agregarRecordatorio(
         'p1',
         Recordatorio(
           id: 'r1',
@@ -352,7 +354,7 @@ void main() {
             'sin red el recordatorio se ve de inmediato y además queda en la cola',
       );
 
-      await ent.datos.actualizarRecordatorio(
+      await ent.recordatorios.actualizarRecordatorio(
         'p1',
         id,
         fechaHora: DateTime(2026, 10, 1, 10),
@@ -385,7 +387,7 @@ void main() {
         });
 
         await expectLater(
-          ent.datos.actualizarRecordatorio(
+          ent.recordatorios.actualizarRecordatorio(
             'p1',
             'r1',
             titulo: 'Nuevo título',
@@ -498,7 +500,7 @@ void main() {
   group('Los borrados también se encolan sin red', () {
     test('sin red el borrado se ve de inmediato y llega al servidor', () async {
       final ent = await _crearEntorno(enLinea: true);
-      final id = await ent.datos.agregarRecordatorio(
+      final id = await ent.recordatorios.agregarRecordatorio(
         'p1',
         Recordatorio(
           id: 'r1',
@@ -515,7 +517,7 @@ void main() {
       );
 
       ent.red.fijar(false);
-      await ent.datos.eliminarRecordatorio('p1', id);
+      await ent.recordatorios.eliminarRecordatorio('p1', id);
 
       expect(
         (await ent.coleccion('p1', 'recordatorios').doc(id).get()).exists,
@@ -569,7 +571,7 @@ void main() {
 
     test('crear y luego borrar sin red deja el documento ausente', () async {
       final ent = await _crearEntorno(enLinea: false);
-      final id = await ent.datos.agregarRecordatorio(
+      final id = await ent.recordatorios.agregarRecordatorio(
         'p1',
         Recordatorio(
           id: 'r1',
@@ -580,7 +582,7 @@ void main() {
           creadoEn: DateTime(2026, 10, 1),
         ),
       );
-      await ent.datos.eliminarRecordatorio('p1', id);
+      await ent.recordatorios.eliminarRecordatorio('p1', id);
 
       final encoladas = await ent.cola.pendientes(_uid);
       expect(encoladas, hasLength(2));
@@ -603,7 +605,7 @@ void main() {
       'con red el borrado se aplica directo, sin pasar por la cola',
       () async {
         final ent = await _crearEntorno(enLinea: true);
-        final id = await ent.datos.agregarRecordatorio(
+        final id = await ent.recordatorios.agregarRecordatorio(
           'p1',
           Recordatorio(
             id: 'r1',
@@ -615,7 +617,7 @@ void main() {
           ),
         );
 
-        await ent.datos.eliminarRecordatorio('p1', id);
+        await ent.recordatorios.eliminarRecordatorio('p1', id);
 
         expect(await ent.cola.pendientes(_uid), isEmpty);
         expect(
@@ -629,7 +631,7 @@ void main() {
   group('El binding de paciente viaja en cada escritura', () {
     test('actualizar un recordatorio lo sigue declarando', () async {
       final ent = await _crearEntorno(enLinea: true);
-      final id = await ent.datos.agregarRecordatorio(
+      final id = await ent.recordatorios.agregarRecordatorio(
         'p1',
         Recordatorio(
           id: 'r1',
@@ -641,7 +643,7 @@ void main() {
         ),
       );
 
-      await ent.datos.actualizarRecordatorio('p1', id, activo: false);
+      await ent.recordatorios.actualizarRecordatorio('p1', id, activo: false);
 
       final doc = await ent.coleccion('p1', 'recordatorios').doc(id).get();
       expect(doc.data()!['pacienteId'], 'p1');

@@ -12,6 +12,7 @@ import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_carga.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
@@ -42,7 +43,7 @@ MockFirebaseAuth _auth({bool conSesion = false}) => MockFirebaseAuth(
 Future<ServicioBaseDatos> _baseConRecordatorio() async {
   final (base, _) = await baseRecordatorios();
   final idPaciente = await crearPacienteRecordatorios(base);
-  await base.agregarRecordatorio(
+  await RepositorioRecordatorios(base.bd).agregarRecordatorio(
     idPaciente,
     recordatorioDe(idPaciente, titulo: 'Tomar jarabe'),
   );

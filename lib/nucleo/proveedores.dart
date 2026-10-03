@@ -13,6 +13,7 @@ import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/proveedores_perfil.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/proveedores_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
@@ -462,7 +463,7 @@ final recordatoriosProvider = StreamProvider.autoDispose<List<Recordatorio>>((
   final paciente = pacienteAsync.value;
   if (paciente == null) return Stream.value(const []);
   return ref
-      .watch(servicioBaseDatosProvider)
+      .watch(repositorioRecordatoriosProvider)
       .recordatoriosEnTiempoReal(paciente.id);
 });
 

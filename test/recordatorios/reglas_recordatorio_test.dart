@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -123,7 +124,9 @@ void main() {
               ),
             });
 
-        final leidos = await base.recordatoriosEnTiempoReal(idPaciente).first;
+        final leidos = await RepositorioRecordatorios(
+          base.bd,
+        ).recordatoriosEnTiempoReal(idPaciente).first;
         expect(leidos.single.titulo, 'Jarabe de la mañana');
         expect(leidos.single.asignadoA, Recordatorio.asignadoAPaciente);
         expect(leidos.single.esParaCuidador, isFalse);
@@ -137,7 +140,7 @@ void main() {
     ) async {
       final (base, firestore) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Retirar receta'),
       );

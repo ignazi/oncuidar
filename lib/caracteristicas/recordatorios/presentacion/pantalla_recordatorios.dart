@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/proveedores_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/compartido/estilos.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
@@ -34,13 +35,6 @@ enum _AccionRecordatorio { editar, eliminar }
     _ => (icono: Icons.lightbulb_rounded, color: const Color(0xFF8B5CF6)),
   };
 }
-
-String _etiquetaTipo(String tipo) => switch (tipo) {
-  'medicamento' => 'Medicamento',
-  'medicion' => 'Medición',
-  'cita' => 'Cita médica',
-  _ => 'Recordatorio',
-};
 
 String _diaCorto(String dia) => switch (dia) {
   'lun' => 'Lun',
@@ -638,7 +632,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
   ) {
     return notif.programar(
       id: ServicioNotificaciones.idSeguro(r.id),
-      titulo: r.tituloAviso(nombrePaciente, _etiquetaTipo(r.tipo)),
+      titulo: r.tituloAviso(nombrePaciente, etiquetaTipoRecordatorio(r.tipo)),
       cuerpo: r.cuerpoAviso,
       fechaHora: r.fechaHora,
       diasRepeticion: r.diasRepeticion,
@@ -652,7 +646,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
     final nuevoActivo = !r.activo;
     try {
       await ref
-          .read(servicioBaseDatosProvider)
+          .read(repositorioRecordatoriosProvider)
           .actualizarRecordatorio(paciente.id, r.id, activo: nuevoActivo);
       final notif = ref.read(servicioNotificacionesProvider);
       if (nuevoActivo) {
@@ -681,7 +675,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
     if (confirmar != true || !mounted) return;
     try {
       await ref
-          .read(servicioBaseDatosProvider)
+          .read(repositorioRecordatoriosProvider)
           .eliminarRecordatorio(paciente.id, r.id);
       await ref
           .read(servicioNotificacionesProvider)
@@ -1016,7 +1010,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
       hora.hour,
       hora.minute,
     );
-    final base = ref.read(servicioBaseDatosProvider);
+    final repositorio = ref.read(repositorioRecordatoriosProvider);
     final notif = ref.read(servicioNotificacionesProvider);
     final mensual = modoRepeticion == 'mensual';
     final diasGuardar = mensual || modoRepeticion == 'unavez'
@@ -1042,7 +1036,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
           activo: true,
           creadoEn: DateTime.now(),
         );
-        final docId = await base.agregarRecordatorio(paciente.id, r);
+        final docId = await repositorio.agregarRecordatorio(paciente.id, r);
         await notif.solicitarPermiso();
         await _programarAviso(
           notif,
@@ -1061,7 +1055,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
           ),
         );
       } else {
-        await base.actualizarRecordatorio(
+        await repositorio.actualizarRecordatorio(
           paciente.id,
           existente.id,
           tipo: tipo,

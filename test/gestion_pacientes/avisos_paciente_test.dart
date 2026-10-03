@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/gestion_pacientes.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -48,11 +49,11 @@ void main() {
       base,
       nombre: 'Rosa Pérez',
     );
-    final id1 = await base.agregarRecordatorio(
+    final id1 = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
       idPaciente,
       recordatorioDe(idPaciente, titulo: 'Jarabe'),
     );
-    final id2 = await base.agregarRecordatorio(
+    final id2 = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
       idPaciente,
       recordatorioDe(idPaciente, titulo: 'Control'),
     );
@@ -78,7 +79,7 @@ void main() {
   ) async {
     final (base, _) = await baseRecordatorios();
     final idPaciente = await crearPacienteRecordatorios(base);
-    final id = await base.agregarRecordatorio(
+    final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
       idPaciente,
       recordatorioDe(idPaciente, titulo: 'Jarabe'),
     );
@@ -101,7 +102,7 @@ void main() {
       base,
       nombre: 'Rosa Pérez',
     );
-    await base.agregarRecordatorio(
+    await RepositorioRecordatorios(base.bd).agregarRecordatorio(
       idPaciente,
       recordatorioDe(idPaciente, titulo: 'Jarabe'),
     );

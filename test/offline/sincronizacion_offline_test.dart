@@ -4,6 +4,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
@@ -61,6 +62,7 @@ class _Entorno {
   final _BaseConFallos base;
 
   ServicioBaseDatos get datos => ServicioBaseDatos.sobre(base);
+  RepositorioRecordatorios get recordatorios => RepositorioRecordatorios(base);
   RepositorioRegistrosClinicos get registros =>
       RepositorioRegistrosClinicos(base);
   final OrquestadorSincronizacion orquestador;
@@ -142,7 +144,7 @@ void main() {
       'un recordatorio creado sin red se ve de inmediato y queda en la cola',
       () async {
         final e = await _crearEntorno();
-        final id = await e.datos.agregarRecordatorio(
+        final id = await e.recordatorios.agregarRecordatorio(
           'pacienteA',
           _recordatorio('pacienteA'),
         );
@@ -153,7 +155,7 @@ void main() {
           hasLength(1),
           reason: 'sin red la lista debe mostrar lo recién creado',
         );
-        final visibles = await e.datos
+        final visibles = await e.recordatorios
             .recordatoriosEnTiempoReal('pacienteA')
             .first;
         expect(visibles.map((r) => r.titulo), ['Dar paracetamol']);
@@ -171,7 +173,7 @@ void main() {
           'pacienteA',
           _registro('r1', 'pacienteA'),
         );
-        await e.datos.agregarRecordatorio(
+        await e.recordatorios.agregarRecordatorio(
           'pacienteA',
           _recordatorio('pacienteA'),
         );
@@ -194,7 +196,7 @@ void main() {
 
     test('con conexión se escribe directo y la cola queda vacía', () async {
       final e = await _crearEntorno(enLinea: true);
-      final id = await e.datos.agregarRecordatorio(
+      final id = await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );
@@ -211,7 +213,7 @@ void main() {
         'pacienteA',
         _registro('r1', 'pacienteA'),
       );
-      final idRec = await e.datos.agregarRecordatorio(
+      final idRec = await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );
@@ -236,7 +238,7 @@ void main() {
 
     test('sin red no envía nada y conserva la cola', () async {
       final e = await _crearEntorno();
-      await e.datos.agregarRecordatorio(
+      await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );
@@ -247,7 +249,7 @@ void main() {
 
     test('drenar dos veces no duplica documentos', () async {
       final e = await _crearEntorno();
-      await e.datos.agregarRecordatorio(
+      await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );
@@ -262,7 +264,7 @@ void main() {
 
     test('reenviar una escritura ya aplicada es idempotente', () async {
       final e = await _crearEntorno(enLinea: true);
-      await e.datos.agregarRecordatorio(
+      await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );
@@ -285,11 +287,15 @@ void main() {
       'aplica en orden: crear y luego actualizar el mismo recordatorio',
       () async {
         final e = await _crearEntorno();
-        final id = await e.datos.agregarRecordatorio(
+        final id = await e.recordatorios.agregarRecordatorio(
           'pacienteA',
           _recordatorio('pacienteA'),
         );
-        await e.datos.actualizarRecordatorio('pacienteA', id, activo: false);
+        await e.recordatorios.actualizarRecordatorio(
+          'pacienteA',
+          id,
+          activo: false,
+        );
         e.red.fijar(true);
         await e.orquestador.drenar();
 
@@ -307,7 +313,7 @@ void main() {
       () async {
         final e = await _crearEntorno();
         e.orquestador.iniciar();
-        await e.datos.agregarRecordatorio(
+        await e.recordatorios.agregarRecordatorio(
           'pacienteA',
           _recordatorio('pacienteA'),
         );
@@ -326,7 +332,7 @@ void main() {
       'la cola sobrevive al cierre de la app y se envía al reabrir',
       () async {
         final e = await _crearEntorno();
-        await e.datos.agregarRecordatorio(
+        await e.recordatorios.agregarRecordatorio(
           'pacienteA',
           _recordatorio('pacienteA'),
         );
@@ -368,12 +374,16 @@ void main() {
       'un borrado en el servidor gana sobre una actualización encolada',
       () async {
         final e = await _crearEntorno(enLinea: true);
-        final id = await e.datos.agregarRecordatorio(
+        final id = await e.recordatorios.agregarRecordatorio(
           'pacienteA',
           _recordatorio('pacienteA'),
         );
         e.red.fijar(false);
-        await e.datos.actualizarRecordatorio('pacienteA', id, activo: false);
+        await e.recordatorios.actualizarRecordatorio(
+          'pacienteA',
+          id,
+          activo: false,
+        );
         await e.coleccion('pacienteA', 'recordatorios').doc(id).delete();
 
         e.red.fijar(true);
@@ -391,13 +401,21 @@ void main() {
 
     test('la última escritura encolada gana campo a campo', () async {
       final e = await _crearEntorno(enLinea: true);
-      final id = await e.datos.agregarRecordatorio(
+      final id = await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );
       e.red.fijar(false);
-      await e.datos.actualizarRecordatorio('pacienteA', id, activo: false);
-      await e.datos.actualizarRecordatorio('pacienteA', id, activo: true);
+      await e.recordatorios.actualizarRecordatorio(
+        'pacienteA',
+        id,
+        activo: false,
+      );
+      await e.recordatorios.actualizarRecordatorio(
+        'pacienteA',
+        id,
+        activo: true,
+      );
 
       e.red.fijar(true);
       await e.orquestador.drenar();
@@ -411,7 +429,7 @@ void main() {
   group('Fallos durante el drenaje', () {
     test('un fallo transitorio a mitad no pierde ninguna escritura', () async {
       final e = await _crearEntorno();
-      await e.datos.agregarRecordatorio(
+      await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );
@@ -448,7 +466,7 @@ void main() {
       final e = await _crearEntorno(
         retardoBase: const Duration(milliseconds: 10),
       );
-      await e.datos.agregarRecordatorio(
+      await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );
@@ -479,7 +497,7 @@ void main() {
         'pacienteA',
         _registro('r1', 'pacienteA'),
       );
-      await e.datos.agregarRecordatorio(
+      await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );
@@ -503,7 +521,7 @@ void main() {
 
     test('tras agotar los intentos la escritura pasa a fallidas', () async {
       final e = await _crearEntorno(maxIntentos: 2);
-      await e.datos.agregarRecordatorio(
+      await e.recordatorios.agregarRecordatorio(
         'pacienteA',
         _recordatorio('pacienteA'),
       );

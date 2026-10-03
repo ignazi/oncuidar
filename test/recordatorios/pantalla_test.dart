@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
@@ -262,7 +263,7 @@ void main() {
       (tester) async {
         final (base, firestore) = await baseRecordatorios();
         final idPaciente = await crearPacienteRecordatorios(base);
-        final id = await base.agregarRecordatorio(
+        final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
           idPaciente,
           recordatorioDe(
             idPaciente,
@@ -302,7 +303,7 @@ void main() {
       final idPaciente = await crearPacienteRecordatorios(base);
       final futura = DateTime.now().add(const Duration(days: 10));
       final original = DateTime(futura.year, futura.month, futura.day, 9);
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, fechaHora: original),
       );

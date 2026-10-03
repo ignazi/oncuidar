@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -79,10 +80,14 @@ void main() {
   group('Un borrado nunca se deshace al sincronizar', () {
     test('crear sin red, volver la red y borrar antes de drenar', () async {
       final ent = await _crearEntorno(enLinea: false);
-      final id = await ent.base.agregarRecordatorio('p1', _recordatorio('A'));
+      final id = await RepositorioRecordatorios(
+        ent.base.bd,
+      ).agregarRecordatorio('p1', _recordatorio('A'));
 
       ent.red.fijar(true);
-      await ent.base.eliminarRecordatorio('p1', id);
+      await RepositorioRecordatorios(
+        ent.base.bd,
+      ).eliminarRecordatorio('p1', id);
 
       final cola = await ent.cola.pendientes(_uid);
       expect(cola.map((e) => e.operacion), [
@@ -104,13 +109,14 @@ void main() {
       'editar un documento ya borrado en el servidor no lo revive',
       () async {
         final ent = await _crearEntorno();
-        final id = await ent.base.agregarRecordatorio(
-          'p1',
-          _recordatorio('Turno'),
-        );
+        final id = await RepositorioRecordatorios(
+          ent.base.bd,
+        ).agregarRecordatorio('p1', _recordatorio('Turno'));
         await ent.coleccion('recordatorios').doc(id).delete();
 
-        await ent.base.actualizarRecordatorio('p1', id, activo: false);
+        await RepositorioRecordatorios(
+          ent.base.bd,
+        ).actualizarRecordatorio('p1', id, activo: false);
 
         expect(
           (await ent.coleccion('recordatorios').doc(id).get()).exists,
@@ -123,12 +129,13 @@ void main() {
       'una actualización encolada de un documento borrado se descarta',
       () async {
         final ent = await _crearEntorno();
-        final id = await ent.base.agregarRecordatorio(
-          'p1',
-          _recordatorio('Turno'),
-        );
+        final id = await RepositorioRecordatorios(
+          ent.base.bd,
+        ).agregarRecordatorio('p1', _recordatorio('Turno'));
         ent.red.fijar(false);
-        await ent.base.actualizarRecordatorio('p1', id, activo: false);
+        await RepositorioRecordatorios(
+          ent.base.bd,
+        ).actualizarRecordatorio('p1', id, activo: false);
         await ent.coleccion('recordatorios').doc(id).delete();
 
         ent.red.fijar(true);
@@ -146,15 +153,18 @@ void main() {
   group('Una edición nueva no se pisa con una vieja', () {
     test('con pendientes del mismo documento la nueva va detrás', () async {
       final ent = await _crearEntorno();
-      final id = await ent.base.agregarRecordatorio(
-        'p1',
-        _recordatorio('Turno'),
-      );
+      final id = await RepositorioRecordatorios(
+        ent.base.bd,
+      ).agregarRecordatorio('p1', _recordatorio('Turno'));
       ent.red.fijar(false);
-      await ent.base.actualizarRecordatorio('p1', id, activo: false);
+      await RepositorioRecordatorios(
+        ent.base.bd,
+      ).actualizarRecordatorio('p1', id, activo: false);
 
       ent.red.fijar(true);
-      await ent.base.actualizarRecordatorio('p1', id, activo: true);
+      await RepositorioRecordatorios(
+        ent.base.bd,
+      ).actualizarRecordatorio('p1', id, activo: true);
 
       expect(await ent.cola.pendientes(_uid), hasLength(2));
 
@@ -166,11 +176,12 @@ void main() {
 
     test('sin pendientes la escritura va directa al servidor', () async {
       final ent = await _crearEntorno();
-      final id = await ent.base.agregarRecordatorio(
-        'p1',
-        _recordatorio('Turno'),
-      );
-      await ent.base.actualizarRecordatorio('p1', id, activo: false);
+      final id = await RepositorioRecordatorios(
+        ent.base.bd,
+      ).agregarRecordatorio('p1', _recordatorio('Turno'));
+      await RepositorioRecordatorios(
+        ent.base.bd,
+      ).actualizarRecordatorio('p1', id, activo: false);
 
       expect(await ent.cola.pendientes(_uid), isEmpty);
       final doc = await ent.coleccion('recordatorios').doc(id).get();
@@ -183,10 +194,9 @@ void main() {
     () async {
       final ent = await _crearEntorno();
       expect(
-        () => ent.base.agregarRecordatorio(
-          'p1',
-          _recordatorio('A', paciente: 'p2'),
-        ),
+        () => RepositorioRecordatorios(
+          ent.base.bd,
+        ).agregarRecordatorio('p1', _recordatorio('A', paciente: 'p2')),
         throwsArgumentError,
       );
       expect((await ent.coleccion('recordatorios').get()).docs, isEmpty);

@@ -12,6 +12,7 @@ import 'package:oncuidar/caracteristicas/chat/datos/repositorio_conversaciones.d
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
@@ -56,7 +57,7 @@ void main() {
         observaciones: 'obs $etiqueta',
       ),
     );
-    await base.agregarRecordatorio(
+    await RepositorioRecordatorios(base.bd).agregarRecordatorio(
       id,
       Recordatorio(
         id: '',

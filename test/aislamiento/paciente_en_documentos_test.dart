@@ -4,6 +4,7 @@
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
@@ -33,7 +34,7 @@ void main() {
       'un recordatorio creado guarda pacienteId igual al de su ruta',
       () async {
         final ahora = DateTime.now();
-        final id = await base.agregarRecordatorio(
+        final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
           'pacienteA',
           Recordatorio(
             id: '',

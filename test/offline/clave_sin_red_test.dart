@@ -6,6 +6,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
@@ -95,7 +96,9 @@ void main() {
       'un recordatorio falla con un error explícito y no se encola',
       () async {
         await expectLater(
-          base.agregarRecordatorio('pacienteA', _recordatorio()),
+          RepositorioRecordatorios(
+            base.bd,
+          ).agregarRecordatorio('pacienteA', _recordatorio()),
           throwsA(isA<ClaveNoDisponibleSinConexion>()),
         );
         await afirmarNadaEscrito();
@@ -135,7 +138,9 @@ void main() {
     });
 
     test('también encola recordatorios', () async {
-      await base.agregarRecordatorio('pacienteA', _recordatorio());
+      await RepositorioRecordatorios(
+        base.bd,
+      ).agregarRecordatorio('pacienteA', _recordatorio());
       expect(await cola.pendientes(_uid), hasLength(1));
     });
   });
@@ -147,7 +152,9 @@ void main() {
       'conserva el comportamiento previo: error de clave no cargada',
       () async {
         await expectLater(
-          base.agregarRecordatorio('pacienteA', _recordatorio()),
+          RepositorioRecordatorios(
+            base.bd,
+          ).agregarRecordatorio('pacienteA', _recordatorio()),
           throwsA(isA<StateError>()),
         );
         expect(await cola.pendientes(_uid), isEmpty);

@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -167,7 +168,7 @@ void main() {
       final (base, firestore) = await _baseDatos();
       final idPaciente = await _sembrarPaciente(base);
       final fecha = DateTime.now();
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -201,7 +202,7 @@ void main() {
       final (base, _) = await _baseDatos();
       final idPaciente = await _sembrarPaciente(base);
       final fecha = DateTime.now();
-      await base.agregarRecordatorio(
+      await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -213,9 +214,9 @@ void main() {
           creadoEn: fecha,
         ),
       );
-      final recordatorios = await base
-          .recordatoriosEnTiempoReal(idPaciente)
-          .first;
+      final recordatorios = await RepositorioRecordatorios(
+        base.bd,
+      ).recordatoriosEnTiempoReal(idPaciente).first;
       expect(recordatorios, hasLength(1));
       expect(recordatorios.first.titulo, 'Control médico');
       expect(recordatorios.first.tipo, 'cita');
@@ -225,7 +226,7 @@ void main() {
       final (base, firestore) = await _baseDatos();
       final idPaciente = await _sembrarPaciente(base);
       final fecha = DateTime.now();
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -243,13 +244,17 @@ void main() {
       expect(payload['recurrencia'], 'mensual');
       expect(datos!.containsKey('completadoEn'), isFalse);
 
-      var recordatorios = await base
-          .recordatoriosEnTiempoReal(idPaciente)
-          .first;
+      var recordatorios = await RepositorioRecordatorios(
+        base.bd,
+      ).recordatoriosEnTiempoReal(idPaciente).first;
       expect(recordatorios.single.esMensual, isTrue);
 
-      await base.actualizarRecordatorio(idPaciente, id, recurrencia: '');
-      recordatorios = await base.recordatoriosEnTiempoReal(idPaciente).first;
+      await RepositorioRecordatorios(
+        base.bd,
+      ).actualizarRecordatorio(idPaciente, id, recurrencia: '');
+      recordatorios = await RepositorioRecordatorios(
+        base.bd,
+      ).recordatoriosEnTiempoReal(idPaciente).first;
       expect(recordatorios.single.recurrencia, isNull);
     });
 
@@ -260,7 +265,7 @@ void main() {
         final idPaciente = await _sembrarPaciente(base);
         final fecha = DateTime(2026, 9, 21, 9, 0);
         // Activo semanal: debe reprogramarse.
-        await base.agregarRecordatorio(
+        await RepositorioRecordatorios(base.bd).agregarRecordatorio(
           idPaciente,
           Recordatorio(
             id: '',
@@ -274,7 +279,7 @@ void main() {
           ),
         );
         // Activo mensual: debe reprogramarse con mensual=true.
-        await base.agregarRecordatorio(
+        await RepositorioRecordatorios(base.bd).agregarRecordatorio(
           idPaciente,
           Recordatorio(
             id: '',
@@ -288,7 +293,7 @@ void main() {
           ),
         );
         // Inactivo: no.
-        await base.agregarRecordatorio(
+        await RepositorioRecordatorios(base.bd).agregarRecordatorio(
           idPaciente,
           Recordatorio(
             id: '',
@@ -424,7 +429,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      await base.agregarRecordatorio(
+      await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -446,7 +451,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -500,7 +505,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -549,7 +554,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -609,7 +614,7 @@ void main() {
       final idPaciente = await _sembrarPaciente(base);
       final notif = _FakeNotificaciones();
       final fecha = DateTime.now();
-      final id = await base.agregarRecordatorio(
+      final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
         idPaciente,
         Recordatorio(
           id: '',
@@ -652,7 +657,7 @@ void main() {
         final notif = _FakeNotificaciones();
         // Una sola vez y vigente: los vencidos ya no se reprograman.
         final fecha = DateTime.now().add(const Duration(days: 2));
-        final id = await base.agregarRecordatorio(
+        final id = await RepositorioRecordatorios(base.bd).agregarRecordatorio(
           idPaciente,
           Recordatorio(
             id: '',

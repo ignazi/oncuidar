@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_carga.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -72,7 +73,9 @@ void main() {
     test('no propaga el fallo del plugin ni al cancelar', () async {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      await base.agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
+      await RepositorioRecordatorios(
+        base.bd,
+      ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
       final notif = _AvisosQueFallan();
 
       await expectLater(base.reagendarNotificaciones(notif), completes);
@@ -86,7 +89,7 @@ void main() {
     test('no lanza ni programa avisos ilegibles', () async {
       final (baseOrigen, firestore) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(baseOrigen);
-      await baseOrigen.agregarRecordatorio(
+      await RepositorioRecordatorios(baseOrigen.bd).agregarRecordatorio(
         idPaciente,
         recordatorioDe(idPaciente, titulo: 'Tomar jarabe'),
       );
@@ -107,7 +110,9 @@ void main() {
     test('traga el fallo del servicio de avisos', () async {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      await base.agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
+      await RepositorioRecordatorios(
+        base.bd,
+      ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
 
       reagendarAvisosEnSegundoPlano(base, _AvisosQueFallan());
       await Future<void>.delayed(const Duration(milliseconds: 10));
@@ -129,7 +134,9 @@ void main() {
     ) async {
       final (base, _) = await baseRecordatorios();
       final idPaciente = await crearPacienteRecordatorios(base);
-      await base.agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
+      await RepositorioRecordatorios(
+        base.bd,
+      ).agregarRecordatorio(idPaciente, recordatorioDe(idPaciente));
       final notif = _AvisosQueFallan();
 
       await tester.pumpWidget(
