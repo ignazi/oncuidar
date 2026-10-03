@@ -5,13 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
+import 'package:oncuidar/caracteristicas/chat/presentacion/controlador_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/proveedor_chat_activo.dart';
-import 'package:oncuidar/caracteristicas/chat/presentacion/proveedores_chat.dart';
+import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/burbujas_chat.dart';
+import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/entrada_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/hoja_conversaciones.dart';
+import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/sugerencias_chat.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/catalogo_preguntas.dart';
-import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/pregunta_base.dart';
 import 'package:oncuidar/compartido/estilos.dart';
 import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
@@ -33,13 +34,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _focoEntrada = FocusNode();
   final _focoBusqueda = FocusNode();
   final _scroll = ScrollController();
+  late final _chat = ControladorChat(ref);
 
-  List<MensajeConversacion> get _mensajes =>
-      ref.read(chatActivoProvider).mensajes;
-
-  String? get _tituloConversacion => ref.read(chatActivoProvider).titulo;
-
-  Future<void> _colaGuardado = Future<void>.value();
   bool _avisoGuardadoMostrado = false;
   bool _escribiendo = false;
   bool _buscando = false;
@@ -55,23 +51,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// Restaura la conversación activa al abrir la pantalla: la del provider
   /// si existe, o la guardada para este usuario; si no, una nueva.
   Future<void> _inicializar() async {
-    final activo = ref.read(chatActivoProvider);
-    if (activo.mensajes.isNotEmpty) {
+    if (_chat.mensajes.isNotEmpty) {
       _irAlFinal();
       return;
     }
     try {
-      final id = await ref.read(chatActivoProvider.notifier).idGuardado();
-      if (id != null && id.isNotEmpty) {
-        final conversaciones = await ref
-            .read(conversacionesProvider.future)
-            .timeout(const Duration(seconds: 5));
-        for (final conversacion in conversaciones) {
-          if (conversacion.id == id && mounted) {
-            _cargarConversacion(conversacion);
-            return;
-          }
-        }
+      final guardada = await _chat.conversacionGuardada();
+      if (guardada != null && mounted) {
+        _cargarConversacion(guardada);
+        return;
       }
     } catch (_) {
       // Sin almacenamiento ni red: se cae a un chat nuevo.
@@ -94,90 +82,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setState(() => _busqueda = _controladorBusqueda.text);
   }
 
-  List<PreguntaBase> get _preguntasNoUsadas {
-    final usadas = _mensajes
-        .where((m) => m.delUsuario)
-        .map((m) => m.texto)
-        .toSet();
-    return preguntasFrecuentes
-        .where((p) => !usadas.contains(p.pregunta))
-        .toList();
-  }
-
   bool get _muestraSugerenciasIniciales =>
-      _mensajes.length == 1 && !_escribiendo && !_buscando;
+      _chat.mensajes.length == 1 && !_escribiendo && !_buscando;
 
   bool get _muestraSeguimiento =>
-      _mensajes.length > 1 &&
+      _chat.mensajes.length > 1 &&
       !_escribiendo &&
       !_buscando &&
-      !_mensajes.last.delUsuario &&
-      _preguntasNoUsadas.isNotEmpty;
-
-  List<MensajeConversacion> get _mensajesFiltrados {
-    final termino = normalizarTexto(_busqueda);
-    if (termino.isEmpty) {
-      return _mensajes;
-    }
-    return _mensajes
-        .where((m) => normalizarTexto(m.texto).contains(termino))
-        .toList();
-  }
-
-  PreguntaBase? _resolver(String texto) {
-    final entrada = normalizarTexto(texto);
-    if (entrada.isEmpty) {
-      return null;
-    }
-    final tokens = entrada
-        .split(RegExp(r'[^a-z0-9]+'))
-        .where((t) => t.length > 2)
-        .toList();
-    PreguntaBase? mejor;
-    var mejorPuntaje = 0;
-    for (final pregunta in preguntasFrecuentes) {
-      final cuerpo = normalizarTexto(
-        '${pregunta.pregunta} ${pregunta.claves.join(' ')}',
-      );
-      var puntaje = 0;
-      if (cuerpo.contains(entrada)) {
-        puntaje += 6;
-      }
-      for (final token in tokens) {
-        if (cuerpo.contains(token)) {
-          puntaje += token.length >= 6 ? 2 : 1;
-        }
-      }
-      for (final clave in pregunta.claves) {
-        final claveNormalizada = normalizarTexto(clave);
-        if (claveNormalizada.length > 2 && entrada.contains(claveNormalizada)) {
-          puntaje += 2;
-        }
-      }
-      if (puntaje > mejorPuntaje) {
-        mejorPuntaje = puntaje;
-        mejor = pregunta;
-      }
-    }
-    return mejorPuntaje >= 2 ? mejor : null;
-  }
+      !_chat.mensajes.last.delUsuario &&
+      _chat.preguntasNoUsadas.isNotEmpty;
 
   void _enviar([String? plantilla]) {
     final texto = (plantilla ?? _controladorTexto.text).trim();
     if (texto.isEmpty || _escribiendo) {
       return;
     }
-    final respuesta = _resolver(texto);
-    setState(() {
-      _escribiendo = true;
-    });
-    final notifier = ref.read(chatActivoProvider.notifier);
-    notifier.agregarMensaje(
-      MensajeConversacion(texto: texto, delUsuario: true),
-    );
-    if (respuesta != null && ref.read(chatActivoProvider).categoria == null) {
-      notifier.fijarCategoria(respuesta.categoria);
-    }
+    setState(() => _escribiendo = true);
+    final respuesta = _chat.preguntar(texto);
     _controladorTexto.clear();
     _focoEntrada.unfocus();
     _encolarGuardado();
@@ -187,77 +108,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         if (!mounted) {
           return;
         }
-        setState(() {
-          _escribiendo = false;
-        });
-        ref
-            .read(chatActivoProvider.notifier)
-            .agregarMensaje(
-              MensajeConversacion(
-                texto: respuesta?.respuesta ?? mensajeSinCoincidencia,
-                delUsuario: false,
-              ),
-            );
+        setState(() => _escribiendo = false);
+        _chat.responder(respuesta);
         _irAlFinal();
         _encolarGuardado();
       }),
     );
   }
 
-  List<MensajeConversacion> get _mensajesAGuardar =>
-      _mensajes.where((m) => m.texto != mensajeBienvenidaChat).toList();
-
-  /// Nombre de una conversación nueva: el que dio el usuario o su primera pregunta recortada.
-  String _nombrePorDefecto() {
-    final titulo = ref.read(chatActivoProvider).titulo?.trim();
-    if (titulo != null && titulo.isNotEmpty) {
-      return titulo;
-    }
-    final primera = _mensajesAGuardar.where((m) => m.delUsuario).firstOrNull;
-    return tituloAutomaticoConversacion(primera?.texto ?? '');
-  }
-
-  /// Encola el guardado en serie para que dos escrituras nunca se pisen.
   void _encolarGuardado() {
-    _colaGuardado = _colaGuardado.then((_) => _persistirConversacion());
+    _chat.encolarGuardado(
+      sigueAbierta: () => mounted,
+      alFallar: _avisarFalloGuardado,
+    );
   }
 
-  /// Guarda la conversación (best-effort): crea el doc la primera vez y luego
-  /// lo actualiza. Nunca bloquea la UI ni persiste el mensaje de bienvenida.
-  Future<void> _persistirConversacion() async {
-    if (!mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    final mensajes = _mensajesAGuardar;
-    if (mensajes.isEmpty) return;
-    try {
-      final repositorio = ref.read(repositorioConversacionesProvider);
-      final activo = ref.read(chatActivoProvider);
-      if (activo.conversacionId == null) {
-        final id = await repositorio.crearConversacion(
-          titulo: _nombrePorDefecto(),
-          mensajes: mensajes,
-        );
-        ref.read(chatActivoProvider.notifier).fijarId(id);
-      } else {
-        await repositorio.actualizarConversacion(
-          activo.conversacionId!,
-          mensajes: mensajes,
-        );
-      }
-    } catch (e, pila) {
-      debugPrint('No se pudo persistir la conversación: $e\n$pila');
-      if (!mounted || _avisoGuardadoMostrado) return;
-      _avisoGuardadoMostrado = true;
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No se pudo guardar la conversación. Revisa tu conexión.',
-          ),
-          backgroundColor: Paleta.doradoPrincipal,
-          duration: Duration(seconds: 2),
+  /// Avisa una sola vez que la conversación no se pudo guardar.
+  void _avisarFalloGuardado() {
+    if (_avisoGuardadoMostrado) return;
+    _avisoGuardadoMostrado = true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'No se pudo guardar la conversación. Revisa tu conexión.',
         ),
-      );
-    }
+        backgroundColor: Paleta.doradoPrincipal,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   void _abrirHojaConversaciones() {
@@ -266,50 +144,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       alEntrar: _cargarConversacion,
       alEliminar: _alEliminarConversacion,
       alCrearNueva: _nuevaConversacion,
-      alRenombrar: (id, titulo) {
-        if (id == ref.read(chatActivoProvider).conversacionId) {
-          ref.read(chatActivoProvider.notifier).fijarTitulo(titulo);
-        }
-      },
+      alRenombrar: _chat.renombrarActiva,
     );
   }
 
-  void _cargarConversacion(Conversacion conversacion) {
+  /// Deja la pantalla lista para mostrar otra conversación.
+  void _reiniciarVista() {
     setState(() {
       _escribiendo = false;
       _buscando = false;
     });
     _controladorBusqueda.clear();
     _focoBusqueda.unfocus();
-    ref
-        .read(chatActivoProvider.notifier)
-        .cargar(
-          id: conversacion.id,
-          titulo: conversacion.titulo,
-          mensajes: [
-            const MensajeConversacion(
-              texto: mensajeBienvenidaChat,
-              delUsuario: false,
-            ),
-            ...conversacion.mensajes,
-          ],
-        );
+  }
+
+  void _cargarConversacion(Conversacion conversacion) {
+    _reiniciarVista();
+    _chat.cargar(conversacion);
     _irAlFinal();
   }
 
   void _nuevaConversacion(String? nombre) {
-    setState(() {
-      _escribiendo = false;
-      _buscando = false;
-    });
-    _controladorBusqueda.clear();
-    _focoBusqueda.unfocus();
-    ref.read(chatActivoProvider.notifier).nueva(nombre: nombre);
+    _reiniciarVista();
+    _chat.nueva(nombre);
     _irAlFinal();
   }
 
   void _alEliminarConversacion(Conversacion conversacion) {
-    if (conversacion.id == ref.read(chatActivoProvider).conversacionId) {
+    if (_chat.esActiva(conversacion.id)) {
       _nuevaConversacion(null);
     }
   }
@@ -351,7 +213,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         children: [
           EncabezadoGradiente(
             titulo: 'Chat de orientación',
-            subtitulo: _tituloConversacion ?? 'Resuelve tus dudas',
+            subtitulo: _chat.tituloConversacion ?? 'Resuelve tus dudas',
             logo: const AssetImage('assets/images/OnCuidar.png'),
             tamanoTitulo: 20,
             alto: 100,
@@ -361,7 +223,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
           if (_buscando) _campoBusqueda(),
           Expanded(child: _zonaChat()),
-          _areaEntrada(),
+          EntradaChat(
+            controlador: _controladorTexto,
+            foco: _focoEntrada,
+            habilitada: !_escribiendo,
+            alEnviar: _enviar,
+          ),
         ],
       ),
     );
@@ -436,389 +303,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _zonaChat() {
-    final filtrados = _mensajesFiltrados;
+    final filtrados = _chat.filtrar(_busqueda);
     if (_buscando && _busqueda.trim().isNotEmpty && filtrados.isEmpty) {
-      return _estadoSinResultados();
+      return const _SinResultados();
     }
     return ListView(
       controller: _scroll,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       children: [
         for (var i = 0; i < filtrados.length; i++)
-          _burbuja(
-            filtrados[i],
+          BurbujaMensaje(
+            mensaje: filtrados[i],
             agrupado:
                 i > 0 && filtrados[i - 1].delUsuario == filtrados[i].delUsuario,
           ),
-        if (!_buscando && _escribiendo) _indicadorEscribiendo(),
-        if (_muestraSeguimiento) _sugerenciasSeguimiento(),
-        if (_muestraSugerenciasIniciales) _preguntasSugeridas(),
+        if (!_buscando && _escribiendo) const BurbujaEscribiendo(),
+        if (_muestraSeguimiento)
+          SugerenciasSeguimiento(
+            preguntas: _chat.preguntasNoUsadas,
+            alElegir: _enviar,
+          ),
+        if (_muestraSugerenciasIniciales)
+          PreguntasSugeridas(preguntas: preguntasFrecuentes, alElegir: _enviar),
       ],
     );
   }
+}
 
-  Widget _preguntasSugeridas() {
-    final sugerencias = preguntasFrecuentes;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            'Preguntas frecuentes',
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: Paleta.textoTerciario,
-            ),
-          ),
-        ),
-        for (final pregunta in sugerencias)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: GestureDetector(
-              key: Key('sugerencia_${pregunta.id}'),
-              onTap: () => _enviar(pregunta.pregunta),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Paleta.tarjeta,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Paleta.doradoOscuro.withValues(alpha: 0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        color: Paleta.doradoBannerClaro,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.question_answer_outlined,
-                        color: Paleta.doradoOscuro,
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        pregunta.pregunta,
-                        style: GoogleFonts.nunito(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: Paleta.textoPrincipal,
-                          height: 1.3,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: Paleta.textoSecundario,
-                      size: 22,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: GestureDetector(
-            key: const Key('verPreguntasFrecuentes'),
-            onTap: () => context.push('/faq'),
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.help_outline_rounded,
-                    size: 16,
-                    color: Paleta.doradoOscuro,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Ver todas las preguntas frecuentes',
-                    style: GoogleFonts.nunito(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Paleta.doradoOscuro,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+class _SinResultados extends StatelessWidget {
+  const _SinResultados();
 
-  Widget _sugerenciasSeguimiento() {
-    final sugerencias = _preguntasNoUsadas;
-    return Padding(
-      padding: const EdgeInsets.only(left: 36, top: 4, bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Otras preguntas:',
-            style: GoogleFonts.nunito(
-              fontSize: 13,
-              color: Paleta.textoSecundario,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final pregunta in sugerencias)
-                GestureDetector(
-                  key: Key('seguimiento_${pregunta.id}'),
-                  onTap: () => _enviar(pregunta.pregunta),
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.7,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Paleta.doradoBannerClaro,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: Paleta.doradoMedio.withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: Text(
-                      pregunta.pregunta,
-                      style: GoogleFonts.nunito(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: Paleta.doradoOscuro,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _indicadorEscribiendo() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          _avatarAsistente(),
-          const SizedBox(width: 8),
-          Container(
-            key: const Key('indicadorEscribiendo'),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            decoration: BoxDecoration(
-              color: Paleta.tarjeta,
-              borderRadius: BorderRadius.circular(
-                18,
-              ).copyWith(bottomLeft: const Radius.circular(6)),
-              boxShadow: [
-                BoxShadow(
-                  color: Paleta.doradoOscuro.withValues(alpha: 0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const _IndicadorEscribiendo(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _avatarAsistente() {
-    return Container(
-      width: 30,
-      height: 30,
-      margin: const EdgeInsets.only(bottom: 2),
-      decoration: BoxDecoration(
-        gradient: Paleta.degradadoCabecera,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Paleta.doradoOscuro.withValues(alpha: 0.18),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.smart_toy_outlined,
-        color: Colors.white,
-        size: 16,
-      ),
-    );
-  }
-
-  Widget _burbuja(MensajeConversacion mensaje, {bool agrupado = false}) {
-    final delUsuario = mensaje.delUsuario;
-    return Padding(
-      padding: EdgeInsets.only(bottom: agrupado ? 4 : 10),
-      child: Row(
-        mainAxisAlignment: delUsuario
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!delUsuario) ...[_avatarAsistente(), const SizedBox(width: 8)],
-          Flexible(
-            child: Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.75,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-              decoration: BoxDecoration(
-                gradient: delUsuario ? Paleta.degradadoCabecera : null,
-                color: delUsuario ? null : Paleta.tarjeta,
-                borderRadius: BorderRadius.circular(18).copyWith(
-                  bottomRight: delUsuario ? const Radius.circular(6) : null,
-                  bottomLeft: !delUsuario ? const Radius.circular(6) : null,
-                ),
-                border: delUsuario
-                    ? Border.all(color: Colors.white.withValues(alpha: 0.25))
-                    : null,
-                boxShadow: [
-                  BoxShadow(
-                    color: Paleta.doradoOscuro.withValues(
-                      alpha: delUsuario ? 0.18 : 0.06,
-                    ),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Text(
-                mensaje.texto,
-                style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  color: delUsuario ? Colors.white : Paleta.textoPrincipal,
-                  height: 1.45,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _areaEntrada() {
-    return Container(
-      color: Paleta.crema,
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 44),
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
-                decoration: BoxDecoration(
-                  color: Paleta.tarjeta,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Paleta.bordeTarjeta),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Paleta.doradoOscuro.withValues(alpha: 0.05),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  key: const Key('campoMensajeChat'),
-                  controller: _controladorTexto,
-                  focusNode: _focoEntrada,
-                  enabled: !_escribiendo,
-                  minLines: 1,
-                  maxLines: 4,
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (_) => _enviar(),
-                  style: GoogleFonts.nunito(
-                    fontSize: 14,
-                    color: Paleta.textoPrincipal,
-                    height: 1.4,
-                  ),
-                  decoration: InputDecoration.collapsed(
-                    hintText: 'Escribe tu duda aquí…',
-                    hintStyle: GoogleFonts.nunito(
-                      fontSize: 14,
-                      color: Paleta.textoSecundario,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            ValueListenableBuilder<TextEditingValue>(
-              valueListenable: _controladorTexto,
-              builder: (context, valor, _) {
-                final tieneTexto = valor.text.trim().isNotEmpty;
-                return GestureDetector(
-                  key: const Key('enviarMensaje'),
-                  onTap: _enviar,
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      gradient: Paleta.degradadoCabecera,
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Paleta.doradoOscuro.withValues(alpha: 0.25),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Opacity(
-                      opacity: tieneTexto ? 1 : 0.4,
-                      child: const Icon(
-                        Icons.send_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _estadoSinResultados() {
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -844,84 +360,4 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
     );
   }
-}
-
-class _IndicadorEscribiendo extends StatefulWidget {
-  const _IndicadorEscribiendo();
-
-  @override
-  State<_IndicadorEscribiendo> createState() => _IndicadorEscribiendoState();
-}
-
-class _IndicadorEscribiendoState extends State<_IndicadorEscribiendo>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controlador = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 800),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _controlador.dispose();
-    super.dispose();
-  }
-
-  Widget _punto(int indice) {
-    final animacion = CurvedAnimation(
-      parent: _controlador,
-      curve: Interval(
-        indice * 0.18,
-        indice * 0.18 + 0.4,
-        curve: Curves.easeInOut,
-      ),
-    );
-    return AnimatedBuilder(
-      animation: animacion,
-      builder: (context, _) {
-        final valor = animacion.value;
-        return Transform.translate(
-          offset: Offset(0, -3 * valor),
-          child: Opacity(
-            opacity: 0.25 + 0.75 * valor,
-            child: Container(
-              width: 7,
-              height: 7,
-              decoration: const BoxDecoration(
-                color: Paleta.textoSecundario,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _punto(0),
-        const SizedBox(width: 6),
-        _punto(1),
-        const SizedBox(width: 6),
-        _punto(2),
-      ],
-    );
-  }
-}
-
-/// Largo máximo del título automático de una conversación.
-const largoMaximoTituloConversacion = 40;
-
-/// Recorta la primera pregunta del usuario para usarla como título; vacía cae a 'Consulta'.
-String tituloAutomaticoConversacion(String primeraPregunta) {
-  final limpio = primeraPregunta.trim().replaceAll(RegExp(r'\s+'), ' ');
-  if (limpio.isEmpty) return 'Consulta';
-  if (limpio.length <= largoMaximoTituloConversacion) return limpio;
-  final corte = limpio.substring(0, largoMaximoTituloConversacion);
-  final ultimoEspacio = corte.lastIndexOf(' ');
-  final base = ultimoEspacio > 15 ? corte.substring(0, ultimoEspacio) : corte;
-  return '${base.trimRight()}…';
 }
