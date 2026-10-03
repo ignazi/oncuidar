@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/compartido/widgets/chip_franja.dart';
 import 'package:oncuidar/compartido/widgets/tarjeta_dato.dart';
+import 'package:oncuidar/compartido/widgets/tarjeta_perfil.dart';
 
 class TarjetaPerfilCuidador extends StatelessWidget {
   const TarjetaPerfilCuidador({
@@ -36,91 +37,59 @@ class TarjetaPerfilCuidador extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: double.infinity,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: Paleta.tarjeta,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.zero,
-              bottom: Radius.circular(24),
-            ),
-            border: Border.all(color: Paleta.bordeTarjeta),
-            boxShadow: [
-              BoxShadow(
-                color: Paleta.doradoOscuro.withValues(alpha: 0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
+    return MarcoTarjetaPerfil(
+      hijos: [
+        _CabeceraCuidador(nombre: nombre, relacion: relacion),
+        Padding(
+          padding: const EdgeInsets.only(top: 18),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _CabeceraCuidador(nombre: nombre, relacion: relacion),
+              _TarjetaDatosCuidador(direccion: direccion, telefono: telefono),
+              const SizedBox(height: 16),
               Padding(
-                padding: const EdgeInsets.only(top: 18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _TarjetaDatosCuidador(
-                      direccion: direccion,
-                      telefono: telefono,
-                    ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 18),
-                      child: _TarjetaAutenticacion(
-                        correoPrincipal: correoPrincipal,
-                        correoRespaldo: correoRespaldo,
-                        correoPrincipalPendiente: correoPrincipalPendiente,
-                        respaldoPendiente: respaldoPendiente,
-                        onEditarPrincipal: onEditarCorreoPrincipal,
-                        onEditarRespaldo: onEditarCorreoRespaldo,
-                      ),
-                    ),
-                  ],
+                padding: const EdgeInsets.only(bottom: 18),
+                child: _TarjetaAutenticacion(
+                  correoPrincipal: correoPrincipal,
+                  correoRespaldo: correoRespaldo,
+                  correoPrincipalPendiente: correoPrincipalPendiente,
+                  respaldoPendiente: respaldoPendiente,
+                  onEditarPrincipal: onEditarCorreoPrincipal,
+                  onEditarRespaldo: onEditarCorreoRespaldo,
                 ),
               ),
             ],
-          ),
-        ),
-        Positioned(
-          top: 10,
-          right: 10,
-          child: PopupMenuButton<_AccionCuidador>(
-            key: const Key('menuDatosPersonales'),
-            onSelected: (accion) {
-              if (accion == _AccionCuidador.editar) {
-                onEditarDatos();
-              }
-            },
-            itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: _AccionCuidador.editar,
-                child: ListTile(
-                  leading: Icon(Icons.edit_outlined),
-                  title: Text('Editar mis datos'),
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                ),
-              ),
-            ],
-            icon: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.more_vert_rounded, color: Colors.white),
-            ),
-            color: Paleta.tarjeta,
           ),
         ),
       ],
+      menu: PopupMenuButton<_AccionCuidador>(
+        key: const Key('menuDatosPersonales'),
+        onSelected: (accion) {
+          if (accion == _AccionCuidador.editar) {
+            onEditarDatos();
+          }
+        },
+        itemBuilder: (context) => const [
+          PopupMenuItem(
+            value: _AccionCuidador.editar,
+            child: ListTile(
+              leading: Icon(Icons.edit_outlined),
+              title: Text('Editar mis datos'),
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+            ),
+          ),
+        ],
+        icon: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.4),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.more_vert_rounded, color: Colors.white),
+        ),
+        color: Paleta.tarjeta,
+      ),
     );
   }
 }
@@ -135,76 +104,14 @@ class _CabeceraCuidador extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final relacion = this.relacion;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 18, 44, 16),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Paleta.doradoOscuro,
-            Paleta.doradoPrincipal,
-            Paleta.doradoMedio,
-          ],
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.22),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(
-              Icons.person_rounded,
-              color: Colors.white,
-              size: 26,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'MI PERFIL',
-                  style: GoogleFonts.nunito(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white.withValues(alpha: 0.85),
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  nombre.isEmpty ? 'Cuidador' : nombre,
-                  style: GoogleFonts.nunito(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-                if (relacion != null && relacion.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: [
-                        ChipFranja(
-                          Icons.family_restroom_outlined,
-                          'Parentesco: $relacion',
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return CabeceraDorada(
+      icono: Icons.person_rounded,
+      etiqueta: 'MI PERFIL',
+      nombre: nombre.isEmpty ? 'Cuidador' : nombre,
+      franjas: [
+        if (relacion != null && relacion.isNotEmpty)
+          ChipFranja(Icons.family_restroom_outlined, 'Parentesco: $relacion'),
+      ],
     );
   }
 }
