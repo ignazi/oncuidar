@@ -7,6 +7,7 @@ import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/proveedores_autenticacion.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/widgets/botones_acceso.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
@@ -495,84 +496,18 @@ class _RegistroState extends ConsumerState<Registro> {
   }
 
   Widget _botonGuardar() {
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: Opacity(
-        opacity: _cargando ? 0.6 : 1,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Paleta.doradoPrincipal.withValues(alpha: 0.35),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: _cargando ? null : _guardar,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: Colors.transparent,
-              elevation: 0,
-              shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: _cargando
-                ? const SizedBox(
-                    height: 22,
-                    width: 22,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
-                    ),
-                  )
-                : Text(
-                    'Guardar y continuar',
-                    style: GoogleFonts.nunito(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-          ),
-        ),
-      ),
+    return BotonDegradado(
+      etiqueta: 'Guardar y continuar',
+      cargando: _cargando,
+      alPulsar: _guardar,
     );
   }
 
   Widget _enlaceIniciarSesion() {
-    return Center(
-      child: TextButton(
-        onPressed: () => context.go('/iniciar-sesion'),
-        child: Text.rich(
-          TextSpan(
-            text: '¿Ya tienes cuenta? ',
-            style: GoogleFonts.nunito(
-              color: Paleta.textoSecundario,
-              fontSize: 14,
-            ),
-            children: [
-              TextSpan(
-                text: 'Iniciar sesión',
-                style: GoogleFonts.nunito(
-                  color: Paleta.doradoOscuro,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return EnlaceAcceso(
+      pregunta: '¿Ya tienes cuenta? ',
+      accion: 'Iniciar sesión',
+      alPulsar: () => context.go('/iniciar-sesion'),
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/widgets/botones_acceso.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 import 'package:oncuidar/compartido/widgets/marca.dart';
@@ -215,28 +216,10 @@ class _RecuperarAccesoState extends State<RecuperarAcceso> {
                         ),
                       ],
                       const SizedBox(height: 12),
-                      Center(
-                        child: TextButton(
-                          onPressed: () => context.push('/iniciar-sesion'),
-                          child: Text.rich(
-                            TextSpan(
-                              text: '¿Recordaste tus datos? ',
-                              style: GoogleFonts.nunito(
-                                color: Paleta.textoSecundario,
-                                fontSize: 14,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: 'Iniciar sesión',
-                                  style: GoogleFonts.nunito(
-                                    color: Paleta.doradoOscuro,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      EnlaceAcceso(
+                        pregunta: '¿Recordaste tus datos? ',
+                        accion: 'Iniciar sesión',
+                        alPulsar: () => context.push('/iniciar-sesion'),
                       ),
                       const SizedBox(height: 24),
                     ],

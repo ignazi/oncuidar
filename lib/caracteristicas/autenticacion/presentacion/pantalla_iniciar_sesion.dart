@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/widgets/botones_acceso.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/ciclo_de_vida_paciente.dart';
@@ -303,87 +304,16 @@ class _IniciarSesionState extends ConsumerState<IniciarSesion> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: Opacity(
-                          opacity: _cargando ? 0.6 : 1,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Paleta.doradoPrincipal,
-                                  Paleta.doradoOscuro,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Paleta.doradoPrincipal.withValues(
-                                    alpha: 0.35,
-                                  ),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: ElevatedButton(
-                              onPressed: _cargando ? null : _iniciarSesion,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: Colors.transparent,
-                                elevation: 0,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              child: _cargando
-                                  ? const SizedBox(
-                                      height: 22,
-                                      width: 22,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Iniciar sesión',
-                                      style: GoogleFonts.nunito(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
+                      BotonDegradado(
+                        etiqueta: 'Iniciar sesión',
+                        cargando: _cargando,
+                        alPulsar: _iniciarSesion,
                       ),
                       const SizedBox(height: 12),
-                      Center(
-                        child: TextButton(
-                          onPressed: () => context.go('/crear-cuenta'),
-                          child: Text.rich(
-                            TextSpan(
-                              text: '¿No tienes cuenta? ',
-                              style: GoogleFonts.nunito(
-                                color: Paleta.textoSecundario,
-                                fontSize: 14,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: 'Crear cuenta',
-                                  style: GoogleFonts.nunito(
-                                    color: Paleta.doradoOscuro,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      EnlaceAcceso(
+                        pregunta: '¿No tienes cuenta? ',
+                        accion: 'Crear cuenta',
+                        alPulsar: () => context.go('/crear-cuenta'),
                       ),
                       const SizedBox(height: 24),
                     ],
