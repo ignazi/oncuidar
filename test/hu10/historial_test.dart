@@ -195,7 +195,7 @@ void main() {
     await tester.tap(find.text('Click para ver registro completo'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Fiebre · Intenso (8/10)'), findsOneWidget);
+    expect(find.text('Fiebre · Severo (8/10)'), findsOneWidget);
     expect(find.text('Observaciones'), findsOneWidget);
     expect(find.text('Paciente estable'), findsOneWidget);
   });
@@ -225,7 +225,7 @@ void main() {
     await tester.tap(find.text('Click para ver registro completo'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Fiebre · Mínimo síntoma (0/10)'), findsOneWidget);
+    expect(find.text('Fiebre · Sin síntoma (0/10)'), findsOneWidget);
   });
 
   testWidgets('filtro por estado muestra solo los registros coincidentes', (
