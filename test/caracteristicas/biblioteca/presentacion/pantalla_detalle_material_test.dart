@@ -261,4 +261,26 @@ void main() {
 
     expect(find.text('Material no encontrado.'), findsOneWidget);
   });
+
+  testWidgets(
+    'una guía sin adjunto muestra sus secciones y ningún botón (CA-19.4)',
+    (tester) async {
+      final sinArchivo = MaterialEducativo(
+        id: 'guias-alimentacion',
+        title: 'Guía de alimentación',
+        category: 'Guías',
+        topic: 'Alimentación',
+        body:
+            '# Desayuno\nFrutas cocidas.\n\n# Agua\nSolo hervida o embotellada.',
+        createdAt: DateTime.utc(2026, 1, 4),
+      );
+      final (base, _) = await _baseConContenido([sinArchivo]);
+      await _montar(tester, base, _CacheFalso(), sinArchivo.id);
+
+      expect(find.text('Desayuno'), findsOneWidget);
+      expect(find.text('Frutas cocidas.'), findsOneWidget);
+      expect(find.text('Agua'), findsOneWidget);
+      expect(find.text('Abrir archivo adjunto'), findsNothing);
+    },
+  );
 }

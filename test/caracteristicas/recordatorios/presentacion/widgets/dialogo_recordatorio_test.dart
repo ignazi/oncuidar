@@ -318,4 +318,46 @@ void main() {
       expect(payload['diasRepeticion'], isEmpty);
     });
   });
+
+  testWidgets('repetición semanal en los días elegidos (CA-15.2)', (
+    tester,
+  ) async {
+    final (base, firestore) = await baseRecordatorios();
+    final idPaciente = await crearPacienteRecordatorios(base);
+    final notif = NotificacionesFalsas();
+    await _montar(tester, _pantalla(base, notif));
+
+    await tester.tap(find.byKey(const Key('tarjetaRapida_medicamento')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('campoTituloRecordatorio')),
+      'Quimioterapia oral',
+    );
+    await tester.tap(find.byKey(const Key('modoRepeticion_semanal')));
+    await tester.pumpAndSettle();
+    // Parte con toda la semana: se quitan martes, jueves, sábado y domingo.
+    for (final dia in ['Mar', 'Jue', 'Sáb', 'Dom']) {
+      await tester.tap(find.text(dia));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.byKey(const Key('confirmarRecordatorio')));
+    await tester.pumpAndSettle();
+
+    final docs = await firestore
+        .collection('users')
+        .doc(uidRecordatorios)
+        .collection('patients')
+        .doc(idPaciente)
+        .collection('recordatorios')
+        .get();
+    final payload = await _payload(firestore, idPaciente, docs.docs.single.id);
+    expect(payload['diasRepeticion'], ['lun', 'mie', 'vie']);
+    expect(payload.containsKey('recurrencia'), isFalse);
+    expect(notif.programados.single['dias'], ['lun', 'mie', 'vie']);
+    // La tarjeta muestra los días elegidos.
+    for (final dia in ['Lun', 'Mié', 'Vie']) {
+      expect(find.text(dia), findsOneWidget);
+    }
+    expect(find.text('Mar'), findsNothing);
+  });
 }

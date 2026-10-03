@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
+import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/tarjeta_registro.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/datos/proveedores_registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_registros_clinicos.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
@@ -67,10 +69,34 @@ Future<(BaseDatosSegura, FakeFirebaseFirestore, String)> _baseConPaciente(
   return (base, firestore, idPaciente);
 }
 
+/// Entrega una página de 10 registros anteriores al pedir «Cargar más».
+class _RepositorioConPaginaSiguiente extends RepositorioRegistrosClinicos {
+  _RepositorioConPaginaSiguiente(super.bd);
+
+  int pedidas = 0;
+
+  @override
+  Future<List<RegistroClinico>> cargarMasRegistrosClinicos(
+    String idPaciente,
+    DateTime ultimoCreadoEn,
+  ) async {
+    pedidas++;
+    return [
+      for (var i = 1; i <= 10; i++)
+        _registro(
+          'antiguo$i',
+          idPaciente,
+          fecha: ultimoCreadoEn.subtract(Duration(days: i)),
+        ),
+    ];
+  }
+}
+
 Widget _pantalla(
   ServicioCifrado cifrado,
   BaseDatosSegura base, {
   DateTime? filtroFecha,
+  RepositorioRegistrosClinicos? repositorio,
 }) {
   final router = GoRouter(
     initialLocation: '/',
@@ -97,6 +123,8 @@ Widget _pantalla(
       firebaseAuthProvider.overrideWithValue(_auth()),
       servicioCifradoProvider.overrideWithValue(cifrado),
       baseDatosSeguraProvider.overrideWith((_) => base),
+      if (repositorio != null)
+        repositorioRegistrosClinicosProvider.overrideWithValue(repositorio),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -553,6 +581,36 @@ void main() {
 
       expect(find.text('No hay registros para este filtro.'), findsOneWidget);
       expect(find.text('Cargar más registros'), findsOneWidget);
+    });
+
+    testWidgets('pulsar cargar más agrega la página siguiente', (tester) async {
+      _taller(tester);
+      final cifrado = ServicioCifrado(clavePrueba: _clavePrueba);
+      final base = await conRegistros(cifrado, 50);
+      final repositorio = _RepositorioConPaginaSiguiente(base);
+      await tester.pumpWidget(
+        _pantalla(cifrado, base, repositorio: repositorio),
+      );
+      await tester.pumpAndSettle();
+      final antes = find.byType(TarjetaRegistro).evaluate().length;
+      expect(antes, 50);
+
+      final boton = find.text('Cargar más registros');
+      await tester.scrollUntilVisible(
+        boton,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(boton);
+      await tester.pumpAndSettle();
+
+      expect(repositorio.pedidas, 1);
+      expect(find.byType(TarjetaRegistro).evaluate().length, 60);
+      expect(
+        find.text('Cargar más registros'),
+        findsNothing,
+        reason: 'una página incompleta indica que no hay más',
+      );
     });
 
     testWidgets('con menos de 50 registros no hay más que cargar', (

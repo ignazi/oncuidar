@@ -370,4 +370,65 @@ void main() {
     expect(detalleAbierto, isNull);
     expect(find.textContaining('No se pudo preparar el video'), findsOneWidget);
   });
+
+  testWidgets('el catálogo marca solo lo que ya está descargado (CA-17.1)', (
+    tester,
+  ) async {
+    final (base, _) = await _baseConContenido([_video(), _guia()]);
+    // La guía ya está en el teléfono; el video no se puede bajar.
+    final cache = _CacheFalso()
+      ..descargados.add(_guia().fileUrl!)
+      ..fallar.add(_video().fileUrl!);
+    await _montar(tester, base, cache);
+
+    expect(find.text(_video().title), findsOneWidget);
+    expect(find.text(_guia().title), findsOneWidget);
+    final marca = find.byIcon(Icons.check_circle_rounded);
+    expect(marca, findsOneWidget);
+    expect(
+      find.ancestor(of: marca, matching: find.byType(TarjetaMaterial)),
+      findsOneWidget,
+    );
+    final tarjeta = tester.widget<TarjetaMaterial>(
+      find.ancestor(of: marca, matching: find.byType(TarjetaMaterial)),
+    );
+    expect(tarjeta.material.id, _guia().id);
+  });
+
+  testWidgets(
+    'una infografía sin adjunto se amplía con zoom y se cierra (CA-19.3)',
+    (tester) async {
+      final infografia = MaterialEducativo(
+        id: 'infografias-lavado-de-manos',
+        title: 'Lavado de manos',
+        category: 'Infografías',
+        topic: 'Higiene',
+        body: 'Pasos del lavado de manos.',
+        imageUrl: 'https://localhost/lavado.png',
+        createdAt: DateTime.utc(2026, 1, 5),
+      );
+      final (base, _) = await _baseConContenido([infografia]);
+      await _montar(tester, base, _CacheFalso());
+
+      await tester.tap(find.byKey(const Key('miniaturaTarjetaMaterial')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Dialog), findsOneWidget);
+      final visor = tester.widget<InteractiveViewer>(
+        find.byType(InteractiveViewer),
+      );
+      expect(visor.maxScale, 5);
+      expect(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.text('Lavado de manos'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+      expect(find.byType(Dialog), findsNothing);
+    },
+  );
 }
