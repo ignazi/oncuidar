@@ -6,8 +6,8 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
-import 'package:oncuidar/core/servicios/servicio_conectividad.dart';
+import 'package:oncuidar/nucleo/conectividad/servicio_conectividad.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 
 import 'ayudas_offline.dart';
 

@@ -4,20 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:oncuidar/caracteristicas/historial/historial.dart';
-import 'package:oncuidar/caracteristicas/onboarding/iniciar_sesion.dart';
-import 'package:oncuidar/caracteristicas/onboarding/registro.dart';
-import 'package:oncuidar/caracteristicas/perfil/perfil.dart';
-import 'package:oncuidar/caracteristicas/recordatorios/recordatorios.dart';
-import 'package:oncuidar/caracteristicas/registro_clinico/registro_clinico.dart';
-import 'package:oncuidar/caracteristicas/registro_clinico/widgets/selector_multi_sintoma.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
-import 'package:oncuidar/core/servicios/servicio_base_datos.dart';
-import 'package:oncuidar/core/servicios/servicio_cifrado.dart';
-import 'package:oncuidar/core/servicios/servicio_registro.dart';
-import 'package:oncuidar/modelos/paciente.dart';
-import 'package:oncuidar/modelos/recordatorio.dart';
-import 'package:oncuidar/modelos/registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_iniciar_sesion.dart';
+import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
+import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_recordatorios.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/pantalla_registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/widgets/selector_multi_sintoma.dart';
+import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
+import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 
 // Regresión de desbordamientos (RenderFlex overflow) en viewports compactos:
 // 360x800 (teléfono común) y 320x568 (dispositivos pequeños / SE de 1ª gen).

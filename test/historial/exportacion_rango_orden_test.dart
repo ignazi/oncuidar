@@ -3,13 +3,13 @@ import 'dart:typed_data';
 import 'package:excel/excel.dart' as xlsx;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/caracteristicas/historial/exportadores/exportador_excel.dart';
-import 'package:oncuidar/caracteristicas/historial/exportadores/exportador_pdf.dart';
-import 'package:oncuidar/caracteristicas/historial/exportadores/orden_registros.dart';
-import 'package:oncuidar/core/servicios/servicio_base_datos.dart';
-import 'package:oncuidar/core/servicios/servicio_cifrado.dart';
-import 'package:oncuidar/modelos/paciente.dart';
-import 'package:oncuidar/modelos/registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/historial/datos/exportador_excel.dart';
+import 'package:oncuidar/caracteristicas/historial/datos/exportador_pdf.dart';
+import 'package:oncuidar/caracteristicas/historial/dominio/orden_registros.dart';
+import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
+import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
 
 // Exportación: orden cronológico ascendente y consulta del rango completo.
 

@@ -4,10 +4,10 @@
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
-import 'package:oncuidar/core/router/destino_aviso.dart';
-import 'package:oncuidar/core/servicios/servicio_notificaciones.dart';
+import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/main.dart';
+import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ayudas_recordatorios.dart';

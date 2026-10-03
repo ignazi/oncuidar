@@ -3,7 +3,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/core/servicios/cola_escrituras.dart';
+import 'package:oncuidar/nucleo/sincronizacion/cola_escrituras.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ayudas_offline.dart';

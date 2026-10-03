@@ -5,15 +5,15 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
-import 'package:oncuidar/core/servicios/servicio_base_datos.dart';
-import 'package:oncuidar/core/servicios/servicio_cache_metadata.dart';
-import 'package:oncuidar/core/servicios/servicio_cifrado.dart';
-import 'package:oncuidar/modelos/conversacion.dart';
-import 'package:oncuidar/modelos/material_educativo.dart';
-import 'package:oncuidar/modelos/paciente.dart';
-import 'package:oncuidar/modelos/recordatorio.dart';
-import 'package:oncuidar/modelos/registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
+import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
+import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
+import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _clavePrueba = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';

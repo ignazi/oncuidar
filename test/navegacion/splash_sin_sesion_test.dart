@@ -4,9 +4,9 @@ import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/caracteristicas/onboarding/splash.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
-import 'package:oncuidar/core/router/destino_aviso.dart';
+import 'package:oncuidar/app/enrutador/destino_aviso.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_carga.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 
 void main() {
   setUp(EstadoArranque.reiniciar);

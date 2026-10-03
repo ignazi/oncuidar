@@ -7,7 +7,7 @@ import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/core/servicios/servicio_cache_contenido.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 
 class _GestorFalso implements CacheManager {
   _GestorFalso(this.carpeta);

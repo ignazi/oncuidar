@@ -10,12 +10,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:oncuidar/caracteristicas/onboarding/splash.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
-import 'package:oncuidar/core/router/destino_aviso.dart';
-import 'package:oncuidar/core/servicios/servicio_base_datos.dart';
-import 'package:oncuidar/core/servicios/servicio_cache_contenido.dart';
-import 'package:oncuidar/core/servicios/servicio_cifrado.dart';
+import 'package:oncuidar/app/enrutador/destino_aviso.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_carga.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
+import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
+import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ayudas_recordatorios.dart';

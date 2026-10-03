@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:oncuidar/caracteristicas/dashboard/dashboard.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
-import 'package:oncuidar/modelos/paciente.dart';
-import 'package:oncuidar/modelos/registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/panel_principal/presentacion/pantalla_panel_principal.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 
 // Panel principal (HU-08): banner de bienvenida full-bleed que se asoma detrás
 // del header (saludo + chip de registros de hoy + registro más reciente en una

@@ -4,8 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/compartidos/widgets/banner_conexion.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
+import 'package:oncuidar/compartido/widgets/banner_conexion.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 
 const _breve = Duration(seconds: 3);
 final _banner = find.byKey(const Key('banner_conexion'));

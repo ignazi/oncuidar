@@ -3,9 +3,9 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/core/servicios/servicio_cifrado.dart';
-import 'package:oncuidar/core/servicios/servicio_notificaciones.dart';
-import 'package:oncuidar/modelos/recordatorio.dart';
+import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
+import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
+import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ayudas_recordatorios.dart';

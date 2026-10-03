@@ -1,8 +1,8 @@
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
 import 'package:oncuidar/main.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 
 void main() {
   testWidgets('inicia en splash y navega a bienvenida', (tester) async {

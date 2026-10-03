@@ -1,7 +1,7 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/caracteristicas/onboarding/recuperar_acceso.dart';
+import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_recuperar_acceso.dart';
 
 const _mensajeEnviado =
     'Si ese correo de respaldo está asociado a una cuenta, te enviamos un enlace para restablecer la contraseña. Revisa tu bandeja de entrada (y el spam).';

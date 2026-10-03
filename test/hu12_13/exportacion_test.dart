@@ -3,10 +3,10 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/caracteristicas/historial/exportadores/exportador_excel.dart';
-import 'package:oncuidar/caracteristicas/historial/exportadores/exportador_pdf.dart';
-import 'package:oncuidar/modelos/paciente.dart';
-import 'package:oncuidar/modelos/registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/historial/datos/exportador_excel.dart';
+import 'package:oncuidar/caracteristicas/historial/datos/exportador_pdf.dart';
+import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 
 // Exportación del historial (HU-12 PDF / HU-13 Excel): los builders son
 // funciones puras sin dependencia de widgets, por lo que se prueban de forma

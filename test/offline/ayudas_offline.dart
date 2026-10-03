@@ -2,8 +2,8 @@
 
 import 'dart:async';
 
-import 'package:oncuidar/core/servicios/cola_escrituras.dart';
-import 'package:oncuidar/core/servicios/servicio_conectividad.dart';
+import 'package:oncuidar/nucleo/conectividad/servicio_conectividad.dart';
+import 'package:oncuidar/nucleo/sincronizacion/cola_escrituras.dart';
 
 /// Conectividad controlable: permite simular la caída y la vuelta de la red.
 class ConectividadFalsa extends ServicioConectividad {

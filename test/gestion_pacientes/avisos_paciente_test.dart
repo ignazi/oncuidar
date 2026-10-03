@@ -4,10 +4,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/caracteristicas/perfil/gestion_pacientes.dart';
-import 'package:oncuidar/core/proveedores/proveedores.dart';
-import 'package:oncuidar/core/servicios/servicio_base_datos.dart';
-import 'package:oncuidar/core/servicios/servicio_notificaciones.dart';
+import 'package:oncuidar/caracteristicas/pacientes/presentacion/gestion_pacientes.dart';
+import 'package:oncuidar/nucleo/datos/servicio_base_datos.dart';
+import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../recordatorios/ayudas_recordatorios.dart';

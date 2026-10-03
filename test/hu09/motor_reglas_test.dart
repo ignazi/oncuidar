@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/core/servicios/motor_reglas_clinicas.dart';
-import 'package:oncuidar/modelos/registro_clinico.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/dominio/motor_reglas_clinicas.dart';
+import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 
 // Pruebas del motor de reglas clínicas (HU-09): evaluación en vivo del nivel
 // de alerta a partir de signos vitales y síntomas.
