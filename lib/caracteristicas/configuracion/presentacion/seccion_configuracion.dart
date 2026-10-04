@@ -8,42 +8,43 @@ import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart
 import 'package:oncuidar/caracteristicas/configuracion/dominio/modo_tema.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/controlador_recordatorios.dart';
+import 'package:oncuidar/compartido/widgets/fondo_hoja.dart';
 
 /// Abre los ajustes en una hoja inferior, como «Mis conversaciones».
 Future<void> mostrarHojaConfiguracion(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Paleta.crema,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (contexto) => SafeArea(
-      key: const Key('hojaConfiguracion'),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(contexto).size.height * 0.88,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: 12),
-              decoration: BoxDecoration(
-                color: Paleta.bordeTarjeta,
-                borderRadius: BorderRadius.circular(2),
+    backgroundColor: Colors.transparent,
+    builder: (contexto) => FondoHoja(
+      radio: 24,
+      child: SafeArea(
+        key: const Key('hojaConfiguracion'),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(contexto).size.height * 0.88,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Paleta.bordeTarjeta,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            const _EncabezadoHoja(),
-            const Flexible(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
-                child: SeccionConfiguracion(),
+              const _EncabezadoHoja(),
+              const Flexible(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
+                  child: SeccionConfiguracion(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     ),

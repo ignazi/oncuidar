@@ -9,6 +9,7 @@ import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/hoja_renombra
 import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/tarjeta_conversacion.dart';
 import 'package:oncuidar/compartido/estilos.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
+import 'package:oncuidar/compartido/widgets/fondo_hoja.dart';
 
 /// Hoja de conversaciones del chat: permite retomar, renombrar y eliminar
 /// las conversaciones guardadas sin salir de la pantalla actual.
@@ -22,15 +23,14 @@ Future<void> mostrarHojaConversaciones(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Paleta.crema,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (_) => _HojaConversaciones(
-      alEntrar: alEntrar,
-      alEliminar: alEliminar,
-      alCrearNueva: alCrearNueva,
-      alRenombrar: alRenombrar,
+    backgroundColor: Colors.transparent,
+    builder: (_) => FondoHoja(
+      child: _HojaConversaciones(
+        alEntrar: alEntrar,
+        alEliminar: alEliminar,
+        alCrearNueva: alCrearNueva,
+        alRenombrar: alRenombrar,
+      ),
     ),
   );
 }

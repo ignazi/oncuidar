@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/compartido/widgets/fondo_hoja.dart';
 
 /// Qué hacer con el archivo exportado.
 enum AccionExportacion { abrir, compartir }
@@ -9,31 +10,31 @@ enum AccionExportacion { abrir, compartir }
 Future<AccionExportacion?> mostrarHojaExportacion(BuildContext context) {
   return showModalBottomSheet<AccionExportacion>(
     context: context,
-    backgroundColor: Paleta.tarjeta,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (contexto) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            key: const Key('botonAbrirExportacion'),
-            leading: Icon(
-              Icons.open_in_new_rounded,
-              color: Paleta.doradoOscuro,
+    backgroundColor: Colors.transparent,
+    builder: (contexto) => FondoHoja(
+      sobreTarjeta: true,
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('botonAbrirExportacion'),
+              leading: Icon(
+                Icons.open_in_new_rounded,
+                color: Paleta.doradoOscuro,
+              ),
+              title: const Text('Abrir archivo'),
+              onTap: () => Navigator.of(contexto).pop(AccionExportacion.abrir),
             ),
-            title: const Text('Abrir archivo'),
-            onTap: () => Navigator.of(contexto).pop(AccionExportacion.abrir),
-          ),
-          ListTile(
-            key: const Key('botonCompartirExportacion'),
-            leading: Icon(Icons.share_rounded, color: Paleta.doradoOscuro),
-            title: const Text('Compartir'),
-            onTap: () =>
-                Navigator.of(contexto).pop(AccionExportacion.compartir),
-          ),
-        ],
+            ListTile(
+              key: const Key('botonCompartirExportacion'),
+              leading: Icon(Icons.share_rounded, color: Paleta.doradoOscuro),
+              title: const Text('Compartir'),
+              onTap: () =>
+                  Navigator.of(contexto).pop(AccionExportacion.compartir),
+            ),
+          ],
+        ),
       ),
     ),
   );

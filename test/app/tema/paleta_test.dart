@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/app/tema/repintar.dart';
 import 'package:oncuidar/app/tema/tema.dart';
+import 'package:oncuidar/compartido/widgets/fondo_hoja.dart';
 
 /// Pinta un cuadro con el color de tarjeta vigente.
 class _Muestra extends StatelessWidget {
@@ -77,5 +78,59 @@ void main() {
     repintarArbol(raiz);
     await tester.pump();
     expect(_colorMuestra(tester), coloresOscuros.tarjeta);
+  });
+
+  testWidgets('una hoja inferior abierta cambia de color al cambiar de modo', (
+    tester,
+  ) async {
+    // Como en la app: se repinta desde arriba del MaterialApp, que contiene
+    // el Navigator y, con él, las hojas abiertas.
+    late BuildContext raiz;
+    await tester.pumpWidget(
+      Builder(
+        builder: (arriba) {
+          raiz = arriba;
+          return MaterialApp(
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: Center(
+                  child: ElevatedButton(
+                    onPressed: () => showModalBottomSheet<void>(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const FondoHoja(
+                        child: SizedBox(key: Key('contenidoHoja'), height: 100),
+                      ),
+                    ),
+                    child: const Text('abrir'),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+
+    Color fondo() => tester
+        .widget<Material>(
+          find
+              .ancestor(
+                of: find.byKey(const Key('contenidoHoja')),
+                matching: find.byType(Material),
+              )
+              .first,
+        )
+        .color!;
+
+    expect(fondo(), coloresClaros.crema);
+
+    Paleta.usar(coloresOscuros);
+    repintarArbol(raiz);
+    await tester.pump();
+
+    expect(fondo(), coloresOscuros.crema);
   });
 }
