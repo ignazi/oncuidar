@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
+import 'package:oncuidar/caracteristicas/chat/dominio/respuestas_chat.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
 void main() {
@@ -25,6 +26,33 @@ void main() {
 
       expect(leido.enviadoEn, isNull);
       expect(leido.aMapa().containsKey('enviadoEn'), isFalse);
+    });
+  });
+
+  test('guarda y lee el material relacionado y la sugerencia', () {
+    const mensaje = MensajeConversacion(
+      texto: 'Respuesta',
+      delUsuario: false,
+      materialId: 'videos-como-medir-la-fiebre',
+      sugerenciaConsulta: true,
+    );
+
+    final leido = MensajeConversacion.desdeMapa(mensaje.aMapa());
+
+    expect(leido.materialId, 'videos-como-medir-la-fiebre');
+    expect(leido.sugerenciaConsulta, isTrue);
+  });
+
+  group('sugiereConsultarEquipo', () {
+    test('detecta señales aunque falten tildes o haya mayúsculas', () {
+      expect(sugiereConsultarEquipo('Mi hijo tiene FIEBRE'), isTrue);
+      expect(sugiereConsultarEquipo('le cuesta respirar'), isTrue);
+      expect(sugiereConsultarEquipo('tuvo vómitos toda la noche'), isTrue);
+    });
+
+    test('una consulta sin señales no sugiere nada', () {
+      expect(sugiereConsultarEquipo('¿qué puede comer hoy?'), isFalse);
+      expect(sugiereConsultarEquipo('   '), isFalse);
     });
   });
 

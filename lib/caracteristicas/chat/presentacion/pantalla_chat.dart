@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/controlador_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/proveedor_chat_activo.dart';
@@ -110,7 +111,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           return;
         }
         setState(() => _escribiendo = false);
-        _chat.responder(respuesta);
+        _chat.responder(respuesta, consulta: texto);
         _irAlFinal();
         _encolarGuardado();
       }),
@@ -208,6 +209,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     ref.watch(chatActivoProvider);
+    // Mantiene el catálogo cargado para enlazar el material de cada respuesta.
+    ref.watch(contenidosEducativosProvider);
     return Scaffold(
       backgroundColor: Paleta.crema,
       body: Column(
@@ -326,6 +329,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             SeparadorDia(fecha: filtrados[i].enviadoEn!, ahora: ahora),
           BurbujaMensaje(
             mensaje: filtrados[i],
+            alAbrirMaterial: filtrados[i].materialId == null
+                ? null
+                : () => unawaited(
+                    context.push(
+                      '/biblioteca?abrir=${filtrados[i].materialId}',
+                    ),
+                  ),
             agrupado:
                 i > 0 &&
                 !_empiezaDia(filtrados, i) &&

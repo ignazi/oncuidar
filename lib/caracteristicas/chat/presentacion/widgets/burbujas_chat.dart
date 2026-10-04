@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
@@ -40,12 +43,28 @@ class BurbujaMensaje extends StatelessWidget {
     super.key,
     required this.mensaje,
     this.agrupado = false,
+    this.alAbrirMaterial,
   });
 
   final MensajeConversacion mensaje;
 
   /// Sigue a otro mensaje del mismo autor: va más pegada.
   final bool agrupado;
+
+  /// Abre el material relacionado; null si la respuesta no tiene uno.
+  final VoidCallback? alAbrirMaterial;
+
+  Future<void> _copiar(BuildContext context) async {
+    final aviso = ScaffoldMessenger.of(context);
+    await Clipboard.setData(ClipboardData(text: mensaje.texto));
+    aviso.showSnackBar(
+      const SnackBar(
+        content: Text('Mensaje copiado'),
+        backgroundColor: Paleta.doradoPrincipal,
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,62 +82,132 @@ class BurbujaMensaje extends StatelessWidget {
             const SizedBox(width: 8),
           ],
           Flexible(
-            child: Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.75,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-              decoration: BoxDecoration(
-                gradient: delUsuario ? Paleta.degradadoCabecera : null,
-                color: delUsuario ? null : Paleta.tarjeta,
-                borderRadius: BorderRadius.circular(18).copyWith(
-                  bottomRight: delUsuario ? const Radius.circular(6) : null,
-                  bottomLeft: !delUsuario ? const Radius.circular(6) : null,
+            child: GestureDetector(
+              key: const Key('burbujaMensajeChat'),
+              onLongPress: () => unawaited(_copiar(context)),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.75,
                 ),
-                border: delUsuario
-                    ? Border.all(color: Colors.white.withValues(alpha: 0.25))
-                    : null,
-                boxShadow: [
-                  BoxShadow(
-                    color: Paleta.doradoOscuro.withValues(
-                      alpha: delUsuario ? 0.18 : 0.06,
-                    ),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
+                decoration: BoxDecoration(
+                  gradient: delUsuario ? Paleta.degradadoCabecera : null,
+                  color: delUsuario ? null : Paleta.tarjeta,
+                  borderRadius: BorderRadius.circular(18).copyWith(
+                    bottomRight: delUsuario ? const Radius.circular(6) : null,
+                    bottomLeft: !delUsuario ? const Radius.circular(6) : null,
                   ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      mensaje.texto,
-                      style: GoogleFonts.nunito(
-                        fontSize: 14,
-                        color: delUsuario
-                            ? Colors.white
-                            : Paleta.textoPrincipal,
-                        height: 1.45,
+                  border: delUsuario
+                      ? Border.all(color: Colors.white.withValues(alpha: 0.25))
+                      : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Paleta.doradoOscuro.withValues(
+                        alpha: delUsuario ? 0.18 : 0.06,
                       ),
-                    ),
-                  ),
-                  if (mensaje.enviadoEn != null) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      hora12(mensaje.enviadoEn!),
-                      key: const Key('horaMensajeChat'),
-                      style: GoogleFonts.nunito(
-                        fontSize: 10.5,
-                        color: delUsuario
-                            ? Colors.white.withValues(alpha: 0.8)
-                            : Paleta.textoSecundario,
-                      ),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
-                ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        mensaje.texto,
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          color: delUsuario
+                              ? Colors.white
+                              : Paleta.textoPrincipal,
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                    if (!delUsuario && mensaje.sugerenciaConsulta)
+                      const _SugerenciaConsulta(),
+                    if (!delUsuario && alAbrirMaterial != null)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          key: const Key('verMaterialChat'),
+                          onPressed: alAbrirMaterial,
+                          icon: const Icon(Icons.menu_book_rounded, size: 18),
+                          label: const Text('Ver material relacionado'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Paleta.doradoOscuro,
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(0, 32),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            textStyle: GoogleFonts.nunito(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (mensaje.enviadoEn != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        hora12(mensaje.enviadoEn!),
+                        key: const Key('horaMensajeChat'),
+                        style: GoogleFonts.nunito(
+                          fontSize: 10.5,
+                          color: delUsuario
+                              ? Colors.white.withValues(alpha: 0.8)
+                              : Paleta.textoSecundario,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sugerencia amable de consultar al equipo médico; no es una alarma.
+class _SugerenciaConsulta extends StatelessWidget {
+  const _SugerenciaConsulta();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('sugerenciaConsultaChat'),
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Paleta.doradoClaro,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.lightbulb_outline_rounded,
+            size: 17,
+            color: Paleta.doradoOscuro,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Te sugiero comentárselo a su equipo médico si esto te '
+              'preocupa; ellos conocen mejor su caso.',
+              style: GoogleFonts.nunito(
+                fontSize: 12.5,
+                color: Paleta.doradoOscuro,
+                height: 1.4,
               ),
             ),
           ),

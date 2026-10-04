@@ -42,6 +42,33 @@ PreguntaBase? resolverPregunta(String texto, List<PreguntaBase> preguntas) {
   return mejorPuntaje >= 2 ? mejor : null;
 }
 
+/// Señales en una consulta ante las que conviene sugerir hablar con el equipo médico.
+const _senalesParaConsultar = [
+  'fiebre',
+  'sangr',
+  'petequia',
+  'moreton',
+  'vomit',
+  'respirar',
+  'respiracion',
+  'convuls',
+  'desmay',
+  'no despierta',
+  'muy decaido',
+  'dolor fuerte',
+  'mucho dolor',
+  'se ve mal',
+];
+
+/// true si la consulta menciona alguna señal por la que conviene sugerir consultar al equipo.
+///
+/// Es una ayuda por palabras clave: no diagnostica ni reemplaza el criterio médico.
+bool sugiereConsultarEquipo(String texto) {
+  final entrada = normalizarTexto(texto);
+  if (entrada.isEmpty) return false;
+  return _senalesParaConsultar.any(entrada.contains);
+}
+
 /// Largo máximo del título automático de una conversación.
 const largoMaximoTituloConversacion = 40;
 
