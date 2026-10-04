@@ -205,7 +205,9 @@ class _FaqScreenState extends State<FaqScreen> {
                       style: GoogleFonts.nunito(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w800,
-                        color: activo ? Colors.white : Paleta.doradoOscuro,
+                        color: activo
+                            ? Paleta.sobreDorado
+                            : Paleta.doradoOscuro,
                       ),
                       child: Text(
                         etiqueta,

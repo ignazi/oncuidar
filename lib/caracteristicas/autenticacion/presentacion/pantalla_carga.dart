@@ -186,7 +186,7 @@ class _SplashState extends ConsumerState<Splash>
                             style: GoogleFonts.nunito(
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                              color: Paleta.sobreDorado,
                               letterSpacing: -0.5,
                               height: 1.1,
                               shadows: const [
@@ -224,7 +224,7 @@ class _SplashState extends ConsumerState<Splash>
                         width: 28,
                         height: 28,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: Paleta.sobreDorado,
                           strokeWidth: 2.5,
                         ),
                       ),

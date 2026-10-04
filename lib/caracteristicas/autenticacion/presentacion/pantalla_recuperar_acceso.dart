@@ -171,7 +171,7 @@ class _RecuperarAccesoState extends State<RecuperarAcceso> {
                           onPressed: _bloquearEnvios ? null : _recuperarAcceso,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Paleta.doradoPrincipal,
-                            foregroundColor: Colors.white,
+                            foregroundColor: Paleta.sobreDorado,
                             elevation: 2,
                             shadowColor: Paleta.doradoPrincipal.withValues(
                               alpha: 0.35,
@@ -187,7 +187,7 @@ class _RecuperarAccesoState extends State<RecuperarAcceso> {
                                   height: 22,
                                   width: 22,
                                   child: CircularProgressIndicator(
-                                    color: Colors.white,
+                                    color: Paleta.sobreDorado,
                                     strokeWidth: 2.5,
                                   ),
                                 )

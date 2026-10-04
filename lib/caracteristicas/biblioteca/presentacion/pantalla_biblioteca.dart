@@ -312,7 +312,9 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
                 style: GoogleFonts.nunito(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: seleccionado ? Colors.white : Paleta.textoTerciario,
+                  color: seleccionado
+                      ? Paleta.sobreDorado
+                      : Paleta.textoTerciario,
                 ),
               ),
             ),

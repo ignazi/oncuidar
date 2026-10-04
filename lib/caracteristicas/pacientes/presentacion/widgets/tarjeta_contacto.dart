@@ -108,13 +108,13 @@ class TarjetaContacto extends StatelessWidget {
                             style: GoogleFonts.nunito(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              color: Paleta.sobreDorado,
                             ),
                           ),
                           const SizedBox(width: 6),
                           const Icon(
                             Icons.phone_rounded,
-                            color: Colors.white,
+                            color: Paleta.sobreDorado,
                             size: 18,
                           ),
                         ],

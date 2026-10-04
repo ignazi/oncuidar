@@ -45,11 +45,11 @@ class BotonGuardar extends StatelessWidget {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: Paleta.sobreDorado,
                       ),
                     )
                   else
-                    const Icon(Icons.save, size: 18, color: Colors.white),
+                    const Icon(Icons.save, size: 18, color: Paleta.sobreDorado),
                   const SizedBox(width: 8),
                   Text(
                     guardando
@@ -60,7 +60,7 @@ class BotonGuardar extends StatelessWidget {
                     style: GoogleFonts.nunito(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: Paleta.sobreDorado,
                     ),
                   ),
                 ],

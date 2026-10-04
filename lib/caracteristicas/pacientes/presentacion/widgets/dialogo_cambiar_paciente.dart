@@ -152,7 +152,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                               style: GoogleFonts.nunito(
                                 fontWeight: FontWeight.w800,
                                 color: p.id == widget.idActual
-                                    ? Colors.white
+                                    ? Paleta.sobreDorado
                                     : Paleta.doradoOscuro,
                               ),
                             ),

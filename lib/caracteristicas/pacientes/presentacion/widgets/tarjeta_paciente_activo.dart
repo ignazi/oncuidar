@@ -237,7 +237,7 @@ class TarjetaPacienteActivo extends StatelessWidget {
             color: Colors.white.withValues(alpha: 0.25),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.more_vert_rounded, color: Colors.white),
+          child: const Icon(Icons.more_vert_rounded, color: Paleta.sobreDorado),
         ),
         color: Paleta.tarjeta,
       ),

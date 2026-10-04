@@ -62,7 +62,8 @@ class EncabezadoGradiente extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(
                 lateral,
                 alturaBarraEstado + 4,
-                accionDerecha == null ? lateral : 12,
+                // Deja sitio a la insignia que sobresale del botón de la derecha.
+                accionDerecha == null ? lateral : 24,
                 4,
               ),
               // Logo y acciones en la misma fila: quedan a la misma altura.
@@ -95,10 +96,14 @@ class EncabezadoGradiente extends StatelessWidget {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.10),
+                      color: Colors.white.withValues(alpha: 0.30),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(iconoRetroceso, color: Colors.white, size: 20),
+                    child: Icon(
+                      iconoRetroceso,
+                      color: Paleta.sobreDorado,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
@@ -162,18 +167,11 @@ class EncabezadoGradiente extends StatelessWidget {
           titulo,
           textAlign: tituloCentrado ? TextAlign.center : TextAlign.left,
           style: GoogleFonts.nunito(
-            color: Colors.white,
+            color: Paleta.sobreDorado,
             fontSize: tamanoTitulo ?? 24,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.3,
             height: 1.15,
-            shadows: const [
-              Shadow(
-                color: Colors.black26,
-                offset: Offset(0, 1),
-                blurRadius: 3,
-              ),
-            ],
           ),
         ),
         if (subtitulo != null)
@@ -183,7 +181,7 @@ class EncabezadoGradiente extends StatelessWidget {
               subtitulo!,
               textAlign: tituloCentrado ? TextAlign.center : TextAlign.left,
               style: GoogleFonts.nunito(
-                color: Colors.white.withValues(alpha: 0.9),
+                color: Paleta.sobreDorado.withValues(alpha: 0.8),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 height: 1.3,

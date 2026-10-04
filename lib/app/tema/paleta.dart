@@ -98,6 +98,10 @@ const coloresOscuros = ColoresApp(
 class Paleta {
   static ColoresApp _actual = coloresClaros;
 
+  /// Café oscuro para texto e íconos sobre dorado: el dorado es el mismo en
+  /// ambos modos, así que este color también. Blanco sobre dorado se lee mal.
+  static const sobreDorado = Color(0xFF3B2400);
+
   static ColoresApp get actual => _actual;
   static bool get esOscura => _actual.oscuro;
 

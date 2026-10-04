@@ -180,7 +180,7 @@ class _NavegacionPrincipalState extends ConsumerState<NavegacionPrincipal> {
                   size: 22,
                   color: Color.lerp(
                     Paleta.textoSecundario,
-                    Colors.white,
+                    Paleta.sobreDorado,
                     valor,
                   ),
                 ),

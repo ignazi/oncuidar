@@ -190,7 +190,7 @@ class _PantallaDetalleMaterialState
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: Paleta.sobreDorado,
                         ),
                       )
                     : const Icon(Icons.open_in_new, size: 18),

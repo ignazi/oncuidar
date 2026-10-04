@@ -30,7 +30,7 @@ class AvatarAsistente extends StatelessWidget {
       ),
       child: const Icon(
         Icons.smart_toy_outlined,
-        color: Colors.white,
+        color: Paleta.sobreDorado,
         size: 16,
       ),
     );
@@ -124,7 +124,7 @@ class BurbujaMensaje extends StatelessWidget {
                         style: GoogleFonts.nunito(
                           fontSize: 14,
                           color: delUsuario
-                              ? Colors.white
+                              ? Paleta.sobreDorado
                               : Paleta.textoPrincipal,
                           height: 1.45,
                         ),

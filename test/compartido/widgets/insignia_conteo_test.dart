@@ -25,15 +25,33 @@ void main() {
     expect(find.text('99+'), findsOneWidget);
   });
 
+  test('el número blanco se lee sobre el fondo de la insignia', () {
+    // 4.5 es el mínimo recomendado para texto; aquí el número es negrita y grande.
+    expect(
+      _contraste(InsigniaConteo.colorNumero, InsigniaConteo.colorFondo),
+      greaterThan(4.5),
+    );
+  });
+
   for (final (nombre, colores) in [
     ('claro', coloresClaros),
     ('oscuro', coloresOscuros),
   ]) {
-    test('el número se lee sobre el fondo en modo $nombre', () {
+    testWidgets('el aro separa la insignia del degradado en modo $nombre', (
+      tester,
+    ) async {
       Paleta.usar(colores);
-      final fondo = InsigniaConteo.colorEncabezado();
-      // 4.5 es el mínimo recomendado para texto; el número es grande y en negrita.
-      expect(_contraste(coloresClaros.textoPrincipal, fondo), greaterThan(4.5));
+      await tester.pumpWidget(_envolver(const InsigniaConteo(total: 3)));
+
+      final decoracion =
+          tester.widget<Container>(find.byType(Container)).decoration!
+              as BoxDecoration;
+      expect(decoracion.color, InsigniaConteo.colorFondo);
+      expect((decoracion.border! as Border).top.color, colores.tarjeta);
+      // El fondo no es ninguno de los dorados del degradado.
+      for (final dorado in Paleta.degradadoCabecera.colors) {
+        expect(decoracion.color, isNot(dorado));
+      }
     });
   }
 }

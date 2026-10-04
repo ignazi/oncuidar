@@ -76,7 +76,7 @@ class TarjetaMapa extends StatelessWidget {
                             const Icon(
                               Icons.touch_app_outlined,
                               size: 17,
-                              color: Colors.white,
+                              color: Paleta.sobreDorado,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -84,7 +84,7 @@ class TarjetaMapa extends StatelessWidget {
                               style: GoogleFonts.nunito(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.white,
+                                color: Paleta.sobreDorado,
                               ),
                             ),
                           ],

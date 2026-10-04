@@ -45,19 +45,19 @@ class Tema {
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: Paleta.doradoPrincipal,
-        foregroundColor: Colors.white,
+        foregroundColor: Paleta.sobreDorado,
         elevation: 0,
         centerTitle: true,
         titleTextStyle: GoogleFonts.nunito(
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: Paleta.sobreDorado,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: Paleta.doradoPrincipal,
-          foregroundColor: Colors.white,
+          foregroundColor: Paleta.sobreDorado,
           minimumSize: const Size(double.infinity, 54),
           elevation: 2,
           shape: RoundedRectangleBorder(

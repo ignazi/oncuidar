@@ -32,7 +32,7 @@ class ChipEstado extends StatelessWidget {
           style: GoogleFonts.nunito(
             fontSize: 13,
             fontWeight: FontWeight.w800,
-            color: activo ? Colors.white : Paleta.textoTerciario,
+            color: activo ? Paleta.sobreDorado : Paleta.textoTerciario,
           ),
         ),
       ),

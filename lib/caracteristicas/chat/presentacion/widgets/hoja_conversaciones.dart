@@ -280,7 +280,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
                   children: [
                     const Icon(
                       Icons.add_rounded,
-                      color: Colors.white,
+                      color: Paleta.sobreDorado,
                       size: 18,
                     ),
                     const SizedBox(width: 4),
@@ -289,7 +289,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
                       style: GoogleFonts.nunito(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: Paleta.sobreDorado,
                       ),
                     ),
                   ],
@@ -389,7 +389,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
           style: GoogleFonts.nunito(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: Paleta.sobreDorado,
           ),
         ),
       ),

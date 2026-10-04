@@ -79,7 +79,7 @@ class BotonTipo extends StatelessWidget {
                   color: !habilitado
                       ? Paleta.textoSecundario
                       : resaltado
-                      ? Colors.white
+                      ? Paleta.sobreDorado
                       : Paleta.doradoOscuro,
                 ),
                 child: Text(

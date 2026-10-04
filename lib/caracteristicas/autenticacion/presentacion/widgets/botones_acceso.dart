@@ -42,7 +42,7 @@ class BotonDegradado extends StatelessWidget {
             onPressed: cargando ? null : alPulsar,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
+              foregroundColor: Paleta.sobreDorado,
               disabledBackgroundColor: Colors.transparent,
               elevation: 0,
               shadowColor: Colors.transparent,
@@ -55,7 +55,7 @@ class BotonDegradado extends StatelessWidget {
                     height: 22,
                     width: 22,
                     child: CircularProgressIndicator(
-                      color: Colors.white,
+                      color: Paleta.sobreDorado,
                       strokeWidth: 2.5,
                     ),
                   )

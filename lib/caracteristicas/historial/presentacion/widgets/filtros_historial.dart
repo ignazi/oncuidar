@@ -193,7 +193,9 @@ class _BotonExportar extends StatelessWidget {
                 Icon(
                   icono,
                   size: 16,
-                  color: habilitado ? Colors.white : Paleta.textoSecundario,
+                  color: habilitado
+                      ? Paleta.sobreDorado
+                      : Paleta.textoSecundario,
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -201,7 +203,9 @@ class _BotonExportar extends StatelessWidget {
                   style: GoogleFonts.nunito(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: habilitado ? Colors.white : Paleta.textoSecundario,
+                    color: habilitado
+                        ? Paleta.sobreDorado
+                        : Paleta.textoSecundario,
                   ),
                 ),
               ],

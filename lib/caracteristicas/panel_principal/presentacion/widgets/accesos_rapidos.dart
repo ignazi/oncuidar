@@ -94,11 +94,11 @@ class AccesosRapidos extends StatelessWidget {
 
   Widget _tarjeta(BuildContext context, _Acceso acceso) {
     final degradado = acceso.degradado;
-    final colorIcono = degradado ? Colors.white : acceso.color;
+    final colorIcono = degradado ? Paleta.sobreDorado : acceso.color;
     final colorFondoIcono = degradado
         ? Colors.white.withValues(alpha: 0.25)
         : acceso.color.withValues(alpha: 0.10);
-    final colorTitulo = degradado ? Colors.white : Paleta.textoPrincipal;
+    final colorTitulo = degradado ? Paleta.sobreDorado : Paleta.textoPrincipal;
     final colorSubtitulo = degradado
         ? Colors.white.withValues(alpha: 0.85)
         : Paleta.textoSecundario;

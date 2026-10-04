@@ -86,7 +86,7 @@ class _HojaRenombrarConversacionState extends State<HojaRenombrarConversacion> {
                         ),
                         child: const Icon(
                           Icons.edit_outlined,
-                          color: Colors.white,
+                          color: Paleta.sobreDorado,
                           size: 18,
                         ),
                       ),

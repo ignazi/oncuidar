@@ -73,7 +73,7 @@ class _PerfilState extends ConsumerState<Perfil> {
                         showSelectedIcon: false,
                         style: SegmentedButton.styleFrom(
                           foregroundColor: Paleta.doradoOscuro,
-                          selectedForegroundColor: Colors.white,
+                          selectedForegroundColor: Paleta.sobreDorado,
                           selectedBackgroundColor: Paleta.doradoPrincipal,
                           backgroundColor: Colors.transparent,
                           side: BorderSide.none,

@@ -86,7 +86,7 @@ class TarjetaPerfilCuidador extends StatelessWidget {
             color: Colors.white.withValues(alpha: 0.4),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.more_vert_rounded, color: Colors.white),
+          child: const Icon(Icons.more_vert_rounded, color: Paleta.sobreDorado),
         ),
         color: Paleta.tarjeta,
       ),
@@ -258,7 +258,7 @@ class _TarjetaAutenticacion extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.more_vert_rounded,
-                  color: Colors.white,
+                  color: Paleta.sobreDorado,
                   size: 20,
                 ),
               ),

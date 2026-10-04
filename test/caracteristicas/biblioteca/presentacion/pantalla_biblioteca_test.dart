@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
@@ -20,6 +19,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/encabezado_seccion.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
+import 'package:oncuidar/compartido/widgets/insignia_conteo.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -312,17 +312,16 @@ void main() {
     final favoritos = List<String>.from(doc.data()?['idsFavoritos']);
     expect(favoritos, contains('guias-manual-de-control-de-sintomas'));
 
-    // La insignia con el total toma el color del degradado del encabezado.
+    // La insignia tiene su propio fondo: no se mezcla con el degradado.
     final insignia = tester.widget<Container>(
       find.descendant(
         of: find.byKey(const Key('insigniaFavoritos')),
         matching: find.byType(Container),
       ),
     );
-    final colores = Paleta.degradadoCabecera.colors;
     expect(
       (insignia.decoration! as BoxDecoration).color,
-      Color.lerp(colores[1], colores[2], 0.55),
+      InsigniaConteo.colorFondo,
     );
     expect(
       find.descendant(

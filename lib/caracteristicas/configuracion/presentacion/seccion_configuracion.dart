@@ -71,7 +71,7 @@ class _EncabezadoHoja extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.tune_rounded, color: Colors.white),
+            child: const Icon(Icons.tune_rounded, color: Paleta.sobreDorado),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -359,7 +359,7 @@ class _Opcion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorIcono = activa ? Colors.white : Paleta.doradoOscuro;
+    final colorIcono = activa ? Paleta.sobreDorado : Paleta.doradoOscuro;
     return Semantics(
       button: true,
       selected: activa,
@@ -423,7 +423,9 @@ class _Opcion extends StatelessWidget {
                       style: GoogleFonts.nunito(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w800,
-                        color: activa ? Colors.white : Paleta.textoPrincipal,
+                        color: activa
+                            ? Paleta.sobreDorado
+                            : Paleta.textoPrincipal,
                       ),
                       child: Text(etiqueta, maxLines: 1),
                     ),

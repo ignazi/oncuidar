@@ -81,10 +81,10 @@ class CabeceraDorada extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.22),
+              color: Colors.white.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icono, color: Colors.white, size: 26),
+            child: Icon(icono, color: Paleta.sobreDorado, size: 26),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -96,7 +96,7 @@ class CabeceraDorada extends StatelessWidget {
                   style: GoogleFonts.nunito(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white.withValues(alpha: 0.85),
+                    color: Paleta.sobreDorado.withValues(alpha: 0.8),
                     letterSpacing: 0.8,
                   ),
                 ),
@@ -106,7 +106,7 @@ class CabeceraDorada extends StatelessWidget {
                   style: GoogleFonts.nunito(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: Paleta.sobreDorado,
                   ),
                 ),
                 if (franjas.isNotEmpty)

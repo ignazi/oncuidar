@@ -279,7 +279,7 @@ class _DialogoRecordatorioState extends State<_DialogoRecordatorio> {
                     etiqueta: _esNuevo ? 'Guardar' : 'Actualizar',
                     icono: _esNuevo ? Icons.check_rounded : Icons.save_rounded,
                     gradiente: [Paleta.doradoMedio, Paleta.doradoRelleno],
-                    colorTexto: Colors.white,
+                    colorTexto: Paleta.sobreDorado,
                     alPulsar: _confirmar,
                   ),
                 ),
@@ -327,7 +327,7 @@ class _ChipOpcion extends StatelessWidget {
           style: GoogleFonts.nunito(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: activo ? Colors.white : Paleta.doradoOscuro,
+            color: activo ? Paleta.sobreDorado : Paleta.doradoOscuro,
           ),
         ),
       ),
@@ -373,7 +373,7 @@ class _ChipDiaSemana extends StatelessWidget {
           style: GoogleFonts.nunito(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: seleccionado ? Colors.white : Paleta.doradoOscuro,
+            color: seleccionado ? Paleta.sobreDorado : Paleta.doradoOscuro,
           ),
         ),
       ),
@@ -538,7 +538,7 @@ class _ChipTipo extends StatelessWidget {
               child: Icon(
                 icono,
                 size: 15,
-                color: activo ? Colors.white : color,
+                color: activo ? Paleta.sobreDorado : color,
               ),
             ),
             const SizedBox(width: 7),
@@ -547,7 +547,7 @@ class _ChipTipo extends StatelessWidget {
               style: GoogleFonts.nunito(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
-                color: activo ? Colors.white : Paleta.textoPrincipal,
+                color: activo ? Paleta.sobreDorado : Paleta.textoPrincipal,
               ),
             ),
           ],
