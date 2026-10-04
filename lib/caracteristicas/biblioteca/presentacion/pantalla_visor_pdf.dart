@@ -1,20 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:oncuidar/app/proveedores_navegacion.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:pdfx/pdfx.dart';
 
 /// Dibuja el documento de la ruta dada; en pruebas se reemplaza por uno falso.
 typedef ConstructorDocumentoPdf = Widget Function(String ruta);
 
-/// PDF descargado a pantalla completa: barra con volver y título, zoom y desplazamiento vertical.
-class PantallaVisorPdf extends ConsumerStatefulWidget {
+/// Constructor del documento que usan todos los visores; null = el real (pdfx).
+/// Las pruebas lo sustituyen porque pdfx no se puede dibujar sin el teléfono.
+final constructorDocumentoPdfProvider = Provider<ConstructorDocumentoPdf?>(
+  (_) => null,
+);
+
+/// Abre el visor encima de toda la app, barra inferior incluida.
+///
+/// Se hace en el navegador raíz: así el visor ocupa la pantalla desde el primer
+/// cuadro. Antes se ocultaba la barra inferior después de abrir y el documento
+/// se redimensionaba y se volvía a dibujar, y eso se sentía lento.
+Future<void> abrirVisorPdf(
+  BuildContext context, {
+  required String ruta,
+  required String titulo,
+  VoidCallback? alCompartir,
+}) {
+  return Navigator.of(context, rootNavigator: true).push(
+    MaterialPageRoute<void>(
+      builder: (_) => PantallaVisorPdf(
+        ruta: ruta,
+        titulo: titulo,
+        alCompartir: alCompartir,
+      ),
+    ),
+  );
+}
+
+/// PDF a pantalla completa: barra con volver y título, zoom y desplazamiento vertical.
+class PantallaVisorPdf extends ConsumerWidget {
   const PantallaVisorPdf({
     super.key,
     required this.ruta,
     required this.titulo,
     this.constructorDocumento,
+    this.alCompartir,
   });
 
   /// Ruta local del archivo ya descargado.
@@ -22,37 +50,13 @@ class PantallaVisorPdf extends ConsumerStatefulWidget {
   final String titulo;
   final ConstructorDocumentoPdf? constructorDocumento;
 
-  @override
-  ConsumerState<PantallaVisorPdf> createState() => _PantallaVisorPdfState();
-}
-
-class _PantallaVisorPdfState extends ConsumerState<PantallaVisorPdf> {
-  late final PantallaCompletaNotifier _notificadorPantallaCompleta;
+  /// Si se da, la barra muestra el botón de compartir (p. ej. en las exportaciones).
+  final VoidCallback? alCompartir;
 
   @override
-  void initState() {
-    super.initState();
-    _notificadorPantallaCompleta = ref.read(pantallaCompletaProvider.notifier);
-    // La barra inferior se oculta tras el primer cuadro: no se cambia estado durante el build.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _notificadorPantallaCompleta.fijar(true);
-    });
-  }
-
-  @override
-  void dispose() {
-    final notificador = _notificadorPantallaCompleta;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      try {
-        notificador.fijar(false);
-      } catch (_) {}
-    });
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final constructor = widget.constructorDocumento;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final constructor =
+        constructorDocumento ?? ref.watch(constructorDocumentoPdfProvider);
     return Scaffold(
       backgroundColor: const Color(0xFF0B0B0D),
       appBar: AppBar(
@@ -66,7 +70,7 @@ class _PantallaVisorPdfState extends ConsumerState<PantallaVisorPdf> {
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
-          widget.titulo,
+          titulo,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.nunito(
@@ -75,10 +79,17 @@ class _PantallaVisorPdfState extends ConsumerState<PantallaVisorPdf> {
             color: Colors.white,
           ),
         ),
+        actions: [
+          if (alCompartir != null)
+            IconButton(
+              key: const Key('compartirVisorPdf'),
+              tooltip: 'Compartir',
+              icon: const Icon(Icons.share_rounded),
+              onPressed: alCompartir,
+            ),
+        ],
       ),
-      body: constructor != null
-          ? constructor(widget.ruta)
-          : _DocumentoPdf(ruta: widget.ruta),
+      body: constructor != null ? constructor(ruta) : _DocumentoPdf(ruta: ruta),
     );
   }
 }
@@ -143,9 +154,15 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
         Positioned.fill(
           child: PdfViewPinch(
             controller: _controlador,
+            // Más zoom del que se lee con comodidad solo gasta memoria y tiempo
+            // de dibujo: 4x basta para ver el detalle en un teléfono.
+            maxScale: 4,
             backgroundDecoration: const BoxDecoration(color: Color(0xFF0B0B0D)),
             builders: PdfViewPinchBuilders<DefaultBuilderOptions>(
-              options: const DefaultBuilderOptions(),
+              // El cambio de la vista previa a la página nítida es breve, no un fundido lento.
+              options: const DefaultBuilderOptions(
+                loaderSwitchDuration: Duration(milliseconds: 120),
+              ),
               documentLoaderBuilder: (_) => Center(
                 child: CircularProgressIndicator(color: Paleta.doradoMedio),
               ),

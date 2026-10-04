@@ -38,12 +38,7 @@ Future<void> abrirArchivoMaterial(
     if (material.esPdf) {
       // No se espera el cierre del visor: la descarga ya terminó.
       unawaited(
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) =>
-                PantallaVisorPdf(ruta: archivo.path, titulo: material.titulo),
-          ),
-        ),
+        abrirVisorPdf(context, ruta: archivo.path, titulo: material.titulo),
       );
       return;
     }

@@ -12,7 +12,7 @@ xlsx.ExcelColor _color(String hex) => xlsx.ExcelColor.fromHexString(hex);
 
 /// Anchos de columna (en caracteres). Los datos cortos caben enteros; el texto
 /// libre tiene sitio para varias líneas sin cortarse.
-const _anchos = <double>[13, 11, 13, 10, 10, 10, 10, 10, 38, 44];
+const anchosColumnasExcel = <double>[13, 11, 13, 10, 10, 10, 10, 10, 38, 44];
 
 /// Última columna de la ficha izquierda (la derecha empieza en la siguiente).
 const _ultimaColumnaIzquierda = 4;
@@ -247,16 +247,16 @@ Uint8List generarExcelHistorial({
     }
     // El alto se ajusta al texto más largo para que nada quede cortado.
     final lineas = math.max(
-      lineasNecesarias(celdas[8], (_anchos[8] * 1.05).floor()),
-      lineasNecesarias(celdas[9], (_anchos[9] * 1.05).floor()),
+      lineasNecesarias(celdas[8], (anchosColumnasExcel[8] * 1.05).floor()),
+      lineasNecesarias(celdas[9], (anchosColumnasExcel[9] * 1.05).floor()),
     );
     hoja.setRowHeight(fila, math.max(22, lineas * _altoLinea + 8));
     fila++;
     numero++;
   }
 
-  for (var i = 0; i < _anchos.length; i++) {
-    hoja.setColumnWidth(i, _anchos[i]);
+  for (var i = 0; i < anchosColumnasExcel.length; i++) {
+    hoja.setColumnWidth(i, anchosColumnasExcel[i]);
   }
 
   final bytes = libro.save();
