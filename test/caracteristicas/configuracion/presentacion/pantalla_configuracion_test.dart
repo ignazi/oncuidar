@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart';
+import 'package:oncuidar/caracteristicas/configuracion/dominio/modo_tema.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/pantalla_configuracion.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -54,6 +55,25 @@ void main() {
     expect(contenedor.read(escalaTextoProvider), EscalaTexto.grande);
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString(claveEscalaTexto), 'grande');
+  });
+
+  testWidgets('elegir el modo oscuro lo aplica y lo guarda', (tester) async {
+    final (contenedor, _) = await _montar(tester);
+    expect(contenedor.read(modoTemaProvider), ModoTema.sistema);
+
+    await tester.tap(find.byKey(const Key('modo_oscuro')));
+    await tester.pumpAndSettle();
+
+    expect(contenedor.read(modoTemaProvider), ModoTema.oscuro);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(claveModoTema), 'oscuro');
+  });
+
+  testWidgets('el modo guardado se restaura al abrir la app', (tester) async {
+    SharedPreferences.setMockInitialValues({claveModoTema: 'claro'});
+    final (contenedor, _) = await _montar(tester);
+
+    expect(contenedor.read(modoTemaProvider), ModoTema.claro);
   });
 
   testWidgets('el tamaño guardado se restaura al abrir la app', (tester) async {

@@ -41,7 +41,7 @@ class CabeceraRegistro extends StatelessWidget {
                     height: 36,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Paleta.tarjeta,
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
@@ -54,7 +54,7 @@ class CabeceraRegistro extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.history_rounded,
                           color: Paleta.doradoOscuro,
                           size: 17,

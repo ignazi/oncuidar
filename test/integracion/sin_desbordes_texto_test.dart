@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tema.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/proveedores_autenticacion.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta.dart';
@@ -173,6 +175,7 @@ Widget _app(_Entorno entorno, Widget inicio, double factor) {
       ),
     ],
     child: MaterialApp.router(
+      theme: Tema.obtener(),
       routerConfig: router,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(
@@ -342,6 +345,42 @@ void main() {
       }
     }
   }
+
+  // Modo oscuro: mismas pantallas con el texto más grande en el teléfono pequeño.
+  group('modo oscuro', () {
+    setUp(() => Paleta.usar(coloresOscuros));
+    tearDown(() => Paleta.usar(coloresClaros));
+
+    for (final (nombre, pantalla, accion) in _casos) {
+      testWidgets('$nombre · oscuro · Muy grande · 320x568', (tester) async {
+        tester.view.physicalSize = const Size(320, 568);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final entorno = await _entorno();
+
+        await _conDeteccion(() async {
+          await tester.pumpWidget(
+            _app(entorno, pantalla(), EscalaTexto.muyGrande.factor),
+          );
+          await tester.pumpAndSettle();
+          await _verificar(tester, '$nombre al abrir (oscuro)');
+          final fondo = tester
+              .widgetList<Scaffold>(find.byType(Scaffold))
+              .first
+              .backgroundColor;
+          expect(
+            fondo,
+            anyOf(isNull, coloresOscuros.crema),
+            reason: 'el fondo de $nombre debe ser el oscuro',
+          );
+
+          await accion(tester);
+          await _verificar(tester, '$nombre (oscuro)');
+        });
+      });
+    }
+  });
 
   testWidgets('el detector falla ante un desborde real', (tester) async {
     await _conDeteccion(() async {

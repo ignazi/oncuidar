@@ -202,7 +202,7 @@ class _RecuperarAccesoState extends State<RecuperarAcceso> {
                       ),
                       const SizedBox(height: 16),
                       if (_enviado) ...[
-                        const _PanelEstado(
+                        _PanelEstado(
                           color: Paleta.doradoPrincipal,
                           icono: Icons.mark_email_read_outlined,
                           texto:

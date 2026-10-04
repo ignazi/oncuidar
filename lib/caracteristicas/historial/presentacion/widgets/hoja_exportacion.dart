@@ -19,7 +19,7 @@ Future<AccionExportacion?> mostrarHojaExportacion(BuildContext context) {
         children: [
           ListTile(
             key: const Key('botonAbrirExportacion'),
-            leading: const Icon(
+            leading: Icon(
               Icons.open_in_new_rounded,
               color: Paleta.doradoOscuro,
             ),
@@ -28,10 +28,7 @@ Future<AccionExportacion?> mostrarHojaExportacion(BuildContext context) {
           ),
           ListTile(
             key: const Key('botonCompartirExportacion'),
-            leading: const Icon(
-              Icons.share_rounded,
-              color: Paleta.doradoOscuro,
-            ),
+            leading: Icon(Icons.share_rounded, color: Paleta.doradoOscuro),
             title: const Text('Compartir'),
             onTap: () =>
                 Navigator.of(contexto).pop(AccionExportacion.compartir),
@@ -59,7 +56,7 @@ class BotonNuevoRegistro extends StatelessWidget {
           height: 36,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Paleta.tarjeta,
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
@@ -72,11 +69,7 @@ class BotonNuevoRegistro extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.add_rounded,
-                color: Paleta.doradoOscuro,
-                size: 17,
-              ),
+              Icon(Icons.add_rounded, color: Paleta.doradoOscuro, size: 17),
               const SizedBox(width: 6),
               Text(
                 'Nuevo registro',

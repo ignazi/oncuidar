@@ -23,10 +23,10 @@ class TituloSeccionRegistro extends StatelessWidget {
           width: 26,
           height: 26,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Paleta.doradoMedio, Paleta.doradoOscuro],
+              colors: [Paleta.doradoMedio, Paleta.doradoRelleno],
             ),
             borderRadius: BorderRadius.circular(8),
           ),

@@ -83,10 +83,13 @@ class TarjetaContacto extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       height: 40,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
+                          colors: [
+                            Paleta.doradoPrincipal,
+                            Paleta.doradoRelleno,
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(22),
                         boxShadow: [

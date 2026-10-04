@@ -33,19 +33,30 @@ class _TransicionWhatsApp extends PageTransitionsBuilder {
 }
 
 class Tema {
+  /// Tema armado con los colores vigentes de [Paleta] (claros u oscuros).
   static ThemeData obtener() {
+    final brillo = Paleta.esOscura ? Brightness.dark : Brightness.light;
     final esquema = ColorScheme.fromSeed(
+      brightness: brillo,
       seedColor: Paleta.doradoPrincipal,
       primary: Paleta.doradoPrincipal,
       secondary: Paleta.doradoMedio,
       surface: Paleta.tarjeta,
       onSurface: Paleta.textoPrincipal,
+      error: Paleta.error,
     );
 
     return ThemeData(
       useMaterial3: true,
+      brightness: brillo,
       colorScheme: esquema,
       scaffoldBackgroundColor: Paleta.crema,
+      dialogTheme: DialogThemeData(backgroundColor: Paleta.tarjeta),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: Paleta.tarjeta,
+        modalBackgroundColor: Paleta.tarjeta,
+      ),
+      dividerColor: Paleta.bordeTarjeta,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: _TransicionWhatsApp(),

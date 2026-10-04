@@ -51,7 +51,7 @@ class EncabezadoSeccion extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          const Expanded(child: Divider(color: Paleta.bordeTarjeta)),
+          Expanded(child: Divider(color: Paleta.bordeTarjeta)),
         ],
       ),
     );

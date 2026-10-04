@@ -115,7 +115,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.search_off,
                             size: 40,
                             color: Paleta.textoSecundario,
@@ -176,7 +176,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                                 )
                               : null,
                           trailing: p.id == widget.idActual
-                              ? const Icon(
+                              ? Icon(
                                   Icons.check_circle,
                                   color: Paleta.doradoPrincipal,
                                 )

@@ -308,7 +308,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.cloud_off_rounded,
             size: 44,
             color: Paleta.textoSecundario,
@@ -339,11 +339,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.forum_outlined,
-            size: 44,
-            color: Paleta.textoSecundario,
-          ),
+          Icon(Icons.forum_outlined, size: 44, color: Paleta.textoSecundario),
           const SizedBox(height: 10),
           Text(
             'Aún no tienes conversaciones.',

@@ -74,7 +74,7 @@ class FiltrosHistorial extends StatelessWidget {
                             alpha: 0.6,
                           ),
                         ),
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close,
                           size: 18,
                           color: Paleta.textoSecundario,
@@ -89,7 +89,7 @@ class FiltrosHistorial extends StatelessWidget {
             _BotonExportar(
               formato: FormatoExportacion.pdf,
               icono: Icons.picture_as_pdf,
-              colores: const [Paleta.doradoPrincipal, Paleta.doradoOscuro],
+              colores: [Paleta.doradoPrincipal, Paleta.doradoRelleno],
               habilitado: exportable,
               alPulsar: alExportar,
             ),
@@ -112,7 +112,7 @@ class FiltrosHistorial extends StatelessWidget {
       height: 40,
       child: OutlinedButton.icon(
         onPressed: alElegirRango,
-        icon: const Icon(
+        icon: Icon(
           Icons.calendar_month_outlined,
           size: 18,
           color: Paleta.doradoOscuro,
@@ -128,7 +128,7 @@ class FiltrosHistorial extends StatelessWidget {
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: Paleta.doradoOscuro,
-          side: const BorderSide(color: Paleta.bordeTarjeta),
+          side: BorderSide(color: Paleta.bordeTarjeta),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -184,7 +184,7 @@ class _BotonExportar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               gradient: habilitado ? LinearGradient(colors: colores) : null,
-              color: habilitado ? null : const Color(0xFFEDE3D2),
+              color: habilitado ? null : Paleta.deshabilitado,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(

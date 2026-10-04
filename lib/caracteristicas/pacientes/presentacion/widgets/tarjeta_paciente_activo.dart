@@ -150,7 +150,7 @@ class TarjetaPacienteActivo extends StatelessWidget {
           }
         },
         itemBuilder: (context) => [
-          const PopupMenuItem(
+          PopupMenuItem(
             value: _AccionPaciente.cambiar,
             child: ListTile(
               leading: Icon(
@@ -186,7 +186,7 @@ class TarjetaPacienteActivo extends StatelessWidget {
               dense: true,
             ),
           ),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: _AccionPaciente.eliminar,
             child: ListTile(
               leading: Icon(Icons.delete_outline, color: Paleta.error),
@@ -201,7 +201,7 @@ class TarjetaPacienteActivo extends StatelessWidget {
               dense: true,
             ),
           ),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: _AccionPaciente.archivar,
             child: ListTile(
               leading: Icon(Icons.archive_outlined, color: Paleta.doradoOscuro),

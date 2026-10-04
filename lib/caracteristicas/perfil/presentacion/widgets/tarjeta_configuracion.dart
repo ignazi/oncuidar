@@ -27,11 +27,11 @@ class TarjetaConfiguracion extends StatelessWidget {
               Container(
                 width: 38,
                 height: 38,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: Paleta.doradoClaro,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.tune_rounded,
                   size: 20,
                   color: Paleta.doradoOscuro,
@@ -51,7 +51,7 @@ class TarjetaConfiguracion extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Tamaño del texto y avisos',
+                      'Apariencia, tamaño del texto y avisos',
                       style: GoogleFonts.nunito(
                         fontSize: 12,
                         color: Paleta.textoSecundario,
@@ -60,10 +60,7 @@ class TarjetaConfiguracion extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Paleta.textoSecundario,
-              ),
+              Icon(Icons.chevron_right_rounded, color: Paleta.textoSecundario),
             ],
           ),
         ),

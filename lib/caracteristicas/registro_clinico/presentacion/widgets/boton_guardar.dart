@@ -22,10 +22,10 @@ class BotonGuardar extends StatelessWidget {
       child: Ink(
         height: 48,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Paleta.doradoMedio, Paleta.doradoOscuro],
+            colors: [Paleta.doradoMedio, Paleta.doradoRelleno],
           ),
           borderRadius: BorderRadius.circular(16),
         ),

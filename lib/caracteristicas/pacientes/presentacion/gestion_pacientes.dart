@@ -125,8 +125,8 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
     } catch (_) {
       if (mounted) {
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('No se pudo restaurar. Intenta de nuevo.'),
+          SnackBar(
+            content: const Text('No se pudo restaurar. Intenta de nuevo.'),
             backgroundColor: Paleta.error,
           ),
         );
@@ -198,8 +198,8 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
     } catch (_) {
       if (mounted) {
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('No se pudo archivar. Intenta de nuevo.'),
+          SnackBar(
+            content: const Text('No se pudo archivar. Intenta de nuevo.'),
             backgroundColor: Paleta.error,
           ),
         );
@@ -248,8 +248,8 @@ class _GestionPacientesState extends ConsumerState<GestionPacientes> {
     } catch (_) {
       if (mounted) {
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('No se pudo eliminar. Intenta de nuevo.'),
+          SnackBar(
+            content: const Text('No se pudo eliminar. Intenta de nuevo.'),
             backgroundColor: Paleta.error,
           ),
         );

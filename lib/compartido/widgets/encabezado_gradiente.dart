@@ -50,10 +50,10 @@ class EncabezadoGradiente extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          const Positioned.fill(
+          Positioned.fill(
             child: IgnorePointer(
               child: ClipPath(
-                clipper: _ClipperOla(profundidad: _profundidadOla),
+                clipper: const _ClipperOla(profundidad: _profundidadOla),
                 child: DecoratedBox(
                   decoration: BoxDecoration(gradient: Paleta.degradadoCabecera),
                 ),

@@ -56,12 +56,12 @@ class TarjetaRecordatorio extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: r.activo ? Paleta.doradoClaro : const Color(0xFFF0EDE8),
+                color: r.activo ? Paleta.doradoClaro : Paleta.deshabilitado,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icono,
-                color: r.activo ? color : const Color(0xFFB0A08A),
+                color: r.activo ? color : Paleta.textoDeshabilitado,
                 size: 20,
               ),
             ),
@@ -121,7 +121,7 @@ class TarjetaRecordatorio extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                       ],
-                      const Icon(
+                      Icon(
                         Icons.access_time,
                         size: 14,
                         color: Paleta.textoSecundario,
@@ -199,10 +199,7 @@ class TarjetaRecordatorio extends StatelessWidget {
           value: _AccionRecordatorio.editar,
           child: ListTile(
             key: Key('accionEditar_${r.id}'),
-            leading: const Icon(
-              Icons.edit_outlined,
-              color: Paleta.doradoOscuro,
-            ),
+            leading: Icon(Icons.edit_outlined, color: Paleta.doradoOscuro),
             title: Text(
               'Editar',
               style: GoogleFonts.nunito(
@@ -220,7 +217,7 @@ class TarjetaRecordatorio extends StatelessWidget {
           value: _AccionRecordatorio.eliminar,
           child: ListTile(
             key: Key('accionEliminar_${r.id}'),
-            leading: const Icon(Icons.delete_outline, color: Paleta.error),
+            leading: Icon(Icons.delete_outline, color: Paleta.error),
             title: Text(
               'Eliminar',
               style: GoogleFonts.nunito(
@@ -242,7 +239,7 @@ class TarjetaRecordatorio extends StatelessWidget {
           color: Paleta.doradoClaro.withValues(alpha: 0.35),
           shape: BoxShape.circle,
         ),
-        child: const Icon(
+        child: Icon(
           Icons.more_vert_rounded,
           size: 18,
           color: Paleta.doradoOscuro,
@@ -263,7 +260,7 @@ class _ChipDia extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: activo ? Paleta.doradoClaro : const Color(0xFFF0EDE8),
+        color: activo ? Paleta.doradoClaro : Paleta.deshabilitado,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -293,7 +290,7 @@ class _Interruptor extends StatelessWidget {
         width: 48,
         height: 26,
         decoration: BoxDecoration(
-          color: activo ? Paleta.doradoPrincipal : const Color(0xFFD8D0C8),
+          color: activo ? Paleta.doradoPrincipal : Paleta.bordeDeshabilitado,
           borderRadius: BorderRadius.circular(13),
         ),
         child: AnimatedAlign(

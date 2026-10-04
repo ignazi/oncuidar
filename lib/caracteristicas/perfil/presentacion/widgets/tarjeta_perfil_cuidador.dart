@@ -248,11 +248,11 @@ class _TarjetaAutenticacion extends StatelessWidget {
               ],
               icon: Container(
                 padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
+                    colors: [Paleta.doradoPrincipal, Paleta.doradoRelleno],
                   ),
                   shape: BoxShape.circle,
                 ),
@@ -283,11 +283,7 @@ class _AvisoPendiente extends StatelessWidget {
       padding: const EdgeInsets.only(left: 44, top: 4),
       child: Row(
         children: [
-          const Icon(
-            Icons.schedule_rounded,
-            size: 14,
-            color: Paleta.doradoOscuro,
-          ),
+          Icon(Icons.schedule_rounded, size: 14, color: Paleta.doradoOscuro),
           const SizedBox(width: 4),
           Expanded(
             child: Text(

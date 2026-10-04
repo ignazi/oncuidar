@@ -140,8 +140,8 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
     ];
 
     if (async.isLoading && visibles.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.only(top: 48),
+      return Padding(
+        padding: const EdgeInsets.only(top: 48),
         child: Center(
           child: CircularProgressIndicator(color: Paleta.doradoPrincipal),
         ),

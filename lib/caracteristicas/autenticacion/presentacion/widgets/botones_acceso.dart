@@ -24,10 +24,10 @@ class BotonDegradado extends StatelessWidget {
         opacity: cargando ? 0.6 : 1,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Paleta.doradoPrincipal, Paleta.doradoOscuro],
+              colors: [Paleta.doradoPrincipal, Paleta.doradoRelleno],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [

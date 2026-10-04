@@ -58,10 +58,10 @@ class BurbujaMensaje extends StatelessWidget {
     final aviso = ScaffoldMessenger.of(context);
     await Clipboard.setData(ClipboardData(text: mensaje.texto));
     aviso.showSnackBar(
-      const SnackBar(
-        content: Text('Mensaje copiado'),
+      SnackBar(
+        content: const Text('Mensaje copiado'),
         backgroundColor: Paleta.doradoPrincipal,
-        duration: Duration(seconds: 1),
+        duration: const Duration(seconds: 1),
       ),
     );
   }
@@ -194,7 +194,7 @@ class _SugerenciaConsulta extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.lightbulb_outline_rounded,
             size: 17,
             color: Paleta.doradoOscuro,
@@ -327,7 +327,7 @@ class _PuntosAnimadosState extends State<_PuntosAnimados>
             child: Container(
               width: 7,
               height: 7,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Paleta.textoSecundario,
                 shape: BoxShape.circle,
               ),

@@ -6,11 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart';
+import 'package:oncuidar/caracteristicas/configuracion/dominio/modo_tema.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/controlador_recordatorios.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
-/// Ajustes de la app: tamaño de texto y silencio de los avisos.
+/// Ajustes de la app: apariencia, tamaño de texto y silencio de los avisos.
 class PantallaConfiguracion extends ConsumerStatefulWidget {
   const PantallaConfiguracion({super.key});
 
@@ -41,6 +42,7 @@ class _PantallaConfiguracionState extends ConsumerState<PantallaConfiguracion> {
   @override
   Widget build(BuildContext context) {
     final escala = ref.watch(escalaTextoProvider);
+    final modo = ref.watch(modoTemaProvider);
     return Scaffold(
       backgroundColor: Paleta.crema,
       body: Column(
@@ -58,6 +60,40 @@ class _PantallaConfiguracionState extends ConsumerState<PantallaConfiguracion> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
               children: [
+                const _TituloSeccion('Apariencia'),
+                _Tarjeta(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final opcion in ModoTema.values)
+                            _Opcion(
+                              clave: Key('modo_${opcion.name}'),
+                              etiqueta: opcion.etiqueta,
+                              activa: opcion == modo,
+                              alPulsar: () => unawaited(
+                                ref
+                                    .read(modoTemaProvider.notifier)
+                                    .fijar(opcion),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Automático sigue el modo claro u oscuro del teléfono.',
+                        style: GoogleFonts.nunito(
+                          fontSize: 12.5,
+                          color: Paleta.textoSecundario,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
                 const _TituloSeccion('Tamaño del texto'),
                 _Tarjeta(
                   child: Column(
@@ -68,8 +104,9 @@ class _PantallaConfiguracionState extends ConsumerState<PantallaConfiguracion> {
                         runSpacing: 8,
                         children: [
                           for (final opcion in EscalaTexto.values)
-                            _OpcionEscala(
-                              escala: opcion,
+                            _Opcion(
+                              clave: Key('escala_${opcion.name}'),
+                              etiqueta: opcion.etiqueta,
                               activa: opcion == escala,
                               alPulsar: () => unawaited(
                                 ref
@@ -159,7 +196,7 @@ class _Tarjeta extends StatelessWidget {
       color: Paleta.tarjeta,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: Paleta.bordeTarjeta),
+        side: BorderSide(color: Paleta.bordeTarjeta),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -169,21 +206,23 @@ class _Tarjeta extends StatelessWidget {
   }
 }
 
-class _OpcionEscala extends StatelessWidget {
-  const _OpcionEscala({
-    required this.escala,
+class _Opcion extends StatelessWidget {
+  const _Opcion({
+    required this.clave,
+    required this.etiqueta,
     required this.activa,
     required this.alPulsar,
   });
 
-  final EscalaTexto escala;
+  final Key clave;
+  final String etiqueta;
   final bool activa;
   final VoidCallback alPulsar;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      key: Key('escala_${escala.name}'),
+      key: clave,
       onTap: alPulsar,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
@@ -193,7 +232,7 @@ class _OpcionEscala extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
-          escala.etiqueta,
+          etiqueta,
           style: GoogleFonts.nunito(
             fontSize: 13,
             fontWeight: FontWeight.w700,

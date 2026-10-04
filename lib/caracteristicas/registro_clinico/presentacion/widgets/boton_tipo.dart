@@ -16,8 +16,8 @@ class BotonTipo extends StatelessWidget {
   final bool habilitado;
   final VoidCallback alPulsar;
 
-  static const _grisDeshabilitado = Color(0xFFEDE4D6);
-  static const _bordeDeshabilitado = Color(0xFFE0D8C8);
+  static Color get _grisDeshabilitado => Paleta.deshabilitado;
+  static Color get _bordeDeshabilitado => Paleta.bordeDeshabilitado;
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +30,10 @@ class BotonTipo extends StatelessWidget {
         // Gradiente en TODOS los estados para que BoxDecoration.lerp
         // interpole geometría de gradiente suave, sin parpadeo.
         gradient: resaltado
-            ? const LinearGradient(
+            ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Paleta.doradoMedio, Paleta.doradoOscuro],
+                colors: [Paleta.doradoMedio, Paleta.doradoRelleno],
               )
             : LinearGradient(
                 begin: Alignment.topLeft,

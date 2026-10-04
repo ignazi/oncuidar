@@ -130,12 +130,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (_avisoGuardadoMostrado) return;
     _avisoGuardadoMostrado = true;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
+      SnackBar(
+        content: const Text(
           'No se pudo guardar la conversación. Revisa tu conexión.',
         ),
         backgroundColor: Paleta.doradoPrincipal,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -284,7 +284,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         decoration:
             entradaDorada(
               hintText: 'Buscar en el chat…',
-              prefixIcon: const Icon(
+              prefixIcon: Icon(
                 Icons.search,
                 color: Paleta.textoSecundario,
                 size: 20,
@@ -294,7 +294,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ? GestureDetector(
                       key: const Key('borrarBusquedaChat'),
                       onTap: _controladorBusqueda.clear,
-                      child: const Icon(
+                      child: Icon(
                         Icons.cancel_rounded,
                         color: Paleta.textoSecundario,
                         size: 18,
@@ -366,7 +366,7 @@ class _SinResultados extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.search_off_rounded,
               size: 40,
               color: Paleta.textoSecundario,

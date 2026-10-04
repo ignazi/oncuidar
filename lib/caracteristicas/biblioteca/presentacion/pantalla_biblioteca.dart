@@ -263,7 +263,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
               child: Container(
                 width: 18,
                 height: 18,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: Paleta.doradoOscuro,
                   shape: BoxShape.circle,
                 ),
@@ -329,7 +329,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
                 style: GoogleFonts.nunito(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: seleccionado ? Colors.white : const Color(0xFF7A6030),
+                  color: seleccionado ? Colors.white : Paleta.textoTerciario,
                 ),
               ),
             ),
@@ -392,7 +392,7 @@ class _EstadoVacio extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.menu_book_outlined,
               size: 48,
               color: Paleta.textoSecundario,

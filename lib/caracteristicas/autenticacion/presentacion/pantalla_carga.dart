@@ -144,7 +144,7 @@ class _SplashState extends ConsumerState<Splash>
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -153,7 +153,7 @@ class _SplashState extends ConsumerState<Splash>
                 Paleta.doradoPrincipal,
                 Paleta.doradoClaro,
               ],
-              stops: [0.0, 0.5, 1.0],
+              stops: const [0.0, 0.5, 1.0],
             ),
           ),
           child: SafeArea(

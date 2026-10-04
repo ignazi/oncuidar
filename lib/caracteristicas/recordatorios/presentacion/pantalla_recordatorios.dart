@@ -97,8 +97,8 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
   Widget _contenido() {
     final async = ref.watch(recordatoriosProvider);
     if (async.isLoading && !async.hasValue) {
-      return const Padding(
-        padding: EdgeInsets.only(top: 48),
+      return Padding(
+        padding: const EdgeInsets.only(top: 48),
         child: Center(
           child: CircularProgressIndicator(color: Paleta.doradoPrincipal),
         ),
@@ -269,7 +269,7 @@ class _EstadoVacio extends StatelessWidget {
       child: Center(
         child: Column(
           children: [
-            const Icon(Icons.alarm_off, size: 48, color: Paleta.textoAyuda),
+            Icon(Icons.alarm_off, size: 48, color: Paleta.textoAyuda),
             const SizedBox(height: 10),
             Text(
               'No tienes recordatorios.',

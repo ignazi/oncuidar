@@ -106,7 +106,7 @@ class _PantallaDetalleMaterialState
 
   Widget _cuerpo(MaterialEducativo? material) {
     if (material == null) {
-      return const Center(
+      return Center(
         child: Text(
           'Material no encontrado.',
           style: TextStyle(color: Paleta.textoSecundario),
@@ -218,7 +218,7 @@ class _PantallaDetalleMaterialState
   Widget _reemplazoImagen() {
     return Container(
       color: Paleta.fondoEntrada,
-      child: const Icon(
+      child: Icon(
         Icons.image_not_supported_outlined,
         size: 48,
         color: Paleta.textoSecundario,

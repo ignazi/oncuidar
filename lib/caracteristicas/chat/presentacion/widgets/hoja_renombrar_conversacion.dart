@@ -42,9 +42,9 @@ class _HojaRenombrarConversacionState extends State<HojaRenombrarConversacion> {
       maxChildSize: 0.62,
       builder: (ctx, _) => Container(
         key: const Key('dialogoRenombrarConversacion'),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Paleta.tarjeta,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
           top: false,
@@ -73,7 +73,7 @@ class _HojaRenombrarConversacionState extends State<HojaRenombrarConversacion> {
                       Container(
                         width: 36,
                         height: 36,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -103,10 +103,7 @@ class _HojaRenombrarConversacionState extends State<HojaRenombrarConversacion> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.of(ctx).pop(false),
-                        icon: const Icon(
-                          Icons.close,
-                          color: Paleta.textoSecundario,
-                        ),
+                        icon: Icon(Icons.close, color: Paleta.textoSecundario),
                       ),
                     ],
                   ),

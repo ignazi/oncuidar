@@ -278,7 +278,7 @@ class _DialogoRecordatorioState extends State<_DialogoRecordatorio> {
                     key: const Key('confirmarRecordatorio'),
                     etiqueta: _esNuevo ? 'Guardar' : 'Actualizar',
                     icono: _esNuevo ? Icons.check_rounded : Icons.save_rounded,
-                    gradiente: const [Paleta.doradoMedio, Paleta.doradoOscuro],
+                    gradiente: [Paleta.doradoMedio, Paleta.doradoRelleno],
                     colorTexto: Colors.white,
                     alPulsar: _confirmar,
                   ),
@@ -356,10 +356,10 @@ class _ChipDiaSemana extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
           gradient: seleccionado
-              ? const LinearGradient(
+              ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Paleta.doradoMedio, Paleta.doradoOscuro],
+                  colors: [Paleta.doradoMedio, Paleta.doradoRelleno],
                 )
               : null,
           color: seleccionado ? null : Paleta.tarjeta,
@@ -421,7 +421,7 @@ class _CampoSelector extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down,
               size: 18,
               color: Paleta.textoSecundario,

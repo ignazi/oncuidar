@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/enrutador/enrutador.dart';
+import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/repintar.dart';
 import 'package:oncuidar/app/tema/tema.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/firebase_options.dart';
@@ -30,10 +32,12 @@ class OncuidarApp extends ConsumerStatefulWidget {
   ConsumerState<OncuidarApp> createState() => _OncuidarAppState();
 }
 
-class _OncuidarAppState extends ConsumerState<OncuidarApp> {
+class _OncuidarAppState extends ConsumerState<OncuidarApp>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _escucharAvisos();
     var sesionPrevia = false;
     ref.read(firebaseAuthProvider).authStateChanges().listen((usuario) {
@@ -48,6 +52,32 @@ class _OncuidarAppState extends ConsumerState<OncuidarApp> {
         unawaited(ref.read(orquestadorSincronizacionProvider).drenar());
       }
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// El modo automático sigue al sistema cuando este cambia de claro a oscuro.
+  @override
+  void didChangePlatformBrightness() {
+    if (mounted) setState(() {});
+  }
+
+  /// Aplica la paleta del modo vigente; si cambió, repinta toda la app.
+  void _aplicarPaleta() {
+    final brilloSistema =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final oscuro = ref.watch(modoTemaProvider).esOscuro(brilloSistema);
+    if (Paleta.usar(oscuro ? coloresOscuros : coloresClaros)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _repintarTodo());
+    }
+  }
+
+  void _repintarTodo() {
+    if (mounted) repintarArbol(context);
   }
 
   /// Abre la sección de recordatorios al tocar un aviso, con la app viva o cerrada.
@@ -71,6 +101,7 @@ class _OncuidarAppState extends ConsumerState<OncuidarApp> {
     final usuario = ref.watch(estadoAutenticacionProvider).value;
     final desbloqueado = ref.watch(bloqueoCifradoProvider);
     final escalaTexto = ref.watch(escalaTextoProvider).factor;
+    _aplicarPaleta();
     if (usuario != null) ref.watch(orquestadorSincronizacionProvider);
     return MaterialApp.router(
       title: 'Oncuidar',

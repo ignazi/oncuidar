@@ -35,7 +35,7 @@ class CabeceraRegistro extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF4D0),
+            color: Paleta.doradoClaro,
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Icon(
@@ -83,7 +83,7 @@ class CabeceraRegistro extends StatelessWidget {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: _AccionRegistro.editar,
                 child: ListTile(
                   leading: Icon(
@@ -101,7 +101,7 @@ class CabeceraRegistro extends StatelessWidget {
                   dense: true,
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: _AccionRegistro.eliminar,
                 child: ListTile(
                   leading: Icon(Icons.delete_outline, color: Paleta.error),
@@ -123,7 +123,7 @@ class CabeceraRegistro extends StatelessWidget {
                 color: Paleta.doradoClaro.withValues(alpha: 0.35),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.more_vert_rounded,
                 size: 18,
                 color: Paleta.doradoOscuro,

@@ -85,11 +85,7 @@ class SeccionSintomas extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(
-                Icons.arrow_drop_down,
-                size: 26,
-                color: Paleta.doradoOscuro,
-              ),
+              Icon(Icons.arrow_drop_down, size: 26, color: Paleta.doradoOscuro),
             ],
           ),
         ),
@@ -166,7 +162,7 @@ class SeccionSintomas extends StatelessWidget {
                 )
               else ...[
                 const SizedBox(height: 16),
-                const Divider(color: Paleta.doradoClaro, height: 20),
+                Divider(color: Paleta.doradoClaro, height: 20),
                 const SizedBox(height: 8),
                 Text(
                   'Intensidad de cada síntoma:',
