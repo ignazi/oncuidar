@@ -22,9 +22,11 @@ Widget _pantalla({List<MaterialEducativo> catalogo = const []}) {
     routes: [
       GoRoute(path: '/faq', builder: (c, s) => const FaqScreen()),
       GoRoute(
-        path: '/biblioteca/:id',
+        path: '/biblioteca',
         builder: (c, s) => Scaffold(
-          body: Center(child: Text('Material ${s.pathParameters['id']}')),
+          body: Center(
+            child: Text('Biblioteca abre ${s.uri.queryParameters['abrir']}'),
+          ),
         ),
       ),
       GoRoute(
@@ -187,7 +189,10 @@ void main() {
       expect(enlace, findsOneWidget);
       await tester.tap(enlace);
       await tester.pumpAndSettle();
-      expect(find.text('Material videos-como-medir-la-fiebre'), findsOneWidget);
+      expect(
+        find.text('Biblioteca abre videos-como-medir-la-fiebre'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('si el material no está en el catálogo, no hay enlace', (

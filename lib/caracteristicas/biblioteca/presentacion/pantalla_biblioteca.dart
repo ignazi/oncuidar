@@ -19,7 +19,10 @@ import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
 class BibliotecaScreen extends ConsumerStatefulWidget {
-  const BibliotecaScreen({super.key});
+  const BibliotecaScreen({super.key, this.abrirId});
+
+  /// Material que se abre al entrar (p. ej. desde Preguntas frecuentes).
+  final String? abrirId;
 
   @override
   ConsumerState<BibliotecaScreen> createState() => _BibliotecaScreenState();
@@ -32,6 +35,18 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
   bool _buscando = false;
   final Set<String> _urlsDescargando = {};
   final _controladorBusqueda = TextEditingController();
+  late bool _abrirPendiente = widget.abrirId != null;
+
+  /// Abre una sola vez el material pedido por la ruta, cuando el catálogo ya cargó.
+  void _abrirSolicitado(List<MaterialEducativo> items) {
+    if (!_abrirPendiente) return;
+    _abrirPendiente = false;
+    final material = items.where((m) => m.id == widget.abrirId).firstOrNull;
+    if (material == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_abrirMaterial(material));
+    });
+  }
 
   List<MaterialEducativo> _filtrar(
     List<MaterialEducativo> items,
@@ -188,6 +203,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
                 mensaje: 'No se pudieron cargar los materiales.',
               ),
               data: (items) {
+                _abrirSolicitado(items);
                 final filtrados = _filtrar(items, favoritos.toSet());
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),

@@ -123,11 +123,16 @@ Widget _pantalla(
   BaseDatosSegura base,
   _CacheFalso cache, {
   void Function(String id)? alAbrirDetalle,
+  String? abrir,
 }) {
   final router = GoRouter(
-    initialLocation: '/biblioteca',
+    initialLocation: abrir == null ? '/biblioteca' : '/biblioteca?abrir=$abrir',
     routes: [
-      GoRoute(path: '/biblioteca', builder: (c, s) => const BibliotecaScreen()),
+      GoRoute(
+        path: '/biblioteca',
+        builder: (c, s) =>
+            BibliotecaScreen(abrirId: s.uri.queryParameters['abrir']),
+      ),
       GoRoute(
         path: '/biblioteca/:id',
         builder: (c, s) {
@@ -153,13 +158,14 @@ Future<void> _montar(
   BaseDatosSegura base,
   _CacheFalso cache, {
   void Function(String id)? alAbrirDetalle,
+  String? abrir,
 }) async {
   tester.view.physicalSize = const Size(800, 1600);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(
-    _pantalla(base, cache, alAbrirDetalle: alAbrirDetalle),
+    _pantalla(base, cache, alAbrirDetalle: alAbrirDetalle, abrir: abrir),
   );
   await tester.pumpAndSettle();
 }
@@ -346,6 +352,28 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No se encontraron materiales.'), findsOneWidget);
+  });
+
+  testWidgets('entrar con ?abrir= abre ese material sin pasar por el detalle', (
+    tester,
+  ) async {
+    final (base, _) = await _baseConContenido([_video(), _guia()]);
+    final cache = _CacheFalso()
+      ..fallar.add(
+        'https://firebasestorage.googleapis.com/v0/b/oncuidar-v1.firebasestorage.app/o/videos%2Fprueba.mp4?alt=media',
+      );
+    String? detalleAbierto;
+    await _montar(
+      tester,
+      base,
+      cache,
+      alAbrirDetalle: (id) => detalleAbierto = id,
+      abrir: 'videos-como-medir-la-fiebre',
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(detalleAbierto, isNull);
+    expect(find.textContaining('No se pudo preparar el video'), findsOneWidget);
   });
 
   testWidgets('tocar un video sin descarga avisa del error', (tester) async {

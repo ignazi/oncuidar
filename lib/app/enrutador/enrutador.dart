@@ -65,7 +65,8 @@ GoRoute _rutaRecordatorios() {
 GoRoute _rutaBiblioteca() {
   return GoRoute(
     path: '/biblioteca',
-    builder: (context, state) => const BibliotecaScreen(),
+    builder: (context, state) =>
+        BibliotecaScreen(abrirId: state.uri.queryParameters['abrir']),
   );
 }
 

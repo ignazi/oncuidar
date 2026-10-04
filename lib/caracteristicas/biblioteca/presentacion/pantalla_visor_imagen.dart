@@ -1,12 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/proveedores_navegacion.dart';
-import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_material.dart';
-import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
 
 /// Etiqueta del Hero que comparten la tarjeta y el visor.
@@ -157,11 +152,6 @@ class _PantallaVisorImagenState extends ConsumerState<PantallaVisorImagen>
   }
 
   Widget _barraSuperior() {
-    final id = widget.idMaterial;
-    final esFavorito =
-        id != null &&
-        (ref.watch(idsFavoritosProvider).value?.contains(id) ?? false);
-    final compartible = !widget.url.startsWith('assets/');
     return IgnorePointer(
       ignoring: !_mostrarBarra,
       child: AnimatedOpacity(
@@ -205,33 +195,6 @@ class _PantallaVisorImagenState extends ConsumerState<PantallaVisorImagen>
                   ),
                 ),
               ),
-              if (id != null)
-                IconButton(
-                  key: const Key('favoritoVisorImagen'),
-                  tooltip: esFavorito
-                      ? 'Quitar de favoritos'
-                      : 'Guardar en favoritos',
-                  onPressed: () =>
-                      unawaited(alternarFavoritoMaterial(ref, context, id)),
-                  icon: Icon(
-                    esFavorito ? Icons.bookmark : Icons.bookmark_border,
-                    color: esFavorito ? Paleta.doradoMedio : Colors.white,
-                  ),
-                ),
-              if (compartible)
-                IconButton(
-                  key: const Key('compartirVisorImagen'),
-                  tooltip: 'Compartir',
-                  onPressed: () => unawaited(
-                    compartirImagenMaterial(
-                      ref,
-                      context,
-                      widget.url,
-                      widget.titulo,
-                    ),
-                  ),
-                  icon: const Icon(Icons.share_rounded, color: Colors.white),
-                ),
             ],
           ),
         ),

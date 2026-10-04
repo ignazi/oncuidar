@@ -142,23 +142,6 @@ void main() {
     expect(escala(tester), closeTo(1, 0.01));
   });
 
-  testWidgets('el favorito se guarda en la lista del cuidador', (tester) async {
-    await abrir(tester);
-
-    await tester.tap(find.byKey(const Key('favoritoVisorImagen')));
-    await tester.pumpAndSettle();
-
-    final doc = await firestore.collection('usuarios').doc(_uid).get();
-    expect(doc.data()?['idsFavoritos'], [_id]);
-    expect(
-      find.descendant(
-        of: find.byKey(const Key('favoritoVisorImagen')),
-        matching: find.byIcon(Icons.bookmark),
-      ),
-      findsOneWidget,
-    );
-  });
-
   testWidgets('volver cierra el visor y devuelve la barra inferior', (
     tester,
   ) async {
