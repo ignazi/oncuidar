@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/modo_tema.dart';
-import 'package:oncuidar/caracteristicas/configuracion/presentacion/pantalla_configuracion.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
+import 'package:oncuidar/caracteristicas/configuracion/presentacion/seccion_configuracion.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,19 +22,14 @@ Future<(ProviderContainer, NotificacionesFalsas)> _montar(
     ],
   );
   addTearDown(contenedor.dispose);
-  final router = GoRouter(
-    initialLocation: '/configuracion',
-    routes: [
-      GoRoute(
-        path: '/configuracion',
-        builder: (c, s) => const PantallaConfiguracion(),
-      ),
-    ],
-  );
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: contenedor,
-      child: MaterialApp.router(routerConfig: router),
+      child: const MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(child: SeccionConfiguracion()),
+        ),
+      ),
     ),
   );
   await tester.pumpAndSettle();

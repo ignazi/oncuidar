@@ -15,7 +15,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_biblio
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/pantalla_chat.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart';
-import 'package:oncuidar/caracteristicas/configuracion/presentacion/pantalla_configuracion.dart';
+import 'package:oncuidar/caracteristicas/configuracion/presentacion/seccion_configuracion.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
@@ -314,7 +314,9 @@ final _casos =
       ),
       (
         'configuración',
-        () => const PantallaConfiguracion(),
+        () => const Scaffold(
+          body: SingleChildScrollView(child: SeccionConfiguracion()),
+        ),
         (t) async {
           await _alFinal(t);
         },

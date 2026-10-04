@@ -8,7 +8,6 @@ import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_rec
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_detalle_material.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/pantalla_chat.dart';
-import 'package:oncuidar/caracteristicas/configuracion/presentacion/pantalla_configuracion.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
 import 'package:oncuidar/caracteristicas/panel_principal/presentacion/pantalla_panel_principal.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/pantalla_perfil.dart';
@@ -68,14 +67,6 @@ GoRoute _rutaBiblioteca() {
     path: '/biblioteca',
     builder: (context, state) =>
         BibliotecaScreen(abrirId: state.uri.queryParameters['abrir']),
-  );
-}
-
-/// Configuración de la app, disponible desde cualquier pestaña.
-GoRoute _rutaConfiguracion() {
-  return GoRoute(
-    path: '/configuracion',
-    builder: (context, state) => const PantallaConfiguracion(),
   );
 }
 
@@ -139,7 +130,6 @@ final router = GoRouter(
             _rutaRecordatorios(),
             _rutaBiblioteca(),
             _rutaBibliotecaDetalle(),
-            _rutaConfiguracion(),
           ],
         ),
         // Pestaña Perfil.
@@ -156,7 +146,6 @@ final router = GoRouter(
             _rutaRecordatorios(),
             _rutaBiblioteca(),
             _rutaBibliotecaDetalle(),
-            _rutaConfiguracion(),
           ],
         ),
       ],
