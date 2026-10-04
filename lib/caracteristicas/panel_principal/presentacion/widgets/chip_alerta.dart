@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/compartido/config_alerta.dart';
 
 class ChipAlerta extends StatelessWidget {
@@ -33,7 +33,7 @@ class ChipAlerta extends StatelessWidget {
               estado.label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w800,
                 color: estado.color,

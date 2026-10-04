@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Encabezado de sección con ícono en cuadro de degradado dorado.
 class TituloSeccionRegistro extends StatelessWidget {
@@ -36,7 +36,7 @@ class TituloSeccionRegistro extends StatelessWidget {
         Expanded(
           child: Text(
             texto,
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: Paleta.textoTerciario,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/catalogo_preguntas.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/pregunta_base.dart';
@@ -203,7 +203,7 @@ class _FaqScreenState extends State<FaqScreen> {
                     child: AnimatedDefaultTextStyle(
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeOut,
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w800,
                         color: activo ? Colors.white : Paleta.doradoOscuro,
@@ -257,7 +257,7 @@ class _FaqScreenState extends State<FaqScreen> {
                       children: [
                         Text(
                           pregunta.categoria,
-                          style: Tipografia.estilo(
+                          style: GoogleFonts.nunito(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             color: Paleta.doradoOscuro,
@@ -266,7 +266,7 @@ class _FaqScreenState extends State<FaqScreen> {
                         const SizedBox(height: 2),
                         Text(
                           pregunta.pregunta,
-                          style: Tipografia.estilo(
+                          style: GoogleFonts.nunito(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: Paleta.textoPrincipal,
@@ -312,7 +312,7 @@ class _FaqScreenState extends State<FaqScreen> {
                       children: [
                         Text(
                           pregunta.respuesta,
-                          style: Tipografia.estilo(
+                          style: GoogleFonts.nunito(
                             fontSize: 13,
                             color: Paleta.textoTerciario,
                             height: 1.6,
@@ -346,7 +346,7 @@ class _FaqScreenState extends State<FaqScreen> {
             Text(
               'No se encontraron preguntas que coincidan con tu búsqueda.',
               textAlign: TextAlign.center,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 color: Paleta.textoSecundario,
               ),
@@ -379,7 +379,7 @@ class _EnlaceMaterialRelacionado extends ConsumerWidget {
         style: TextButton.styleFrom(
           foregroundColor: Paleta.doradoOscuro,
           padding: EdgeInsets.zero,
-          textStyle: Tipografia.estilo(
+          textStyle: GoogleFonts.nunito(
             fontSize: 13,
             fontWeight: FontWeight.w800,
           ),

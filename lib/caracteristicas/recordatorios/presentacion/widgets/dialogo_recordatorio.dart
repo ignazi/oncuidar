@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/controlador_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/formato_recordatorio.dart';
@@ -114,7 +114,7 @@ class _DialogoRecordatorioState extends State<_DialogoRecordatorio> {
           children: [
             Text(
               _esNuevo ? 'Nuevo recordatorio' : 'Editar recordatorio',
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: Paleta.textoPrincipal,
@@ -144,13 +144,13 @@ class _DialogoRecordatorioState extends State<_DialogoRecordatorio> {
               key: const Key('campoTituloRecordatorio'),
               controller: widget.tituloCtrl,
               maxLines: 1,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 color: Paleta.textoPrincipal,
               ),
               decoration: entradaDorada(
                 hintText: 'Título del recordatorio',
-                hintStyle: Tipografia.estilo(
+                hintStyle: GoogleFonts.nunito(
                   fontSize: 14,
                   color: Paleta.textoAyuda,
                 ),
@@ -162,13 +162,13 @@ class _DialogoRecordatorioState extends State<_DialogoRecordatorio> {
               controller: widget.descCtrl,
               minLines: 1,
               maxLines: 2,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 color: Paleta.textoPrincipal,
               ),
               decoration: entradaDorada(
                 hintText: 'Descripción (opcional)',
-                hintStyle: Tipografia.estilo(
+                hintStyle: GoogleFonts.nunito(
                   fontSize: 14,
                   color: Paleta.textoAyuda,
                 ),
@@ -253,7 +253,7 @@ class _DialogoRecordatorioState extends State<_DialogoRecordatorio> {
               Text(
                 'Se recordará cada mes el día ${_fecha.day} a la hora indicada.',
                 key: const Key('textoDiaMensual'),
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 12,
                   color: Paleta.textoSecundario,
                 ),
@@ -324,7 +324,7 @@ class _ChipOpcion extends StatelessWidget {
         ),
         child: Text(
           etiqueta,
-          style: Tipografia.estilo(
+          style: GoogleFonts.nunito(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             color: activo ? Colors.white : Paleta.doradoOscuro,
@@ -370,7 +370,7 @@ class _ChipDiaSemana extends StatelessWidget {
         ),
         child: Text(
           diaCorto(dia),
-          style: Tipografia.estilo(
+          style: GoogleFonts.nunito(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             color: seleccionado ? Colors.white : Paleta.doradoOscuro,
@@ -415,7 +415,7 @@ class _CampoSelector extends StatelessWidget {
             const SizedBox(width: 10),
             Text(
               texto,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 color: Paleta.textoPrincipal,
               ),
@@ -544,7 +544,7 @@ class _ChipTipo extends StatelessWidget {
             const SizedBox(width: 7),
             Text(
               etiqueta,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
                 color: activo ? Colors.white : Paleta.textoPrincipal,
@@ -603,7 +603,7 @@ class _BotonAccion extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 etiqueta,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: colorTexto,

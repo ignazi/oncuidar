@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/compartido/estilos.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 
@@ -94,7 +94,7 @@ class _HojaRenombrarConversacionState extends State<HojaRenombrarConversacion> {
                       Expanded(
                         child: Text(
                           'Renombrar conversación',
-                          style: Tipografia.estilo(
+                          style: GoogleFonts.nunito(
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
                             color: Paleta.textoPrincipal,
@@ -114,7 +114,7 @@ class _HojaRenombrarConversacionState extends State<HojaRenombrarConversacion> {
                     key: const Key('campoRenombrarConversacion'),
                     controller: widget.controlador,
                     focusNode: _foco,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 14,
                       color: Paleta.textoPrincipal,
                     ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ChipFranja extends StatelessWidget {
   const ChipFranja(this.icono, this.texto, {super.key});
@@ -25,7 +25,7 @@ class ChipFranja extends StatelessWidget {
               texto,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w800,
                 color: Colors.white,

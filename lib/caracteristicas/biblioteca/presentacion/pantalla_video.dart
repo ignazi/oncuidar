@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/proveedores_navegacion.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:video_player/video_player.dart';
 
@@ -311,7 +311,7 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
         widget.titulo,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: Tipografia.estilo(
+        style: GoogleFonts.nunito(
           fontSize: 16,
           fontWeight: FontWeight.w700,
           color: Colors.white,
@@ -332,7 +332,7 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
             Text(
               'No se pudo reproducir el video',
               textAlign: TextAlign.center,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
@@ -344,7 +344,7 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: Tipografia.estilo(fontSize: 12, color: Colors.white54),
+              style: GoogleFonts.nunito(fontSize: 12, color: Colors.white54),
             ),
             const SizedBox(height: 24),
             TextButton(
@@ -352,7 +352,7 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
               style: TextButton.styleFrom(foregroundColor: Paleta.doradoMedio),
               child: Text(
                 'Volver',
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),
@@ -453,7 +453,7 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
                     Text(
                       '${formatearDuracion(posicion)} / '
                       '${formatearDuracion(duracion)}',
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 12,
                         color: Colors.white,
                       ),
@@ -509,7 +509,7 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
               widget.titulo,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
@@ -537,7 +537,7 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
           ),
           child: Text(
             etiquetaVelocidad(velocidad),
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w800,
               color: Colors.white,
@@ -595,7 +595,7 @@ class _HojaVelocidad extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Velocidad de reproducción',
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -618,7 +618,7 @@ class _HojaVelocidad extends StatelessWidget {
                   velocidad == 1.0
                       ? 'Normal (1×)'
                       : etiquetaVelocidad(velocidad),
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 14,
                     fontWeight: velocidad == actual
                         ? FontWeight.w800

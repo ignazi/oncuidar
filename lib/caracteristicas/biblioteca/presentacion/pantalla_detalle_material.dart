@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/parseo_contenido.dart';
@@ -130,7 +130,7 @@ class _PantallaDetalleMaterialState
           ],
           Text(
             material.titulo,
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 22,
               fontWeight: FontWeight.w800,
               color: Paleta.textoPrincipal,
@@ -151,7 +151,7 @@ class _PantallaDetalleMaterialState
                 ),
                 child: Text(
                   etiquetaCategoria(material.categoria),
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: Paleta.doradoOscuro,
@@ -163,7 +163,7 @@ class _PantallaDetalleMaterialState
                 Expanded(
                   child: Text(
                     material.tema,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 13,
                       color: Paleta.textoSecundario,
                     ),
@@ -235,7 +235,7 @@ class _PantallaDetalleMaterialState
           child: bloque.esTitulo
               ? Text(
                   bloque.texto,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: Paleta.doradoOscuro,
@@ -243,7 +243,7 @@ class _PantallaDetalleMaterialState
                 )
               : Text(
                   bloque.texto,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 14,
                     height: 1.6,
                     color: Paleta.textoPrincipal,

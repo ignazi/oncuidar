@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/controlador_recordatorios.dart';
@@ -110,7 +110,7 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
         child: Center(
           child: Text(
             'Error al cargar recordatorios.',
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               color: Paleta.textoSecundario,
             ),
@@ -273,7 +273,7 @@ class _EstadoVacio extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               'No tienes recordatorios.',
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Paleta.textoSecundario,
@@ -282,7 +282,7 @@ class _EstadoVacio extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Usa las tarjetas de arriba para crear uno.',
-              style: Tipografia.estilo(fontSize: 13, color: Paleta.textoAyuda),
+              style: GoogleFonts.nunito(fontSize: 13, color: Paleta.textoAyuda),
             ),
           ],
         ),

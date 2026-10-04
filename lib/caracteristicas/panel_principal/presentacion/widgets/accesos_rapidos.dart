@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Accesos rápidos del dashboard: 6 tarjetas en 3 filas de 2.
 class AccesosRapidos extends StatelessWidget {
@@ -62,7 +62,7 @@ class AccesosRapidos extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 10),
           child: Text(
             'ACCESO RÁPIDO',
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
@@ -157,7 +157,7 @@ class AccesosRapidos extends StatelessWidget {
                         acceso.titulo,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Tipografia.estilo(
+                        style: GoogleFonts.nunito(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,
                           color: colorTitulo,
@@ -168,7 +168,7 @@ class AccesosRapidos extends StatelessWidget {
                         acceso.subtitulo,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Tipografia.estilo(
+                        style: GoogleFonts.nunito(
                           fontSize: 11.5,
                           color: colorSubtitulo,
                         ),

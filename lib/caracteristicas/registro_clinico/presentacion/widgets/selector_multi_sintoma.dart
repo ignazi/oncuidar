@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/catalogo_sintomas.dart';
 import 'package:oncuidar/compartido/estilos.dart';
 
@@ -95,7 +95,7 @@ class _SelectorMultiSintomaState extends State<SelectorMultiSintoma> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       title: Text(
         nombre,
-        style: Tipografia.estilo(
+        style: GoogleFonts.nunito(
           fontSize: 13.5,
           fontWeight: FontWeight.w600,
           color: Paleta.textoPrincipal,
@@ -115,7 +115,7 @@ class _SelectorMultiSintomaState extends State<SelectorMultiSintoma> {
       // defecto los eleva a 48px y, en pantallas de 320dp, el bloque fijo de
       // 5 filas desbordaba la hoja antes de la lista flexible.
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      labelStyle: Tipografia.estilo(
+      labelStyle: GoogleFonts.nunito(
         fontSize: 11.5,
         fontWeight: FontWeight.w700,
         color: seleccionado ? Colors.white : Paleta.textoSecundario,
@@ -161,7 +161,7 @@ class _SelectorMultiSintomaState extends State<SelectorMultiSintoma> {
                     'Síntomas (ESAS-r)',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: Paleta.doradoOscuro,
@@ -184,14 +184,14 @@ class _SelectorMultiSintomaState extends State<SelectorMultiSintoma> {
             child: TextField(
               controller: _consultaController,
               onChanged: (valor) => setState(() => _consulta = valor),
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w700,
                 color: Paleta.textoPrincipal,
               ),
               decoration: entradaDorada(
                 hintText: 'Buscar síntoma…',
-                hintStyle: Tipografia.estilo(
+                hintStyle: GoogleFonts.nunito(
                   fontSize: 13,
                   color: Paleta.textoAyuda,
                 ),
@@ -220,14 +220,14 @@ class _SelectorMultiSintomaState extends State<SelectorMultiSintoma> {
                     controller: _agregarController,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _agregarPersonalizado(),
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                       color: Paleta.textoPrincipal,
                     ),
                     decoration: entradaDorada(
                       hintText: 'Agregar síntoma…',
-                      hintStyle: Tipografia.estilo(
+                      hintStyle: GoogleFonts.nunito(
                         fontSize: 13,
                         color: Paleta.textoAyuda,
                       ),
@@ -263,7 +263,7 @@ class _SelectorMultiSintomaState extends State<SelectorMultiSintoma> {
               child: Text(
                 'Sin resultados',
                 textAlign: TextAlign.center,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 12.5,
                   color: Paleta.textoSecundario,
                 ),
@@ -287,7 +287,7 @@ class _SelectorMultiSintomaState extends State<SelectorMultiSintoma> {
               ),
               child: Text(
                 'Listo',
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),

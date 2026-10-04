@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/preguntas_frecuentes/dominio/pregunta_base.dart';
 
 /// Preguntas frecuentes para iniciar la conversación.
@@ -24,7 +24,7 @@ class PreguntasSugeridas extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             'Preguntas frecuentes',
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: Paleta.textoTerciario,
@@ -70,7 +70,7 @@ class PreguntasSugeridas extends StatelessWidget {
                     Expanded(
                       child: Text(
                         pregunta.pregunta,
-                        style: Tipografia.estilo(
+                        style: GoogleFonts.nunito(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,
                           color: Paleta.textoPrincipal,
@@ -109,7 +109,7 @@ class PreguntasSugeridas extends StatelessWidget {
                   Flexible(
                     child: Text(
                       'Ver todas las preguntas frecuentes',
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: Paleta.doradoOscuro,
@@ -146,7 +146,7 @@ class SugerenciasSeguimiento extends StatelessWidget {
         children: [
           Text(
             'Otras preguntas:',
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 13,
               color: Paleta.textoSecundario,
             ),
@@ -177,7 +177,7 @@ class SugerenciasSeguimiento extends StatelessWidget {
                     ),
                     child: Text(
                       pregunta.pregunta,
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                         color: Paleta.doradoOscuro,

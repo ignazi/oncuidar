@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Chip de filtro por estado de alerta (Todos / Normal / Alerta / Crítico).
 class ChipEstado extends StatelessWidget {
@@ -29,7 +29,7 @@ class ChipEstado extends StatelessWidget {
         ),
         child: Text(
           etiqueta,
-          style: Tipografia.estilo(
+          style: GoogleFonts.nunito(
             fontSize: 13,
             fontWeight: FontWeight.w800,
             color: activo ? Colors.white : Paleta.textoTerciario,

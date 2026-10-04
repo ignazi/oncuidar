@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/proveedores_navegacion.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
 
 /// Etiqueta del Hero que comparten la tarjeta y el visor.
@@ -188,7 +188,7 @@ class _PantallaVisorImagenState extends ConsumerState<PantallaVisorImagen>
                   widget.titulo,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/seccion_configuracion.dart';
 
 /// Acceso a la configuración de la app desde el perfil.
@@ -44,7 +44,7 @@ class TarjetaConfiguracion extends StatelessWidget {
                   children: [
                     Text(
                       'Configuración de la app',
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: Paleta.textoPrincipal,
@@ -52,7 +52,7 @@ class TarjetaConfiguracion extends StatelessWidget {
                     ),
                     Text(
                       'Apariencia, tamaño del texto y avisos',
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 12,
                         color: Paleta.textoSecundario,
                       ),

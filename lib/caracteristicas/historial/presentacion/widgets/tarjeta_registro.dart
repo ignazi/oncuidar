@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/cabecera_tarjeta_registro.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/detalle_registro.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/mini_signos.dart';
@@ -76,7 +76,7 @@ class TarjetaRegistro extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               'Click para ver registro completo',
-                              style: Tipografia.estilo(
+                              style: GoogleFonts.nunito(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: Paleta.doradoOscuro,

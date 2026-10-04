@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/historial/dominio/filtro_historial.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/controlador_historial.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/widgets/chip_estado.dart';
@@ -120,7 +120,7 @@ class FiltrosHistorial extends StatelessWidget {
         label: Text(
           etiquetaRango(filtro, DateTime.now()),
           overflow: TextOverflow.ellipsis,
-          style: Tipografia.estilo(
+          style: GoogleFonts.nunito(
             fontSize: 13,
             fontWeight: FontWeight.w700,
             color: Paleta.doradoOscuro,
@@ -198,7 +198,7 @@ class _BotonExportar extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   formato.nombre,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: habilitado ? Colors.white : Paleta.textoSecundario,

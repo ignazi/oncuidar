@@ -10,7 +10,6 @@ import 'package:oncuidar/app/enrutador/enrutador.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/app/tema/repintar.dart';
 import 'package:oncuidar/app/tema/tema.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/firebase_options.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -67,14 +66,12 @@ class _OncuidarAppState extends ConsumerState<OncuidarApp>
     if (mounted) setState(() {});
   }
 
-  /// Aplica la paleta y la tipografía vigentes; si cambió algo, repinta toda la app.
+  /// Aplica la paleta del modo vigente; si cambió, repinta toda la app.
   void _aplicarPaleta() {
     final brilloSistema =
         WidgetsBinding.instance.platformDispatcher.platformBrightness;
     final oscuro = ref.watch(modoTemaProvider).esOscuro(brilloSistema);
-    final cambioColores = Paleta.usar(oscuro ? coloresOscuros : coloresClaros);
-    final cambioLetra = Tipografia.usar(ref.watch(tipoLetraProvider));
-    if (cambioColores || cambioLetra) {
+    if (Paleta.usar(oscuro ? coloresOscuros : coloresClaros)) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _repintarTodo());
     }
   }

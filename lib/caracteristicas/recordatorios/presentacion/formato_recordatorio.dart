@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Días de la semana en el orden en que se muestran.
 const todosLosDias = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
@@ -46,7 +46,7 @@ class EtiquetaSeccionRecordatorio extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       texto,
-      style: Tipografia.estilo(
+      style: GoogleFonts.nunito(
         fontSize: 14,
         fontWeight: FontWeight.w700,
         color: Paleta.textoTerciario,

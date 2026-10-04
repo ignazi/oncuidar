@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Pantalla de bienvenida sin paciente: invita al cuidador a agregar uno.
 class EstadoSinPacientes extends StatelessWidget {
@@ -40,7 +40,7 @@ class EstadoSinPacientes extends StatelessWidget {
             Text(
               'Aún no tienes pacientes',
               textAlign: TextAlign.center,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: Paleta.textoPrincipal,
@@ -52,7 +52,7 @@ class EstadoSinPacientes extends StatelessWidget {
               child: Text(
                 subtitulo,
                 textAlign: TextAlign.center,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 14,
                   height: 1.4,
                   color: Paleta.textoSecundario,
@@ -72,7 +72,7 @@ class EstadoSinPacientes extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                textStyle: Tipografia.estilo(
+                textStyle: GoogleFonts.nunito(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),

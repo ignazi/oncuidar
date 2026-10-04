@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/conteo_registros.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
@@ -58,7 +58,7 @@ class SaludoPaciente extends StatelessWidget {
                       'Hola, $nombreCuidador',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 19,
                         fontWeight: FontWeight.w800,
                         color: Paleta.textoPrincipal,
@@ -78,7 +78,7 @@ class SaludoPaciente extends StatelessWidget {
                       'PACIENTE ACTIVO',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.2,
@@ -90,7 +90,7 @@ class SaludoPaciente extends StatelessWidget {
                       paciente.nombreCompleto,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
                         color: Paleta.textoPrincipal,
@@ -117,7 +117,7 @@ class SaludoPaciente extends StatelessWidget {
                   _lineaUltimoRegistro(ultimo),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Paleta.textoPrincipal.withValues(alpha: 0.88),
@@ -140,7 +140,7 @@ class SaludoPaciente extends StatelessWidget {
           'REGISTROS DE HOY',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Tipografia.estilo(
+          style: GoogleFonts.nunito(
             fontSize: 9.5,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.8,
@@ -156,7 +156,7 @@ class SaludoPaciente extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: '$cuantos',
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: Paleta.textoPrincipal,
@@ -164,7 +164,7 @@ class SaludoPaciente extends StatelessWidget {
                   ),
                   TextSpan(
                     text: '/$meta',
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: Paleta.textoSecundario,
@@ -177,7 +177,7 @@ class SaludoPaciente extends StatelessWidget {
               const SizedBox(width: 5),
               Text(
                 '+$extras extra',
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w800,
                   color: const Color(0xFF1FA97C),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Mensaje de error de carga de datos con botón de reintentar.
 class MensajeErrorDatos extends StatelessWidget {
@@ -25,7 +25,7 @@ class MensajeErrorDatos extends StatelessWidget {
           Text(
             'No se pudieron cargar tus datos.',
             textAlign: TextAlign.center,
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               color: Paleta.textoPrincipal,
             ),

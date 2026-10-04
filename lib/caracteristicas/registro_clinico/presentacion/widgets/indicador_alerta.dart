@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/motor_reglas_clinicas.dart';
 import 'package:oncuidar/compartido/config_alerta.dart';
 
@@ -41,7 +41,7 @@ class IndicadorAlerta extends StatelessWidget {
               children: [
                 Text(
                   config.titulo,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: config.color,
@@ -50,7 +50,7 @@ class IndicadorAlerta extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   config.subtitulo,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
                     color: Paleta.textoSecundario,
@@ -63,7 +63,7 @@ class IndicadorAlerta extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 2),
                       child: Text(
                         '• $mensaje',
-                        style: Tipografia.estilo(
+                        style: GoogleFonts.nunito(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Paleta.textoPrincipal,

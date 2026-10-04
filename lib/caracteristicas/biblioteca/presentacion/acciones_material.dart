@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_pdf.dart';
@@ -14,7 +14,7 @@ import 'package:open_filex/open_filex.dart';
 void mostrarAvisoBiblioteca(BuildContext context, String mensaje) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(mensaje, style: Tipografia.estilo(fontSize: 14)),
+      content: Text(mensaje, style: GoogleFonts.nunito(fontSize: 14)),
       backgroundColor: Paleta.error,
     ),
   );

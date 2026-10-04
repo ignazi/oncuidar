@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/proveedores_navegacion.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:pdfx/pdfx.dart';
 
 /// Dibuja el documento de la ruta dada; en pruebas se reemplaza por uno falso.
@@ -69,7 +69,7 @@ class _PantallaVisorPdfState extends ConsumerState<PantallaVisorPdf> {
           widget.titulo,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Tipografia.estilo(
+          style: GoogleFonts.nunito(
             fontSize: 16,
             fontWeight: FontWeight.w700,
             color: Colors.white,
@@ -105,7 +105,7 @@ class IndicadorPaginaPdf extends StatelessWidget {
       ),
       child: Text(
         '$pagina / $total',
-        style: Tipografia.estilo(
+        style: GoogleFonts.nunito(
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: Colors.white,
@@ -155,7 +155,7 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
               errorBuilder: (_, _) => Center(
                 child: Text(
                   'No se pudo mostrar el PDF.',
-                  style: Tipografia.estilo(fontSize: 14, color: Colors.white),
+                  style: GoogleFonts.nunito(fontSize: 14, color: Colors.white),
                 ),
               ),
             ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/catalogo_sintomas.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/widgets/fila_intensidad_sintoma.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/widgets/selector_multi_sintoma.dart';
@@ -78,7 +78,7 @@ class SeccionSintomas extends StatelessWidget {
                       : '${seleccionados.length} seleccionados',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 13,
                     fontWeight: vacio ? FontWeight.w400 : FontWeight.w800,
                     color: vacio ? Paleta.textoSecundario : Paleta.doradoOscuro,
@@ -133,7 +133,7 @@ class SeccionSintomas extends StatelessWidget {
               Text(
                 'Evaluación de síntomas (ESAS-r)',
                 textAlign: TextAlign.center,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w800,
                   color: Paleta.doradoOscuro,
@@ -142,7 +142,7 @@ class SeccionSintomas extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 'Selecciona los síntomas que presenta el paciente ahora:',
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
                   color: Paleta.textoSecundario,
@@ -155,7 +155,7 @@ class SeccionSintomas extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 14),
                   child: Text(
                     'Selecciona un síntoma para evaluar su intensidad.',
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 12.5,
                       color: Paleta.textoSecundario,
                     ),
@@ -167,7 +167,7 @@ class SeccionSintomas extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Intensidad de cada síntoma:',
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
                     color: Paleta.doradoOscuro,
@@ -176,7 +176,7 @@ class SeccionSintomas extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   'Desliza para marcar del 0 (nada) al 10 (máximo).',
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 11.5,
                     color: Paleta.textoSecundario,
                   ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 class TarjetaSeccion extends StatelessWidget {
   const TarjetaSeccion({
@@ -61,7 +61,7 @@ class TarjetaSeccion extends StatelessWidget {
                   child: Text(
                     titulo,
                     overflow: TextOverflow.ellipsis,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
@@ -93,7 +93,7 @@ class EtiquetaCampo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       texto,
-      style: Tipografia.estilo(
+      style: GoogleFonts.nunito(
         fontSize: 13,
         fontWeight: FontWeight.w700,
         color: Paleta.textoTerciario,
@@ -142,7 +142,7 @@ class CampoFormulario extends StatelessWidget {
       onFieldSubmitted: alEnviar,
       onChanged: alCambiar,
       validator: validador,
-      style: Tipografia.estilo(fontSize: 14, color: Paleta.textoPrincipal),
+      style: GoogleFonts.nunito(fontSize: 14, color: Paleta.textoPrincipal),
       decoration: decoracionEntrada(
         textoAyuda: textoAyuda,
         icono: icono,
@@ -159,7 +159,7 @@ InputDecoration decoracionEntrada({
 }) {
   return InputDecoration(
     hintText: textoAyuda,
-    hintStyle: Tipografia.estilo(color: Paleta.textoAyuda, fontSize: 14),
+    hintStyle: GoogleFonts.nunito(color: Paleta.textoAyuda, fontSize: 14),
     prefixIcon: Icon(icono, size: 20, color: Paleta.doradoOscuro),
     suffixIcon: iconoSufijo,
     filled: true,

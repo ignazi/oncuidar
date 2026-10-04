@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Botón principal de guardado con estado de carga y texto según edición.
 class BotonGuardar extends StatelessWidget {
@@ -57,7 +57,7 @@ class BotonGuardar extends StatelessWidget {
                         : (esEdicion
                               ? 'Actualizar registro'
                               : 'Guardar registro'),
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,

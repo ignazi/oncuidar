@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
@@ -129,7 +129,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
           SnackBar(
             content: Text(
               'No se pudo preparar el video: $e',
-              style: Tipografia.estilo(fontSize: 14),
+              style: GoogleFonts.nunito(fontSize: 14),
             ),
             backgroundColor: Paleta.error,
           ),
@@ -148,7 +148,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
       SnackBar(
         content: Text(
           'Descargando ${material.titulo}…',
-          style: Tipografia.estilo(fontSize: 14),
+          style: GoogleFonts.nunito(fontSize: 14),
         ),
       ),
     );
@@ -270,7 +270,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
                 child: Center(
                   child: Text(
                     '$totalFavoritos',
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -326,7 +326,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
               ),
               child: Text(
                 etiqueta,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: seleccionado ? Colors.white : Paleta.textoTerciario,
@@ -401,7 +401,7 @@ class _EstadoVacio extends StatelessWidget {
             Text(
               mensaje,
               textAlign: TextAlign.center,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 color: Paleta.textoSecundario,
               ),

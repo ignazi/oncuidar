@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/formato_recordatorio.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
@@ -72,7 +72,7 @@ class TarjetaRecordatorio extends StatelessWidget {
                 children: [
                   Text(
                     r.titulo,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: r.activo
@@ -86,7 +86,7 @@ class TarjetaRecordatorio extends StatelessWidget {
                       r.descripcion!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 12,
                         fontStyle: FontStyle.italic,
                         color: Paleta.textoSecundario,
@@ -111,7 +111,7 @@ class TarjetaRecordatorio extends StatelessWidget {
                               nombrePaciente,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: Tipografia.estilo(
+                              style: GoogleFonts.nunito(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: Paleta.textoSecundario,
@@ -134,7 +134,7 @@ class TarjetaRecordatorio extends StatelessWidget {
                               : '${fechacorta(r.fechaHora)} · ${hora12(r.fechaHora)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Tipografia.estilo(
+                          style: GoogleFonts.nunito(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: Paleta.textoSecundario,
@@ -202,7 +202,7 @@ class TarjetaRecordatorio extends StatelessWidget {
             leading: Icon(Icons.edit_outlined, color: Paleta.doradoOscuro),
             title: Text(
               'Editar',
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w700,
                 color: Paleta.doradoOscuro,
@@ -220,7 +220,7 @@ class TarjetaRecordatorio extends StatelessWidget {
             leading: Icon(Icons.delete_outline, color: Paleta.error),
             title: Text(
               'Eliminar',
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w700,
                 color: Paleta.error,
@@ -265,7 +265,7 @@ class _ChipDia extends StatelessWidget {
       ),
       child: Text(
         texto,
-        style: Tipografia.estilo(
+        style: GoogleFonts.nunito(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: activo ? Paleta.doradoOscuro : Paleta.textoSecundario,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Ícono blanco sobre un cuadro con degradado dorado.
 class IconoDorado extends StatelessWidget {
@@ -88,7 +88,7 @@ class FilaDato extends StatelessWidget {
             children: [
               Text(
                 etiqueta,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                   color: Paleta.textoTerciario,
@@ -99,12 +99,12 @@ class FilaDato extends StatelessWidget {
                 valor,
                 overflow: recortar ? TextOverflow.ellipsis : null,
                 style: valorAusente
-                    ? Tipografia.estilo(
+                    ? GoogleFonts.nunito(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
                         color: Paleta.textoSecundario,
                       )
-                    : Tipografia.estilo(
+                    : GoogleFonts.nunito(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: Paleta.textoPrincipal,

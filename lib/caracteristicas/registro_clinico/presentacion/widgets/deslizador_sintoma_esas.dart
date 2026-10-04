@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 class EsasSymptomSlider extends StatelessWidget {
   const EsasSymptomSlider({
@@ -39,7 +39,7 @@ class EsasSymptomSlider extends StatelessWidget {
                 titulo,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: Paleta.textoPrincipal,
@@ -85,7 +85,7 @@ class EsasSymptomSlider extends StatelessWidget {
                   child: Text(
                     '$i',
                     textAlign: TextAlign.center,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
                       color: i == valor ? color : Paleta.textoSecundario,
@@ -106,7 +106,7 @@ class EsasSymptomSlider extends StatelessWidget {
                     textAlign: TextAlign.left,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 10.5,
                       height: 1.25,
                       color: Paleta.textoSecundario,
@@ -120,7 +120,7 @@ class EsasSymptomSlider extends StatelessWidget {
                     textAlign: TextAlign.right,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 10.5,
                       height: 1.25,
                       color: Paleta.textoSecundario,

@@ -2,11 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/modo_tema.dart';
-import 'package:oncuidar/caracteristicas/configuracion/dominio/tipo_letra.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/controlador_recordatorios.dart';
 import 'package:oncuidar/compartido/widgets/fondo_hoja.dart';
@@ -81,7 +80,7 @@ class _EncabezadoHoja extends StatelessWidget {
               children: [
                 Text(
                   'Configuración de la app',
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: Paleta.textoPrincipal,
@@ -89,7 +88,7 @@ class _EncabezadoHoja extends StatelessWidget {
                 ),
                 Text(
                   'Ajusta OnCuidar a tu gusto',
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 12.5,
                     color: Paleta.textoSecundario,
                   ),
@@ -147,7 +146,6 @@ class _SeccionConfiguracionState extends ConsumerState<SeccionConfiguracion> {
   Widget build(BuildContext context) {
     final escala = ref.watch(escalaTextoProvider);
     final modo = ref.watch(modoTemaProvider);
-    final tipoLetra = ref.watch(tipoLetraProvider);
     return Column(
       key: const Key('seccionConfiguracion'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -178,41 +176,6 @@ class _SeccionConfiguracionState extends ConsumerState<SeccionConfiguracion> {
         ),
         const SizedBox(height: 14),
         _Tarjeta(
-          icono: Icons.font_download_outlined,
-          titulo: 'Tipografía',
-          descripcion: tipoLetra.descripcion,
-          child: Row(
-            children: [
-              for (final (i, opcion) in TipoLetra.values.indexed) ...[
-                if (i > 0) const SizedBox(width: 8),
-                Expanded(
-                  child: _Opcion(
-                    clave: Key('letra_${opcion.name}'),
-                    etiqueta: opcion.etiqueta,
-                    activa: opcion == tipoLetra,
-                    alPulsar: () => unawaited(
-                      ref.read(tipoLetraProvider.notifier).fijar(opcion),
-                    ),
-                    // «Aa» dibujada con la propia tipografía de la opción.
-                    visual: (color) => Text(
-                      'Aa',
-                      textScaler: TextScaler.noScaling,
-                      style: Tipografia.estiloDe(
-                        opcion,
-                        fontSize: 20,
-                        height: 1,
-                        fontWeight: FontWeight.w700,
-                        color: color,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-        _Tarjeta(
           icono: Icons.text_fields_rounded,
           titulo: 'Tamaño del texto',
           descripcion: 'Se aplica a toda la app y se suma al del teléfono.',
@@ -235,7 +198,7 @@ class _SeccionConfiguracionState extends ConsumerState<SeccionConfiguracion> {
                         visual: (color) => Text(
                           'A',
                           textScaler: TextScaler.noScaling,
-                          style: Tipografia.estilo(
+                          style: GoogleFonts.nunito(
                             fontSize: 16 + i * 4.0,
                             height: 1,
                             fontWeight: FontWeight.w800,
@@ -257,7 +220,7 @@ class _SeccionConfiguracionState extends ConsumerState<SeccionConfiguracion> {
                 child: Text(
                   'Así se verá el texto en toda la app.',
                   key: const Key('vistaPreviaTexto'),
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 14,
                     color: Paleta.textoPrincipal,
                   ),
@@ -279,7 +242,7 @@ class _SeccionConfiguracionState extends ConsumerState<SeccionConfiguracion> {
             activeTrackColor: Paleta.doradoPrincipal,
             title: Text(
               'Silenciar avisos',
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: Paleta.textoPrincipal,
@@ -287,7 +250,7 @@ class _SeccionConfiguracionState extends ConsumerState<SeccionConfiguracion> {
             ),
             subtitle: Text(
               'Los recordatorios no te avisarán, pero se conservan.',
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 12.5,
                 color: Paleta.textoSecundario,
               ),
@@ -345,7 +308,7 @@ class _Tarjeta extends StatelessWidget {
                 Expanded(
                   child: Text(
                     titulo,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,
                       color: Paleta.textoPrincipal,
@@ -358,7 +321,7 @@ class _Tarjeta extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 descripcion,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 12.5,
                   color: Paleta.textoSecundario,
                 ),
@@ -438,7 +401,7 @@ class _Opcion extends StatelessWidget {
                 child: Text(
                   etiqueta,
                   maxLines: 1,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
                     color: activa ? Colors.white : Paleta.textoPrincipal,

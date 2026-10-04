@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
@@ -73,7 +73,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
               'Seleccionar paciente',
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: Paleta.textoPrincipal,
@@ -86,7 +86,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
             child: Text(
               'Los datos que veas se actualizarán según el paciente '
               'seleccionado.',
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 12,
                 color: Paleta.textoTerciario,
               ),
@@ -101,7 +101,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                 textoAyuda: 'Buscar por nombre',
                 icono: Icons.search_outlined,
               ),
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 color: Paleta.textoPrincipal,
               ),
@@ -124,7 +124,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                           Text(
                             'No se encontraron pacientes',
                             textAlign: TextAlign.center,
-                            style: Tipografia.estilo(
+                            style: GoogleFonts.nunito(
                               fontSize: 13,
                               color: Paleta.textoSecundario,
                             ),
@@ -149,7 +149,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                               p.nombreCompleto.isNotEmpty
                                   ? p.nombreCompleto[0].toUpperCase()
                                   : '?',
-                              style: Tipografia.estilo(
+                              style: GoogleFonts.nunito(
                                 fontWeight: FontWeight.w800,
                                 color: p.id == widget.idActual
                                     ? Colors.white
@@ -159,7 +159,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                           ),
                           title: Text(
                             p.nombreCompleto,
-                            style: Tipografia.estilo(
+                            style: GoogleFonts.nunito(
                               fontWeight: FontWeight.w700,
                               color: Paleta.textoPrincipal,
                             ),
@@ -169,7 +169,7 @@ class _DialogoCambiarPacienteState extends State<_DialogoCambiarPaciente> {
                                   p.diagnostico!.isNotEmpty)
                               ? Text(
                                   p.diagnostico!,
-                                  style: Tipografia.estilo(
+                                  style: GoogleFonts.nunito(
                                     fontSize: 12,
                                     color: Paleta.textoSecundario,
                                   ),

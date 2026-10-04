@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/proveedores_navegacion.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/compartido/widgets/banner_conexion.dart';
 
 class NavegacionPrincipal extends ConsumerStatefulWidget {
@@ -190,7 +190,7 @@ class _NavegacionPrincipalState extends ConsumerState<NavegacionPrincipal> {
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOut,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: activo ? Paleta.doradoOscuro : Paleta.textoSecundario,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Hoja inferior arrastrable con asa, ícono, título y botón de cerrar.
 class HojaDialogo extends StatelessWidget {
@@ -70,7 +70,7 @@ class HojaDialogo extends StatelessWidget {
                   Expanded(
                     child: Text(
                       titulo,
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: tamanoTitulo,
                         fontWeight: FontWeight.w800,
                         color: Paleta.textoPrincipal,

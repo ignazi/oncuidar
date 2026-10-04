@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/dominio/validaciones_registro.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/nucleo/utilidades/rut.dart';
@@ -91,7 +91,7 @@ class DesplegableEtiquetado extends StatelessWidget {
               .map(
                 (opcion) => DropdownMenuItem(
                   value: opcion,
-                  child: Text(opcion, style: Tipografia.estilo(fontSize: 14)),
+                  child: Text(opcion, style: GoogleFonts.nunito(fontSize: 14)),
                 ),
               )
               .toList(),
@@ -134,7 +134,7 @@ class CampoRut extends StatelessWidget {
             }),
           ],
           validator: validarRutPaciente,
-          style: Tipografia.estilo(fontSize: 14, color: Paleta.textoPrincipal),
+          style: GoogleFonts.nunito(fontSize: 14, color: Paleta.textoPrincipal),
           decoration: decoracionEntrada(
             textoAyuda: '12.345.678-9',
             icono: Icons.badge_outlined,

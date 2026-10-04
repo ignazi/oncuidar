@@ -3,12 +3,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/modo_tema.dart';
-import 'package:oncuidar/caracteristicas/configuracion/dominio/tipo_letra.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const claveEscalaTexto = 'escala_texto';
 const claveModoTema = 'modo_tema';
-const claveTipoLetra = 'tipo_letra';
 
 /// Preferencia de un valor guardada como texto en el dispositivo.
 abstract class _PreferenciaNotifier<T> extends Notifier<T> {
@@ -78,20 +76,4 @@ class ModoTemaNotifier extends _PreferenciaNotifier<ModoTema> {
 
 final modoTemaProvider = NotifierProvider<ModoTemaNotifier, ModoTema>(
   ModoTemaNotifier.new,
-);
-
-/// Tipografía elegida (del sistema, Nunito o estilo iPhone).
-class TipoLetraNotifier extends _PreferenciaNotifier<TipoLetra> {
-  @override
-  String get clave => claveTipoLetra;
-  @override
-  TipoLetra get porDefecto => TipoLetra.sistema;
-  @override
-  TipoLetra leer(String? guardado) => TipoLetra.desdeNombre(guardado);
-  @override
-  String escribir(TipoLetra valor) => valor.name;
-}
-
-final tipoLetraProvider = NotifierProvider<TipoLetraNotifier, TipoLetra>(
-  TipoLetraNotifier.new,
 );

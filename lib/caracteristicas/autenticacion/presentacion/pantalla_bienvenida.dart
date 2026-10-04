@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 import 'package:oncuidar/compartido/widgets/marca.dart';
@@ -64,7 +64,7 @@ class _BienvenidaState extends State<Bienvenida> {
                     Text(
                       'Te damos la bienvenida',
                       textAlign: TextAlign.center,
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                         color: Paleta.textoPrincipal,
@@ -78,7 +78,7 @@ class _BienvenidaState extends State<Bienvenida> {
                         'Una herramienta de apoyo para el cuidado domiciliario '
                         'de pacientes oncológicos pediátricos.',
                         textAlign: TextAlign.center,
-                        style: Tipografia.estilo(
+                        style: GoogleFonts.nunito(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                           color: Paleta.textoSecundario,

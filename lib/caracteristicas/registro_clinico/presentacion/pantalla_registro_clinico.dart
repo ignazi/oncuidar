@@ -4,8 +4,8 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
@@ -344,7 +344,7 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
                 Expanded(
                   child: Text(
                     'No se pudo guardar. Tu registro sigue en el formulario.',
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -423,7 +423,7 @@ class _RegistroClinicoScreenState extends ConsumerState<RegistroClinicoScreen> {
             Expanded(
               child: Text(
                 texto,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,

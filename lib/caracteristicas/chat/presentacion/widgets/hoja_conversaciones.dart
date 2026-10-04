@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/chat/datos/proveedores_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/proveedores_chat.dart';
@@ -154,7 +154,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
           key: const Key('campoNombreConversacion'),
           controller: _controladorNueva,
           autofocus: true,
-          style: Tipografia.estilo(fontSize: 14, color: Paleta.textoPrincipal),
+          style: GoogleFonts.nunito(fontSize: 14, color: Paleta.textoPrincipal),
           decoration: entradaDorada(
             hintText: 'Nombre de la conversación (opcional)',
           ),
@@ -238,7 +238,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
               children: [
                 Text(
                   'Mis conversaciones',
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: Paleta.textoPrincipal,
@@ -247,7 +247,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
                 const SizedBox(height: 2),
                 Text(
                   'Retoma tus orientaciones',
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 12,
                     color: Paleta.textoTerciario,
                   ),
@@ -286,7 +286,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
                     const SizedBox(width: 4),
                     Text(
                       'Agregar',
-                      style: Tipografia.estilo(
+                      style: GoogleFonts.nunito(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -317,7 +317,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
           Text(
             'No se pudieron cargar tus conversaciones.',
             textAlign: TextAlign.center,
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               color: Paleta.textoSecundario,
             ),
@@ -344,7 +344,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
           Text(
             'Aún no tienes conversaciones.',
             textAlign: TextAlign.center,
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: Paleta.textoPrincipal,
@@ -354,7 +354,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
           Text(
             'Tus intercambios con el asistente quedarán guardados aquí.',
             textAlign: TextAlign.center,
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               fontSize: 13,
               color: Paleta.textoSecundario,
             ),
@@ -386,7 +386,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
         ),
         child: Text(
           etiqueta,
-          style: Tipografia.estilo(
+          style: GoogleFonts.nunito(
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: Colors.white,

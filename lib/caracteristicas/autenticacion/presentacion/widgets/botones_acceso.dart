@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Botón dorado de ancho completo que muestra un indicador mientras carga.
 class BotonDegradado extends StatelessWidget {
@@ -61,7 +61,7 @@ class BotonDegradado extends StatelessWidget {
                   )
                 : Text(
                     etiqueta,
-                    style: Tipografia.estilo(
+                    style: GoogleFonts.nunito(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -94,14 +94,14 @@ class EnlaceAcceso extends StatelessWidget {
         child: Text.rich(
           TextSpan(
             text: pregunta,
-            style: Tipografia.estilo(
+            style: GoogleFonts.nunito(
               color: Paleta.textoSecundario,
               fontSize: 14,
             ),
             children: [
               TextSpan(
                 text: accion,
-                style: Tipografia.estilo(
+                style: GoogleFonts.nunito(
                   color: Paleta.doradoOscuro,
                   fontWeight: FontWeight.w700,
                 ),

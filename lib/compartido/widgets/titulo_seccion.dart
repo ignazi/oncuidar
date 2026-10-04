@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Título de sección dorado con icono (Centro de salud, contactos, correos).
 class TituloSeccion extends StatelessWidget {
@@ -17,7 +17,7 @@ class TituloSeccion extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           texto,
-          style: Tipografia.estilo(
+          style: GoogleFonts.nunito(
             fontSize: 14,
             fontWeight: FontWeight.w800,
             color: Paleta.textoTerciario,

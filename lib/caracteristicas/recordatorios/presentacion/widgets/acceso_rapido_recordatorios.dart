@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/formato_recordatorio.dart';
 
 /// Botones para crear un recordatorio partiendo de un tipo.
@@ -66,7 +66,7 @@ class AccesoRapidoRecordatorios extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               etiqueta,
-              style: Tipografia.estilo(
+              style: GoogleFonts.nunito(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: Paleta.textoPrincipal,

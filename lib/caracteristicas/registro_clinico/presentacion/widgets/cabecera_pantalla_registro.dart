@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
 /// Cabecera de la pantalla de registro clínico con acción de historial.
@@ -62,7 +62,7 @@ class CabeceraRegistro extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           'Ver historial',
-                          style: Tipografia.estilo(
+                          style: GoogleFonts.nunito(
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                             color: Paleta.doradoOscuro,

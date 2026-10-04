@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Tarjeta de perfil con el borde inferior redondeado y un menú en la esquina.
 class MarcoTarjetaPerfil extends StatelessWidget {
@@ -93,7 +93,7 @@ class CabeceraDorada extends StatelessWidget {
               children: [
                 Text(
                   etiqueta,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     color: Colors.white.withValues(alpha: 0.85),
@@ -103,7 +103,7 @@ class CabeceraDorada extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   nombre,
-                  style: Tipografia.estilo(
+                  style: GoogleFonts.nunito(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,

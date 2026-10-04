@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/modo_tema.dart';
-import 'package:oncuidar/caracteristicas/configuracion/dominio/tipo_letra.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/seccion_configuracion.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/tarjeta_configuracion.dart';
@@ -65,29 +64,6 @@ void main() {
     expect(prefs.getString(claveModoTema), 'oscuro');
   });
 
-  testWidgets('la tipografía parte en la del sistema y se puede cambiar', (
-    tester,
-  ) async {
-    final (contenedor, _) = await _montar(tester);
-    expect(contenedor.read(tipoLetraProvider), TipoLetra.sistema);
-
-    await tester.tap(find.byKey(const Key('letra_nunito')));
-    await tester.pumpAndSettle();
-
-    expect(contenedor.read(tipoLetraProvider), TipoLetra.nunito);
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString(claveTipoLetra), 'nunito');
-  });
-
-  testWidgets('la tipografía guardada se restaura al abrir la app', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({claveTipoLetra: 'estiloIos'});
-    final (contenedor, _) = await _montar(tester);
-
-    expect(contenedor.read(tipoLetraProvider), TipoLetra.estiloIos);
-  });
-
   testWidgets('el modo guardado se restaura al abrir la app', (tester) async {
     SharedPreferences.setMockInitialValues({claveModoTema: 'claro'});
     final (contenedor, _) = await _montar(tester);
@@ -107,8 +83,6 @@ void main() {
   ) async {
     final (_, notif) = await _montar(tester);
 
-    await tester.ensureVisible(find.byKey(const Key('interruptorSilencio')));
-    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('interruptorSilencio')));
     await tester.pumpAndSettle();
 
