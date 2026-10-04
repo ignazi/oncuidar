@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
 /// Tiempo que el aviso permanece visible cada vez que aparece.
@@ -80,7 +80,7 @@ class _EstadoBannerConexion extends ConsumerState<BannerConexion>
             const SizedBox(width: 8),
             Text(
               'Sin conexión',
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
                 color: Paleta.textoTerciario,

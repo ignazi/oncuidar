@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 
@@ -20,7 +20,7 @@ class TarjetaSinPacientes extends StatelessWidget {
         Text(
           'Aún no tienes pacientes registrados.',
           textAlign: TextAlign.center,
-          style: GoogleFonts.nunito(
+          style: Tipografia.estilo(
             fontSize: 16,
             fontWeight: FontWeight.w800,
             color: Paleta.textoPrincipal,
@@ -30,7 +30,7 @@ class TarjetaSinPacientes extends StatelessWidget {
         Text(
           'Agrega el primero para comenzar a registrar sus cuidados.',
           textAlign: TextAlign.center,
-          style: GoogleFonts.nunito(
+          style: Tipografia.estilo(
             fontSize: 13,
             height: 1.4,
             color: Paleta.textoSecundario,

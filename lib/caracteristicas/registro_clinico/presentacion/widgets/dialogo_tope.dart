@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 Future<int?> mostrarDialogoTope(
   BuildContext context, {
@@ -16,7 +16,7 @@ Future<int?> mostrarDialogoTope(
         title: Text(
           'Configurar registro',
           textAlign: TextAlign.center,
-          style: GoogleFonts.nunito(
+          style: Tipografia.estilo(
             fontSize: 17,
             fontWeight: FontWeight.w800,
             color: Paleta.textoPrincipal,
@@ -28,7 +28,7 @@ Future<int?> mostrarDialogoTope(
             Text(
               'Máximo de registros programados por día',
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 13,
                 height: 1.4,
                 color: Paleta.textoSecundario,
@@ -58,7 +58,7 @@ Future<int?> mostrarDialogoTope(
                   ),
                   child: Text(
                     '$valor',
-                    style: GoogleFonts.nunito(
+                    style: Tipografia.estilo(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: Paleta.doradoOscuro,
@@ -80,7 +80,7 @@ Future<int?> mostrarDialogoTope(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: Paleta.textoSecundario,
@@ -96,7 +96,7 @@ Future<int?> mostrarDialogoTope(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
-              textStyle: GoogleFonts.nunito(
+              textStyle: Tipografia.estilo(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),

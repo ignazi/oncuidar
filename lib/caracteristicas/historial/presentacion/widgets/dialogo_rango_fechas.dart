@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
@@ -80,7 +80,7 @@ class _DialogoRangoFechasState extends State<_DialogoRangoFechas> {
           'Escribe la fecha y las barras se agregan solas '
           '(DD/MM/AAAA). Deja vacío para no limitar.',
           textAlign: TextAlign.center,
-          style: GoogleFonts.nunito(
+          style: Tipografia.estilo(
             fontSize: 12.5,
             height: 1.4,
             color: Paleta.textoSecundario,
@@ -109,7 +109,7 @@ class _DialogoRangoFechasState extends State<_DialogoRangoFechas> {
           Text(
             _error!,
             textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 12,
               fontWeight: FontWeight.w700,
               color: Paleta.error,
@@ -148,20 +148,20 @@ class _CampoFechaDialogo extends StatelessWidget {
       keyboardType: TextInputType.number,
       maxLength: 10,
       onChanged: alCambiar,
-      style: GoogleFonts.nunito(
+      style: Tipografia.estilo(
         fontSize: 14,
         fontWeight: FontWeight.w700,
         color: Paleta.textoPrincipal,
       ),
       decoration: InputDecoration(
         labelText: etiqueta,
-        labelStyle: GoogleFonts.nunito(
+        labelStyle: Tipografia.estilo(
           fontSize: 13,
           fontWeight: FontWeight.w700,
           color: Paleta.doradoOscuro,
         ),
         hintText: 'DD/MM/AAAA',
-        hintStyle: GoogleFonts.nunito(fontSize: 13, color: Paleta.textoAyuda),
+        hintStyle: Tipografia.estilo(fontSize: 13, color: Paleta.textoAyuda),
         counterText: '',
         prefixIcon: Icon(
           Icons.calendar_today_outlined,

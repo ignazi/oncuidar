@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 Future<bool?> mostrarDialogoConfirmacion(
   BuildContext context, {
@@ -28,7 +28,7 @@ Future<bool?> mostrarDialogoConfirmacion(
         Text(
           mensaje,
           textAlign: TextAlign.center,
-          style: GoogleFonts.nunito(
+          style: Tipografia.estilo(
             fontSize: 13.5,
             height: 1.45,
             color: Paleta.textoSecundario,
@@ -104,7 +104,7 @@ class DialogoTarjeta extends StatelessWidget {
             Text(
               titulo,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: Paleta.textoPrincipal,
@@ -141,7 +141,7 @@ class BotonesDialogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textoBoton = GoogleFonts.nunito(
+    final textoBoton = Tipografia.estilo(
       fontSize: 14,
       fontWeight: FontWeight.w700,
     );

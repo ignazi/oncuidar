@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 class TarjetaSigno extends StatelessWidget {
   const TarjetaSigno({
@@ -60,7 +60,7 @@ class TarjetaSigno extends StatelessWidget {
                   etiqueta,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.nunito(
+                  style: Tipografia.estilo(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color: Paleta.textoSecundario,
@@ -80,7 +80,7 @@ class TarjetaSigno extends StatelessWidget {
                   keyboardType: decimal
                       ? const TextInputType.numberWithOptions(decimal: true)
                       : TextInputType.number,
-                  style: GoogleFonts.nunito(
+                  style: Tipografia.estilo(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: Paleta.textoPrincipal,
@@ -88,7 +88,7 @@ class TarjetaSigno extends StatelessWidget {
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: hint,
-                    hintStyle: GoogleFonts.nunito(
+                    hintStyle: Tipografia.estilo(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Paleta.textoAyuda,
@@ -99,7 +99,7 @@ class TarjetaSigno extends StatelessWidget {
               ),
               Text(
                 unidad,
-                style: GoogleFonts.nunito(
+                style: Tipografia.estilo(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: color,
@@ -111,7 +111,7 @@ class TarjetaSigno extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Rango: $rango $unidad',
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 9.5,
                 fontWeight: FontWeight.w600,
                 color: Paleta.textoAyuda,

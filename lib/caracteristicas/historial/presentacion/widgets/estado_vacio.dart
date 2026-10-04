@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Estado vacío del historial: ícono grande, título y subtítulo opcional.
 class EstadoVacio extends StatelessWidget {
@@ -21,7 +21,7 @@ class EstadoVacio extends StatelessWidget {
           Text(
             titulo,
             textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 16,
               fontWeight: FontWeight.w800,
               color: Paleta.textoPrincipal,
@@ -32,7 +32,7 @@ class EstadoVacio extends StatelessWidget {
             Text(
               subtitulo!,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 13,
                 color: Paleta.textoSecundario,
               ),

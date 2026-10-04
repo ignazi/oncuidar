@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/ciclo_de_vida_paciente.dart';
@@ -183,7 +183,7 @@ class _SplashState extends ConsumerState<Splash>
                         children: [
                           Text(
                             'Oncuidar',
-                            style: GoogleFonts.nunito(
+                            style: Tipografia.estilo(
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
@@ -202,7 +202,7 @@ class _SplashState extends ConsumerState<Splash>
                           Text(
                             'Seguimiento y orientación\npara cuidadores',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.nunito(
+                            style: Tipografia.estilo(
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
                               color: Colors.white.withValues(alpha: 0.85),

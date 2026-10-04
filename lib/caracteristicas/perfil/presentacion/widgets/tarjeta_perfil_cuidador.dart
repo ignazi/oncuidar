@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/compartido/widgets/chip_franja.dart';
 import 'package:oncuidar/compartido/widgets/tarjeta_dato.dart';
 import 'package:oncuidar/compartido/widgets/tarjeta_perfil.dart';
@@ -290,7 +290,7 @@ class _AvisoPendiente extends StatelessWidget {
               texto,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: Paleta.doradoOscuro,

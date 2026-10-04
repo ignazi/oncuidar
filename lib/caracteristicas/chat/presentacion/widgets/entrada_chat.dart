@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Campo para escribir la duda y botón de enviar.
 class EntradaChat extends StatelessWidget {
@@ -53,14 +53,14 @@ class EntradaChat extends StatelessWidget {
                   maxLines: 4,
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => alEnviar(),
-                  style: GoogleFonts.nunito(
+                  style: Tipografia.estilo(
                     fontSize: 14,
                     color: Paleta.textoPrincipal,
                     height: 1.4,
                   ),
                   decoration: InputDecoration.collapsed(
                     hintText: 'Escribe tu duda aquí…',
-                    hintStyle: GoogleFonts.nunito(
+                    hintStyle: Tipografia.estilo(
                       fontSize: 14,
                       color: Paleta.textoSecundario,
                     ),

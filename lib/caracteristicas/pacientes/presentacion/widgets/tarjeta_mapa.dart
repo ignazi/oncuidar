@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 class TarjetaMapa extends StatelessWidget {
   const TarjetaMapa({super.key, required this.direccion, required this.onTap});
@@ -36,7 +36,7 @@ class TarjetaMapa extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.nunito(
+                      style: Tipografia.estilo(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                         color: Paleta.doradoOscuro,
@@ -81,7 +81,7 @@ class TarjetaMapa extends StatelessWidget {
                             const SizedBox(width: 6),
                             Text(
                               'Click para ver mapa',
-                              style: GoogleFonts.nunito(
+                              style: Tipografia.estilo(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                                 color: Colors.white,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/panel_principal/presentacion/widgets/chip_alerta.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/compartido/config_alerta.dart';
@@ -45,7 +45,7 @@ class TarjetaSignosVitales extends StatelessWidget {
                     'Signos vitales y síntomas',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.nunito(
+                    style: Tipografia.estilo(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Paleta.textoPrincipal,
@@ -113,7 +113,7 @@ class TarjetaSignosVitales extends StatelessWidget {
                   'Ver registros del día',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.nunito(
+                  style: Tipografia.estilo(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w800,
                     color: Paleta.textoPrincipal,
@@ -229,7 +229,7 @@ class TarjetaSignosVitales extends StatelessWidget {
                   etiqueta,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.nunito(
+                  style: Tipografia.estilo(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Paleta.textoSecundario,
@@ -243,7 +243,7 @@ class TarjetaSignosVitales extends StatelessWidget {
             valor,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Paleta.textoPrincipal,

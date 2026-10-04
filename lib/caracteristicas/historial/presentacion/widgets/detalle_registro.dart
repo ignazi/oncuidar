@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/motor_reglas_clinicas.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/compartido/config_alerta.dart';
@@ -46,7 +46,7 @@ class DetalleRegistro extends StatelessWidget {
                 children: [
                   Text(
                     'Observaciones',
-                    style: GoogleFonts.nunito(
+                    style: Tipografia.estilo(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       color: Paleta.doradoOscuro,
@@ -55,7 +55,7 @@ class DetalleRegistro extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     observaciones,
-                    style: GoogleFonts.nunito(
+                    style: Tipografia.estilo(
                       fontSize: 13,
                       height: 1.45,
                       color: Paleta.textoPrincipal,
@@ -81,7 +81,7 @@ class DetalleRegistro extends StatelessWidget {
                   children: [
                     Text(
                       '¿Por qué este nivel?',
-                      style: GoogleFonts.nunito(
+                      style: Tipografia.estilo(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                         color: config.color,
@@ -93,7 +93,7 @@ class DetalleRegistro extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 2),
                         child: Text(
                           '• $motivo',
-                          style: GoogleFonts.nunito(
+                          style: Tipografia.estilo(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Paleta.textoPrincipal,
@@ -131,7 +131,7 @@ class _ContenedorSintoma extends StatelessWidget {
         children: [
           Text(
             'Síntoma',
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 11,
               fontWeight: FontWeight.w800,
               color: color,
@@ -140,7 +140,7 @@ class _ContenedorSintoma extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             '${sintoma.nombre} · $etiqueta (${sintoma.intensidad}/10)',
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: Paleta.textoPrincipal,

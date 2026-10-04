@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/presentacion/widgets/deslizador_sintoma_esas.dart';
 import 'package:oncuidar/compartido/estilos.dart';
@@ -57,7 +57,7 @@ class FilaIntensidadSintoma extends StatelessWidget {
                 EntradaSintoma.etiquetaPara(valor),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.nunito(
+                style: Tipografia.estilo(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
                   color: Paleta.doradoOscuro,
@@ -68,7 +68,7 @@ class FilaIntensidadSintoma extends StatelessWidget {
           const SizedBox(width: 3),
           Text(
             '$valor/10',
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: Paleta.textoPrincipal,
@@ -109,14 +109,14 @@ class FilaIntensidadSintoma extends StatelessWidget {
             controller: otroController,
             textCapitalization: TextCapitalization.sentences,
             onChanged: (_) => onCambioOtro?.call(),
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 13.5,
               fontWeight: FontWeight.w700,
               color: Paleta.textoPrincipal,
             ),
             decoration: entradaDorada(
               hintText: 'Describe el problema (por ej: sequedad de boca)',
-              hintStyle: GoogleFonts.nunito(
+              hintStyle: Tipografia.estilo(
                 fontSize: 13,
                 color: Paleta.textoAyuda,
               ),

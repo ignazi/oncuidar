@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/app/tema/tema.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/proveedores_autenticacion.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/datos/servicio_alta_cuenta.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_crear_cuenta.dart';
@@ -15,6 +16,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_biblio
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/pantalla_chat.dart';
 import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart';
+import 'package:oncuidar/caracteristicas/configuracion/dominio/tipo_letra.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/seccion_configuracion.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
@@ -395,6 +397,37 @@ void main() {
       });
     }
   });
+
+  // Las otras tipografías: mismas pantallas con el texto más grande en 320x568.
+  for (final letra in [TipoLetra.nunito, TipoLetra.estiloIos]) {
+    group('tipografía ${letra.etiqueta}', () {
+      setUp(() => Tipografia.usar(letra));
+      tearDown(() => Tipografia.usar(TipoLetra.sistema));
+
+      for (final (nombre, pantalla, accion) in _casos) {
+        testWidgets('$nombre · ${letra.etiqueta} · Muy grande · 320x568', (
+          tester,
+        ) async {
+          tester.view.physicalSize = const Size(320, 568);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(tester.view.resetPhysicalSize);
+          addTearDown(tester.view.resetDevicePixelRatio);
+          final entorno = await _entorno();
+
+          await _conDeteccion(() async {
+            await tester.pumpWidget(
+              _app(entorno, pantalla(), EscalaTexto.muyGrande.factor),
+            );
+            await tester.pumpAndSettle();
+            await _verificar(tester, '$nombre al abrir (${letra.etiqueta})');
+
+            await accion(tester);
+            await _verificar(tester, '$nombre (${letra.etiqueta})');
+          });
+        });
+      }
+    });
+  }
 
   testWidgets('el detector falla ante un desborde real', (tester) async {
     await _conDeteccion(() async {

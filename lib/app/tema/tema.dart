@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Transición de pantalla fluida estilo WhatsApp.
 class _TransicionWhatsApp extends PageTransitionsBuilder {
@@ -66,16 +66,16 @@ class Tema {
           TargetPlatform.linux: _TransicionWhatsApp(),
         },
       ),
-      textTheme: GoogleFonts.nunitoTextTheme().apply(
-        bodyColor: Paleta.textoPrincipal,
-        displayColor: Paleta.textoPrincipal,
+      textTheme: Tipografia.temaDeTexto(
+        oscuro: Paleta.esOscura,
+        color: Paleta.textoPrincipal,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: Paleta.doradoPrincipal,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.nunito(
+        titleTextStyle: Tipografia.estilo(
           fontSize: 18,
           fontWeight: FontWeight.w700,
           color: Colors.white,
@@ -90,7 +90,7 @@ class Tema {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.nunito(
+          textStyle: Tipografia.estilo(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),

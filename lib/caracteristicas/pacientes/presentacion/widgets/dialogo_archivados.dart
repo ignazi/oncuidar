@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 import 'package:oncuidar/compartido/widgets/hoja_dialogo.dart';
@@ -45,7 +45,7 @@ Future<void> mostrarDialogoArchivados(
                         const SizedBox(height: 10),
                         Text(
                           'No hay pacientes archivados.',
-                          style: GoogleFonts.nunito(
+                          style: Tipografia.estilo(
                             fontSize: 13,
                             color: Paleta.textoSecundario,
                           ),
@@ -100,7 +100,7 @@ class _FilaArchivado extends StatelessWidget {
               backgroundColor: Paleta.doradoClaro.withValues(alpha: 0.7),
               child: Text(
                 inicial,
-                style: GoogleFonts.nunito(
+                style: Tipografia.estilo(
                   fontWeight: FontWeight.w800,
                   color: Paleta.doradoOscuro,
                 ),
@@ -116,7 +116,7 @@ class _FilaArchivado extends StatelessWidget {
                         ? 'Sin nombre'
                         : paciente.nombreCompleto,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.nunito(
+                    style: Tipografia.estilo(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                       color: Paleta.textoPrincipal,
@@ -127,7 +127,7 @@ class _FilaArchivado extends StatelessWidget {
                     Text(
                       paciente.diagnostico!,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.nunito(
+                      style: Tipografia.estilo(
                         fontSize: 12,
                         color: Paleta.textoSecundario,
                       ),

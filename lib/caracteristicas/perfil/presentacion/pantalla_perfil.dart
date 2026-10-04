@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/gestion_pacientes.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/perfil_cuidador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
@@ -77,7 +77,7 @@ class _PerfilState extends ConsumerState<Perfil> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18),
                           ),
-                          textStyle: GoogleFonts.nunito(
+                          textStyle: Tipografia.estilo(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                           ),

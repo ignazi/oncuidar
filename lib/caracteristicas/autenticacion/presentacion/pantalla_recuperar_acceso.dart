@@ -1,8 +1,8 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/widgets/botones_acceso.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
@@ -121,7 +121,7 @@ class _RecuperarAccesoState extends State<RecuperarAcceso> {
                       Text(
                         '¿No recuerdas tu correo?',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.nunito(
+                        style: Tipografia.estilo(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           color: Paleta.textoPrincipal,
@@ -131,7 +131,7 @@ class _RecuperarAccesoState extends State<RecuperarAcceso> {
                       Text(
                         'Ingresa tu correo de respaldo y te enviaremos los datos para recuperar tu cuenta.',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.nunito(
+                        style: Tipografia.estilo(
                           fontSize: 14,
                           color: Paleta.textoSecundario,
                         ),
@@ -193,7 +193,7 @@ class _RecuperarAccesoState extends State<RecuperarAcceso> {
                                 )
                               : Text(
                                   _enviado ? 'Enlace enviado' : 'Enviar enlace',
-                                  style: GoogleFonts.nunito(
+                                  style: Tipografia.estilo(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -275,7 +275,7 @@ class _PanelEstado extends StatelessWidget {
           Expanded(
             child: Text(
               texto,
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 13.5,
                 height: 1.4,
                 color: color,

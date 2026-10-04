@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/widgets/tarjeta_mapa.dart';
 import 'package:oncuidar/compartido/widgets/tarjeta_dato.dart';
 
@@ -45,7 +45,7 @@ class TarjetaContacto extends StatelessWidget {
                     children: [
                       Text(
                         etiqueta,
-                        style: GoogleFonts.nunito(
+                        style: Tipografia.estilo(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                           color: Paleta.textoTerciario,
@@ -54,7 +54,7 @@ class TarjetaContacto extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         titulo,
-                        style: GoogleFonts.nunito(
+                        style: Tipografia.estilo(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: Paleta.textoPrincipal,
@@ -64,7 +64,7 @@ class TarjetaContacto extends StatelessWidget {
                         const SizedBox(height: 1),
                         Text(
                           telefono!,
-                          style: GoogleFonts.nunito(
+                          style: Tipografia.estilo(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w600,
                             color: Paleta.textoSecundario,
@@ -105,7 +105,7 @@ class TarjetaContacto extends StatelessWidget {
                         children: [
                           Text(
                             'Llamar',
-                            style: GoogleFonts.nunito(
+                            style: Tipografia.estilo(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,

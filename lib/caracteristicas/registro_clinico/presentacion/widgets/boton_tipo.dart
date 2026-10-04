@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 class BotonTipo extends StatelessWidget {
   const BotonTipo({
@@ -73,7 +73,7 @@ class BotonTipo extends StatelessWidget {
               child: AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOut,
-                style: GoogleFonts.nunito(
+                style: Tipografia.estilo(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w800,
                   color: !habilitado

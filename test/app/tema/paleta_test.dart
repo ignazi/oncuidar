@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/app/tema/repintar.dart';
 import 'package:oncuidar/app/tema/tema.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
+import 'package:oncuidar/caracteristicas/configuracion/dominio/tipo_letra.dart';
 import 'package:oncuidar/compartido/widgets/fondo_hoja.dart';
 
 /// Pinta un cuadro con el color de tarjeta vigente.
@@ -51,6 +53,45 @@ void main() {
     final tema = Tema.obtener();
     expect(tema.brightness, Brightness.dark);
     expect(tema.scaffoldBackgroundColor, coloresOscuros.crema);
+  });
+
+  group('Tipografia', () {
+    tearDown(() => Tipografia.usar(TipoLetra.sistema));
+
+    test('por defecto usa la del sistema, sin familia propia', () {
+      expect(Tipografia.actual, TipoLetra.sistema);
+      expect(Tipografia.estilo(fontSize: 14).fontFamily, isNull);
+    });
+
+    // Con binding de widgets: Google Fonts intenta descargar la fuente.
+    testWidgets(
+      'Nunito y el estilo iPhone fijan su propia familia fuera de Apple',
+      (tester) async {
+        Tipografia.usar(TipoLetra.nunito);
+        expect(Tipografia.estilo(fontSize: 14).fontFamily, contains('Nunito'));
+        Tipografia.usar(TipoLetra.estiloIos);
+        // En la prueba la plataforma es Android: Inter hace de San Francisco.
+        expect(Tipografia.estilo(fontSize: 14).fontFamily, contains('Inter'));
+      },
+    );
+
+    test('estilo conserva tamaño, grosor y color', () {
+      final e = Tipografia.estilo(
+        fontSize: 15,
+        fontWeight: FontWeight.w800,
+        color: const Color(0xFF123456),
+        height: 1.4,
+      );
+      expect(e.fontSize, 15);
+      expect(e.fontWeight, FontWeight.w800);
+      expect(e.color, const Color(0xFF123456));
+      expect(e.height, 1.4);
+    });
+
+    test('usar avisa solo si hubo cambio', () {
+      expect(Tipografia.usar(TipoLetra.nunito), isTrue);
+      expect(Tipografia.usar(TipoLetra.nunito), isFalse);
+    });
   });
 
   testWidgets('repintarArbol actualiza incluso los widgets const', (

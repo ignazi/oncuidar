@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/compartido/widgets/fondo_hoja.dart';
 
 /// Qué hacer con el archivo exportado.
@@ -74,7 +74,7 @@ class BotonNuevoRegistro extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 'Nuevo registro',
-                style: GoogleFonts.nunito(
+                style: Tipografia.estilo(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                   color: Paleta.doradoOscuro,

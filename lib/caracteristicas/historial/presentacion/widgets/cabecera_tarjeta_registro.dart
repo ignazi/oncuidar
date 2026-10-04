@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/compartido/config_alerta.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
@@ -51,7 +51,7 @@ class CabeceraRegistro extends StatelessWidget {
             children: [
               Text(
                 fechalarga(registro.fecha),
-                style: GoogleFonts.nunito(
+                style: Tipografia.estilo(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Paleta.textoPrincipal,
@@ -60,7 +60,7 @@ class CabeceraRegistro extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 '${hora12(registro.fecha)} · $etiqueta',
-                style: GoogleFonts.nunito(
+                style: Tipografia.estilo(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Paleta.textoSecundario,
@@ -167,7 +167,7 @@ class _ChipEstadoRegistro extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             config.label,
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 12,
               fontWeight: FontWeight.w800,
               color: config.color,

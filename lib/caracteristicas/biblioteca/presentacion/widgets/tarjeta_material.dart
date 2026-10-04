@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/categorias.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/dominio/material_educativo.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_imagen.dart';
@@ -191,7 +191,7 @@ class TarjetaMaterial extends StatelessWidget {
           material.titulo,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.nunito(
+          style: Tipografia.estilo(
             fontSize: 15,
             fontWeight: FontWeight.w700,
             color: Paleta.textoPrincipal,
@@ -204,7 +204,7 @@ class TarjetaMaterial extends StatelessWidget {
             material.tema,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 13,
               color: Paleta.textoSecundario,
             ),

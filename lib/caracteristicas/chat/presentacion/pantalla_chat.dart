@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/controlador_chat.dart';
@@ -280,7 +280,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         key: const Key('campoBusquedaChat'),
         controller: _controladorBusqueda,
         focusNode: _focoBusqueda,
-        style: GoogleFonts.nunito(fontSize: 14, color: Paleta.textoPrincipal),
+        style: Tipografia.estilo(fontSize: 14, color: Paleta.textoPrincipal),
         decoration:
             entradaDorada(
               hintText: 'Buscar en el chat…',
@@ -375,7 +375,7 @@ class _SinResultados extends StatelessWidget {
             Text(
               'Sin resultados para tu búsqueda.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 14,
                 color: Paleta.textoSecundario,
               ),

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
@@ -121,7 +121,7 @@ class BurbujaMensaje extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         mensaje.texto,
-                        style: GoogleFonts.nunito(
+                        style: Tipografia.estilo(
                           fontSize: 14,
                           color: delUsuario
                               ? Colors.white
@@ -145,7 +145,7 @@ class BurbujaMensaje extends StatelessWidget {
                             padding: EdgeInsets.zero,
                             minimumSize: const Size(0, 32),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            textStyle: GoogleFonts.nunito(
+                            textStyle: Tipografia.estilo(
                               fontSize: 13,
                               fontWeight: FontWeight.w800,
                             ),
@@ -157,7 +157,7 @@ class BurbujaMensaje extends StatelessWidget {
                       Text(
                         hora12(mensaje.enviadoEn!),
                         key: const Key('horaMensajeChat'),
-                        style: GoogleFonts.nunito(
+                        style: Tipografia.estilo(
                           fontSize: 10.5,
                           color: delUsuario
                               ? Colors.white.withValues(alpha: 0.8)
@@ -204,7 +204,7 @@ class _SugerenciaConsulta extends StatelessWidget {
             child: Text(
               'Te sugiero comentárselo a su equipo médico si esto te '
               'preocupa; ellos conocen mejor su caso.',
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 12.5,
                 color: Paleta.doradoOscuro,
                 height: 1.4,
@@ -238,7 +238,7 @@ class SeparadorDia extends StatelessWidget {
           ),
           child: Text(
             etiquetaDia(fecha, ahora),
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
               color: Paleta.doradoOscuro,

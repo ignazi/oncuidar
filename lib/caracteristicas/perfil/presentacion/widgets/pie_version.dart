@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Pie con el logo, nombre y versión de la app.
 class PieVersion extends StatelessWidget {
@@ -38,7 +38,7 @@ class PieVersion extends StatelessWidget {
           Center(
             child: Text(
               'OnCuidar',
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
                 color: Paleta.textoTerciario,
@@ -49,7 +49,7 @@ class PieVersion extends StatelessWidget {
           Center(
             child: Text(
               'versión 1.0.0',
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
                 color: Paleta.textoAyuda,

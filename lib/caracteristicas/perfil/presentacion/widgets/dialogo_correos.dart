@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/compartido/widgets/boton_principal.dart';
 import 'package:oncuidar/compartido/widgets/campos_formulario.dart';
@@ -256,7 +256,7 @@ class _DialogoCorreosState extends State<_DialogoCorreos> {
                 Text(
                   'Al cambiarlo te enviaremos un enlace de '
                   'verificación al nuevo correo.',
-                  style: GoogleFonts.nunito(
+                  style: Tipografia.estilo(
                     fontSize: 12,
                     height: 1.4,
                     color: Paleta.textoSecundario,
@@ -278,7 +278,7 @@ class _DialogoCorreosState extends State<_DialogoCorreos> {
                 Text(
                   'Sirve para recuperar tu cuenta si pierdes el '
                   'acceso al correo principal.',
-                  style: GoogleFonts.nunito(
+                  style: Tipografia.estilo(
                     fontSize: 12,
                     height: 1.4,
                     color: Paleta.textoSecundario,
@@ -318,7 +318,7 @@ class _DialogoCorreosState extends State<_DialogoCorreos> {
               Text(
                 'Confirmamos tu identidad antes de '
                 'cualquier cambio de correo.',
-                style: GoogleFonts.nunito(
+                style: Tipografia.estilo(
                   fontSize: 12,
                   height: 1.4,
                   color: Paleta.textoSecundario,

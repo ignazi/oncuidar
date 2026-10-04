@@ -4,9 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/widgets/botones_acceso.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/proveedores_pacientes.dart';
@@ -205,7 +205,7 @@ class _IniciarSesionState extends ConsumerState<IniciarSesion> {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           '¡Hola de nuevo!',
-                          style: GoogleFonts.nunito(
+                          style: Tipografia.estilo(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: Paleta.textoPrincipal,
@@ -217,7 +217,7 @@ class _IniciarSesionState extends ConsumerState<IniciarSesion> {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'Ingresa tus datos para continuar cuidando',
-                          style: GoogleFonts.nunito(
+                          style: Tipografia.estilo(
                             fontSize: 14,
                             color: Paleta.textoSecundario,
                           ),
@@ -278,7 +278,7 @@ class _IniciarSesionState extends ConsumerState<IniciarSesion> {
                               onPressed: _recuperarContrasena,
                               child: Text(
                                 '¿Olvidaste tu contraseña?',
-                                style: GoogleFonts.nunito(
+                                style: Tipografia.estilo(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
                                   color: Paleta.doradoOscuro,
@@ -293,7 +293,7 @@ class _IniciarSesionState extends ConsumerState<IniciarSesion> {
                                   context.push('/recuperar-acceso'),
                               child: Text(
                                 'Recuperar con el correo de respaldo',
-                                style: GoogleFonts.nunito(
+                                style: Tipografia.estilo(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
                                   color: Paleta.doradoOscuro,

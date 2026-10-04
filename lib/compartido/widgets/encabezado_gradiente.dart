@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 class EncabezadoGradiente extends StatelessWidget {
   const EncabezadoGradiente({
@@ -154,7 +154,7 @@ class EncabezadoGradiente extends StatelessWidget {
         Text(
           titulo,
           textAlign: tituloCentrado ? TextAlign.center : TextAlign.left,
-          style: GoogleFonts.nunito(
+          style: Tipografia.estilo(
             color: Colors.white,
             fontSize: tamanoTitulo ?? 24,
             fontWeight: FontWeight.w800,
@@ -175,7 +175,7 @@ class EncabezadoGradiente extends StatelessWidget {
             child: Text(
               subtitulo!,
               textAlign: tituloCentrado ? TextAlign.center : TextAlign.left,
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 color: Colors.white.withValues(alpha: 0.9),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

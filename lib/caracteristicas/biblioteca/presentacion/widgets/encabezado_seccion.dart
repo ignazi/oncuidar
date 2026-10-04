@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 
 /// Encabezado de una sección de la biblioteca: ícono del tipo, título y cantidad.
@@ -28,7 +28,7 @@ class EncabezadoSeccion extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             titulo,
-            style: GoogleFonts.nunito(
+            style: Tipografia.estilo(
               fontSize: 15,
               fontWeight: FontWeight.w800,
               color: Paleta.textoPrincipal,
@@ -43,7 +43,7 @@ class EncabezadoSeccion extends StatelessWidget {
             ),
             child: Text(
               '$cantidad',
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 color: estilo.color,

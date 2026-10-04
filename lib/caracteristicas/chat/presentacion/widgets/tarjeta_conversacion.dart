@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
 
 const List<String> _mesesEs = [
@@ -84,7 +84,7 @@ class TarjetaConversacion extends StatelessWidget {
                         conversacion.titulo,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.nunito(
+                        style: Tipografia.estilo(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: Paleta.textoPrincipal,
@@ -95,7 +95,7 @@ class TarjetaConversacion extends StatelessWidget {
                       Text(
                         '${fechaRelativaConversacion(conversacion.ultimaActividad, DateTime.now())}'
                         ' · ${conversacion.mensajes.length} mensajes',
-                        style: GoogleFonts.nunito(
+                        style: Tipografia.estilo(
                           fontSize: 12,
                           color: Paleta.textoSecundario,
                         ),

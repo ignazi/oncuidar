@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 
 /// Fila de mini signos vitales en la tarjeta (2 por fila).
@@ -95,7 +95,7 @@ class _MiniTile extends StatelessWidget {
             child: Text(
               valor,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.nunito(
+              style: Tipografia.estilo(
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
                 color: color,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Botón de "Cargar más registros" con estado de carga.
 class BotonCargarMas extends StatelessWidget {
@@ -31,7 +31,7 @@ class BotonCargarMas extends StatelessWidget {
             : Icon(Icons.expand_more, color: Paleta.doradoOscuro),
         label: Text(
           'Cargar más registros',
-          style: GoogleFonts.nunito(
+          style: Tipografia.estilo(
             fontSize: 14,
             fontWeight: FontWeight.w800,
             color: Paleta.doradoOscuro,

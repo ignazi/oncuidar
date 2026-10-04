@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/tipografia.dart';
 
 /// Botón de cerrar sesión con estado de carga.
 class BotonCerrarSesion extends StatelessWidget {
@@ -39,7 +39,7 @@ class BotonCerrarSesion extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.nunito(
+          textStyle: Tipografia.estilo(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
