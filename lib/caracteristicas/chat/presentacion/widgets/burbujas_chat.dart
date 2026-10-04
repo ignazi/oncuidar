@@ -28,7 +28,7 @@ class AvatarAsistente extends StatelessWidget {
           ),
         ],
       ),
-      child: const Icon(
+      child: Icon(
         Icons.smart_toy_outlined,
         color: Paleta.sobreDorado,
         size: 16,

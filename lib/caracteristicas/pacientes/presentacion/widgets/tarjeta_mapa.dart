@@ -73,7 +73,7 @@ class TarjetaMapa extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.touch_app_outlined,
                               size: 17,
                               color: Paleta.sobreDorado,

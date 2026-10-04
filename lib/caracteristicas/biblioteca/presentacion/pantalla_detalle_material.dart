@@ -185,7 +185,7 @@ class _PantallaDetalleMaterialState
               child: FilledButton.icon(
                 onPressed: _descargando ? null : _abrirArchivo,
                 icon: _descargando
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(

@@ -183,7 +183,7 @@ class _RecuperarAccesoState extends State<RecuperarAcceso> {
                                 .withValues(alpha: 0.5),
                           ),
                           child: _cargando
-                              ? const SizedBox(
+                              ? SizedBox(
                                   height: 22,
                                   width: 22,
                                   child: CircularProgressIndicator(

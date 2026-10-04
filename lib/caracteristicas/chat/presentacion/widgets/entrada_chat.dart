@@ -92,7 +92,7 @@ class EntradaChat extends StatelessWidget {
                     ),
                     child: Opacity(
                       opacity: tieneTexto ? 1 : 0.4,
-                      child: const Icon(
+                      child: Icon(
                         Icons.send_rounded,
                         color: Paleta.sobreDorado,
                         size: 20,

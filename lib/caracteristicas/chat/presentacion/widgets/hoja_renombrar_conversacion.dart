@@ -84,7 +84,7 @@ class _HojaRenombrarConversacionState extends State<HojaRenombrarConversacion> {
                           ),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.edit_outlined,
                           color: Paleta.sobreDorado,
                           size: 18,

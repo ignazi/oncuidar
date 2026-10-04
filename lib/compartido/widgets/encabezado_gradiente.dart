@@ -96,7 +96,9 @@ class EncabezadoGradiente extends StatelessWidget {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.30),
+                      color: Paleta.esOscura
+                          ? Colors.white.withValues(alpha: 0.30)
+                          : Colors.black.withValues(alpha: 0.10),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -172,6 +174,15 @@ class EncabezadoGradiente extends StatelessWidget {
             fontWeight: FontWeight.w800,
             letterSpacing: -0.3,
             height: 1.15,
+            shadows: Paleta.esOscura
+                ? null
+                : const [
+                    Shadow(
+                      color: Colors.black26,
+                      offset: Offset(0, 1),
+                      blurRadius: 3,
+                    ),
+                  ],
           ),
         ),
         if (subtitulo != null)
@@ -181,7 +192,9 @@ class EncabezadoGradiente extends StatelessWidget {
               subtitulo!,
               textAlign: tituloCentrado ? TextAlign.center : TextAlign.left,
               style: GoogleFonts.nunito(
-                color: Paleta.sobreDorado.withValues(alpha: 0.8),
+                color: Paleta.sobreDorado.withValues(
+                  alpha: Paleta.alfa(claro: 0.9, oscuro: 0.8),
+                ),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 height: 1.3,

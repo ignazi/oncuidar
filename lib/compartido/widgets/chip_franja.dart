@@ -13,7 +13,9 @@ class ChipFranja extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.35),
+        color: Colors.white.withValues(
+          alpha: Paleta.alfa(claro: 0.18, oscuro: 0.35),
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

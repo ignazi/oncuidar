@@ -71,7 +71,7 @@ class _EncabezadoHoja extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.tune_rounded, color: Paleta.sobreDorado),
+            child: Icon(Icons.tune_rounded, color: Paleta.sobreDorado),
           ),
           const SizedBox(width: 12),
           Expanded(

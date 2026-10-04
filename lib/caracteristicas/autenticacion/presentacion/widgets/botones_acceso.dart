@@ -51,7 +51,7 @@ class BotonDegradado extends StatelessWidget {
               ),
             ),
             child: cargando
-                ? const SizedBox(
+                ? SizedBox(
                     height: 22,
                     width: 22,
                     child: CircularProgressIndicator(

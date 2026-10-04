@@ -51,7 +51,9 @@ class TarjetaSeccion extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.35),
+                    color: Colors.white.withValues(
+                      alpha: Paleta.alfa(claro: 0.22, oscuro: 0.35),
+                    ),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(icono, color: Paleta.sobreDorado, size: 26),

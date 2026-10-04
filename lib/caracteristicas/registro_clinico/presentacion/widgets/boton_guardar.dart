@@ -40,7 +40,7 @@ class BotonGuardar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (guardando)
-                    const SizedBox(
+                    SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
@@ -49,7 +49,7 @@ class BotonGuardar extends StatelessWidget {
                       ),
                     )
                   else
-                    const Icon(Icons.save, size: 18, color: Paleta.sobreDorado),
+                    Icon(Icons.save, size: 18, color: Paleta.sobreDorado),
                   const SizedBox(width: 8),
                   Text(
                     guardando

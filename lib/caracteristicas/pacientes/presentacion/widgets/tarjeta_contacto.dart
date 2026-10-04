@@ -112,7 +112,7 @@ class TarjetaContacto extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Icon(
+                          Icon(
                             Icons.phone_rounded,
                             color: Paleta.sobreDorado,
                             size: 18,

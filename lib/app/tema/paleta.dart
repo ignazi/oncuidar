@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class ColoresApp {
   const ColoresApp({
     required this.oscuro,
+    required this.sobreDorado,
     required this.doradoPrincipal,
     required this.doradoMedio,
     required this.doradoClaro,
@@ -26,6 +27,9 @@ class ColoresApp {
   });
 
   final bool oscuro;
+
+  /// Texto e íconos sobre rellenos dorados.
+  final Color sobreDorado;
   final Color doradoPrincipal;
   final Color doradoMedio;
   final Color doradoClaro;
@@ -49,6 +53,7 @@ class ColoresApp {
 
 const coloresClaros = ColoresApp(
   oscuro: false,
+  sobreDorado: Color(0xFFFFFFFF),
   doradoPrincipal: Color(0xFFD99A16),
   doradoMedio: Color(0xFFE8A820),
   doradoClaro: Color(0xFFFFF0C2),
@@ -73,6 +78,8 @@ const coloresClaros = ColoresApp(
 /// Fondos cálidos casi negros; el dorado se aclara para leerse sobre ellos.
 const coloresOscuros = ColoresApp(
   oscuro: true,
+  // Café oscuro: en modo oscuro el blanco sobre dorado se lee mal.
+  sobreDorado: Color(0xFF3B2400),
   doradoPrincipal: Color(0xFFD99A16),
   doradoMedio: Color(0xFFE8A820),
   doradoClaro: Color(0xFF3A2E14),
@@ -98,9 +105,13 @@ const coloresOscuros = ColoresApp(
 class Paleta {
   static ColoresApp _actual = coloresClaros;
 
-  /// Café oscuro para texto e íconos sobre dorado: el dorado es el mismo en
-  /// ambos modos, así que este color también. Blanco sobre dorado se lee mal.
-  static const sobreDorado = Color(0xFF3B2400);
+  /// Texto e íconos sobre dorado: blanco en modo claro (como siempre) y café
+  /// oscuro en modo oscuro, donde el blanco sobre dorado se lee mal.
+  static Color get sobreDorado => _actual.sobreDorado;
+
+  /// Opacidad que depende del modo (los velos sobre dorado, p. ej.).
+  static double alfa({required double claro, required double oscuro}) =>
+      esOscura ? oscuro : claro;
 
   static ColoresApp get actual => _actual;
   static bool get esOscura => _actual.oscuro;

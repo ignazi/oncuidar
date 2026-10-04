@@ -29,6 +29,31 @@ void main() {
     expect(Paleta.usar(coloresOscuros), isFalse);
   });
 
+  test('sobre dorado: blanco en claro (como antes) y café en oscuro', () {
+    expect(Paleta.sobreDorado, const Color(0xFFFFFFFF));
+    Paleta.usar(coloresOscuros);
+    expect(Paleta.sobreDorado, const Color(0xFF3B2400));
+    // El café se lee sobre el dorado; el blanco no tanto.
+    double contraste(Color a, Color b) {
+      final claro = a.computeLuminance() > b.computeLuminance() ? a : b;
+      final oscuro = identical(claro, a) ? b : a;
+      return (claro.computeLuminance() + 0.05) /
+          (oscuro.computeLuminance() + 0.05);
+    }
+
+    final dorado = Paleta.doradoPrincipal;
+    expect(
+      contraste(Paleta.sobreDorado, dorado),
+      greaterThan(contraste(Colors.white, dorado)),
+    );
+  });
+
+  test('los velos sobre dorado conservan su valor original en modo claro', () {
+    expect(Paleta.alfa(claro: 0.22, oscuro: 0.35), 0.22);
+    Paleta.usar(coloresOscuros);
+    expect(Paleta.alfa(claro: 0.22, oscuro: 0.35), 0.35);
+  });
+
   test('los degradados dorados son los mismos en modo claro y oscuro', () {
     final cabecera = Paleta.degradadoCabecera.colors;
     final banner = Paleta.degradadoBanner;

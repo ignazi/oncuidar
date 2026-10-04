@@ -278,7 +278,7 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.add_rounded,
                       color: Paleta.sobreDorado,
                       size: 18,

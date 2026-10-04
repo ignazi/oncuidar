@@ -220,7 +220,7 @@ class _SplashState extends ConsumerState<Splash>
                   builder: (context, child) {
                     return Opacity(
                       opacity: _opacidadSpinner.value,
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 28,
                         height: 28,
                         child: CircularProgressIndicator(

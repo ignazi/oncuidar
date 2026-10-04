@@ -81,7 +81,9 @@ class CabeceraDorada extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.35),
+              color: Colors.white.withValues(
+                alpha: Paleta.alfa(claro: 0.22, oscuro: 0.35),
+              ),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icono, color: Paleta.sobreDorado, size: 26),
@@ -96,7 +98,9 @@ class CabeceraDorada extends StatelessWidget {
                   style: GoogleFonts.nunito(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    color: Paleta.sobreDorado.withValues(alpha: 0.8),
+                    color: Paleta.sobreDorado.withValues(
+                      alpha: Paleta.alfa(claro: 0.85, oscuro: 0.8),
+                    ),
                     letterSpacing: 0.8,
                   ),
                 ),
