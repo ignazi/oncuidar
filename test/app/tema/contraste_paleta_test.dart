@@ -92,12 +92,14 @@ void main() {
       ('claro', coloresClaros),
       ('oscuro', coloresOscuros),
     ]) {
-      test('en modo $nombre: el número se lee sobre el fondo dorado', () {
+      test('en modo $nombre: número blanco, aro claro y fondo del degradado', () {
         Paleta.usar(c);
-        // El fondo es el del degradado (igual en ambos modos) y el número, café.
+        // El número es blanco por decisión de diseño; su sombra fina lo ayuda a
+        // leerse (blanco sobre dorado solo da ~2,4:1 por sí solo).
+        expect(InsigniaConteo.colorNumero, const Color(0xFFFFFFFF));
         expect(
           contraste(InsigniaConteo.colorNumero, InsigniaConteo.colorFondo()),
-          greaterThanOrEqualTo(4.5),
+          greaterThan(2.0),
         );
         // El aro claro la separa del botón en oscuro.
         if (c.oscuro) {

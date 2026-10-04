@@ -5,16 +5,16 @@ import 'package:oncuidar/app/tema/paleta.dart';
 /// Número sobre la esquina de un botón del encabezado.
 ///
 /// El fondo es el color del degradado del encabezado, así parece un pedazo que le
-/// falta al botón. El aro claro y la sombra la separan del degradado, y el número
-/// va en café oscuro: se lee igual en modo claro y oscuro, porque el degradado
-/// dorado es el mismo en ambos.
+/// falta al botón. El aro claro y la sombra la separan del degradado. El número
+/// es blanco y lleva una sombra fina para leerse sobre el dorado, que es el
+/// mismo en ambos modos.
 class InsigniaConteo extends StatelessWidget {
   const InsigniaConteo({super.key, required this.total});
 
   final int total;
 
-  /// Color del número: café oscuro, el que mejor se lee sobre el dorado.
-  static const colorNumero = Color(0xFF3B2400);
+  /// Color del número.
+  static const colorNumero = Colors.white;
 
   /// Cuánto sobresale de la esquina del botón.
   static const sobresale = 8.0;
@@ -59,6 +59,14 @@ class InsigniaConteo extends StatelessWidget {
           height: 1,
           fontWeight: FontWeight.w900,
           color: colorNumero,
+          // Sin esta sombra el blanco sobre el dorado casi no se distingue.
+          shadows: const [
+            Shadow(
+              color: Color(0x80000000),
+              blurRadius: 2,
+              offset: Offset(0, 1),
+            ),
+          ],
         ),
       ),
     );

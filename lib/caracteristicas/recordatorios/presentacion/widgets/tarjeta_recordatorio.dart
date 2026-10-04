@@ -49,133 +49,147 @@ class TarjetaRecordatorio extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: r.activo ? Paleta.doradoClaro : Paleta.deshabilitado,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icono,
-                color: r.activo ? color : Paleta.textoDeshabilitado,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    r.titulo,
-                    style: GoogleFonts.nunito(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: r.activo
-                          ? Paleta.textoPrincipal
-                          : Paleta.textoSecundario,
-                    ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: r.activo ? Paleta.doradoClaro : Paleta.deshabilitado,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  if (r.descripcion != null && r.descripcion!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      r.descripcion!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.nunito(
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                        color: Paleta.textoSecundario,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 6),
-                  Row(
+                  child: Icon(
+                    icono,
+                    color: r.activo ? color : Paleta.textoDeshabilitado,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (nombrePaciente.isNotEmpty) ...[
-                        Flexible(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
+                      Text(
+                        r.titulo,
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: r.activo
+                              ? Paleta.textoPrincipal
+                              : Paleta.textoSecundario,
+                        ),
+                      ),
+                      if (r.descripcion != null &&
+                          r.descripcion!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          r.descripcion!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.nunito(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: Paleta.textoSecundario,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          if (nombrePaciente.isNotEmpty) ...[
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Paleta.doradoClaro,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  nombrePaciente,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Paleta.textoSecundario,
+                                  ),
+                                ),
+                              ),
                             ),
-                            decoration: BoxDecoration(
-                              color: Paleta.doradoClaro,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          Icon(
+                            Icons.access_time,
+                            size: 14,
+                            color: Paleta.textoSecundario,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
                             child: Text(
-                              nombrePaciente,
+                              r.esRecurrente
+                                  ? hora12(r.fechaHora)
+                                  : '${fechacorta(r.fechaHora)} · ${hora12(r.fechaHora)}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.nunito(
-                                fontSize: 11,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: Paleta.textoSecundario,
                               ),
                             ),
                           ),
+                        ],
+                      ),
+                      if (r.esMensual) ...[
+                        const SizedBox(height: 6),
+                        _ChipDia(
+                          'Cada mes el día ${r.fechaHora.day}',
+                          r.activo,
                         ),
-                        const SizedBox(width: 8),
                       ],
-                      Icon(
-                        Icons.access_time,
-                        size: 14,
-                        color: Paleta.textoSecundario,
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          r.esRecurrente
-                              ? hora12(r.fechaHora)
-                              : '${fechacorta(r.fechaHora)} · ${hora12(r.fechaHora)}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.nunito(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Paleta.textoSecundario,
+                      if (dias.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        if (dias.length == 7) ...[
+                          _ChipDia('Toda la semana', r.activo),
+                        ] else ...[
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                for (final dia in dias)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 4),
+                                    child: _ChipDia(dia, r.activo),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
+                        ],
+                      ],
                     ],
                   ),
-                  if (r.esMensual) ...[
-                    const SizedBox(height: 6),
-                    _ChipDia('Cada mes el día ${r.fechaHora.day}', r.activo),
-                  ],
-                  if (dias.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    if (dias.length == 7) ...[
-                      _ChipDia('Toda la semana', r.activo),
-                    ] else ...[
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            for (final dia in dias)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 4),
-                                child: _ChipDia(dia, r.activo),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ],
+                ),
+                const SizedBox(width: 6),
+                _menu(r),
+              ],
+            ),
+            // Activar o pausar: abajo a la derecha, más grande y fácil de tocar.
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: _Interruptor(
+                key: Key('switchActivo_${r.id}'),
+                activo: r.activo,
+                alTocar: alAlternarActivo,
               ),
             ),
-            _Interruptor(
-              key: Key('switchActivo_${r.id}'),
-              activo: r.activo,
-              alTocar: alAlternarActivo,
-            ),
-            const SizedBox(width: 6),
-            _menu(r),
           ],
         ),
       ),
@@ -287,19 +301,19 @@ class _Interruptor extends StatelessWidget {
     return GestureDetector(
       onTap: alTocar,
       child: Container(
-        width: 48,
-        height: 26,
+        width: 60,
+        height: 32,
         decoration: BoxDecoration(
           color: activo ? Paleta.doradoPrincipal : Paleta.bordeDeshabilitado,
-          borderRadius: BorderRadius.circular(13),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: AnimatedAlign(
           duration: const Duration(milliseconds: 200),
           alignment: activo ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            width: 22,
-            height: 22,
-            margin: const EdgeInsets.symmetric(horizontal: 2),
+            width: 26,
+            height: 26,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
             decoration: const BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,

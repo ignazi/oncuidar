@@ -89,10 +89,8 @@ class BurbujaMensaje extends StatelessWidget {
                 constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width * 0.75,
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 11,
-                ),
+                // Compacta, como en WhatsApp: la hora cabe dentro del texto.
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
                 decoration: BoxDecoration(
                   gradient: delUsuario ? Paleta.degradadoCabecera : null,
                   color: delUsuario ? null : Paleta.tarjeta,
@@ -113,65 +111,165 @@ class BurbujaMensaje extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        mensaje.texto,
-                        style: GoogleFonts.nunito(
-                          fontSize: 14,
-                          color: delUsuario
-                              ? Paleta.sobreDorado
-                              : Paleta.textoPrincipal,
-                          height: 1.45,
-                        ),
-                      ),
-                    ),
-                    if (!delUsuario && mensaje.sugerenciaConsulta)
-                      const _SugerenciaConsulta(),
-                    if (!delUsuario && alAbrirMaterial != null)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          key: const Key('verMaterialChat'),
-                          onPressed: alAbrirMaterial,
-                          icon: const Icon(Icons.menu_book_rounded, size: 18),
-                          label: const Text('Ver material relacionado'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Paleta.doradoOscuro,
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(0, 32),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            textStyle: GoogleFonts.nunito(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (mensaje.enviadoEn != null) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        hora12(mensaje.enviadoEn!),
-                        key: const Key('horaMensajeChat'),
-                        style: GoogleFonts.nunito(
-                          fontSize: 10.5,
-                          color: delUsuario
-                              ? Colors.white.withValues(alpha: 0.8)
-                              : Paleta.textoSecundario,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                child: _contenido(delUsuario),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// Texto del mensaje; el del usuario va más grueso porque el blanco sobre el
+  /// dorado se leía muy fino.
+  TextStyle _estiloTexto(bool delUsuario) => GoogleFonts.nunito(
+    fontSize: 14,
+    fontWeight: delUsuario ? FontWeight.w700 : FontWeight.w400,
+    color: delUsuario ? Paleta.sobreDorado : Paleta.textoPrincipal,
+    height: 1.4,
+  );
+
+  TextStyle _estiloHora(bool delUsuario) => GoogleFonts.nunito(
+    fontSize: 10.5,
+    fontWeight: FontWeight.w600,
+    color: delUsuario
+        ? Paleta.sobreDorado.withValues(alpha: 0.85)
+        : Paleta.textoSecundario,
+  );
+
+  Widget _contenido(bool delUsuario) {
+    final hora = mensaje.enviadoEn == null ? null : hora12(mensaje.enviadoEn!);
+    final conExtras =
+        !delUsuario && (mensaje.sugerenciaConsulta || alAbrirMaterial != null);
+    if (!conExtras) {
+      // Sin extras: la hora va en la esquina inferior derecha, en la misma
+      // línea que el final del texto si cabe (como WhatsApp).
+      return TextoConHora(
+        texto: mensaje.texto,
+        hora: hora,
+        estiloTexto: _estiloTexto(delUsuario),
+        estiloHora: _estiloHora(delUsuario),
+      );
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(mensaje.texto, style: _estiloTexto(delUsuario)),
+        ),
+        if (mensaje.sugerenciaConsulta) const _SugerenciaConsulta(),
+        if (alAbrirMaterial != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const Key('verMaterialChat'),
+              onPressed: alAbrirMaterial,
+              icon: const Icon(Icons.menu_book_rounded, size: 18),
+              label: const Text('Ver material relacionado'),
+              style: TextButton.styleFrom(
+                foregroundColor: Paleta.doradoOscuro,
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 32),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: GoogleFonts.nunito(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        if (hora != null)
+          Text(
+            hora,
+            key: const Key('horaMensajeChat'),
+            style: _estiloHora(delUsuario),
+          ),
+      ],
+    );
+  }
+}
+
+/// Texto con la hora pegada abajo a la derecha, como en WhatsApp.
+///
+/// Se mide la última línea del texto: si tiene sitio para la hora, comparte esa
+/// línea con ella; si no, la hora queda sola en una línea nueva, a la derecha.
+class TextoConHora extends StatelessWidget {
+  const TextoConHora({
+    super.key,
+    required this.texto,
+    required this.estiloTexto,
+    required this.estiloHora,
+    this.hora,
+  });
+
+  final String texto;
+  final String? hora;
+  final TextStyle estiloTexto;
+  final TextStyle estiloHora;
+
+  /// Espacio entre el final del texto y la hora.
+  static const separacion = 8.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final hora = this.hora;
+    if (hora == null) return Text(texto, style: estiloTexto);
+    final escala = MediaQuery.textScalerOf(context);
+    final etiquetaHora = Text(
+      hora,
+      key: const Key('horaMensajeChat'),
+      style: estiloHora,
+    );
+    return LayoutBuilder(
+      builder: (context, restricciones) {
+        final maximo = restricciones.maxWidth;
+        final medidaTexto = TextPainter(
+          text: TextSpan(text: texto, style: estiloTexto),
+          textDirection: TextDirection.ltr,
+          textScaler: escala,
+          textWidthBasis: TextWidthBasis.longestLine,
+        )..layout(maxWidth: maximo);
+        final anchoHora = (TextPainter(
+          text: TextSpan(text: hora, style: estiloHora),
+          textDirection: TextDirection.ltr,
+          textScaler: escala,
+        )..layout()).width;
+        final lineas = medidaTexto.computeLineMetrics();
+        final ultima = lineas.isEmpty ? 0.0 : lineas.last.width;
+        final necesario = ultima + separacion + anchoHora;
+        final contenido = Text(
+          texto,
+          style: estiloTexto,
+          textWidthBasis: TextWidthBasis.longestLine,
+        );
+
+        if (necesario <= maximo) {
+          // La hora cabe en la última línea: se apoya en su esquina derecha.
+          final ancho = necesario > medidaTexto.width
+              ? necesario
+              : medidaTexto.width;
+          return SizedBox(
+            width: ancho,
+            child: Stack(
+              children: [
+                contenido,
+                Positioned(right: 0, bottom: 0, child: etiquetaHora),
+              ],
+            ),
+          );
+        }
+        // No cabe: línea propia, alineada a la derecha, como WhatsApp.
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Align(alignment: Alignment.centerLeft, child: contenido),
+            etiquetaHora,
+          ],
+        );
+      },
     );
   }
 }
