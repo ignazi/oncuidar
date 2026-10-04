@@ -5,6 +5,7 @@ class ColoresApp {
   const ColoresApp({
     required this.oscuro,
     required this.sobreDorado,
+    required this.insignia,
     required this.doradoPrincipal,
     required this.doradoMedio,
     required this.doradoClaro,
@@ -30,6 +31,9 @@ class ColoresApp {
 
   /// Texto e íconos sobre rellenos dorados.
   final Color sobreDorado;
+
+  /// Fondo de la insignia con número (lleva el número en blanco).
+  final Color insignia;
   final Color doradoPrincipal;
   final Color doradoMedio;
   final Color doradoClaro;
@@ -54,6 +58,8 @@ class ColoresApp {
 const coloresClaros = ColoresApp(
   oscuro: false,
   sobreDorado: Color(0xFFFFFFFF),
+  // Burdeos: contrasta con el dorado y con el blanco del número (8:1).
+  insignia: Color(0xFF9F1239),
   doradoPrincipal: Color(0xFFD99A16),
   doradoMedio: Color(0xFFE8A820),
   doradoClaro: Color(0xFFFFF0C2),
@@ -80,6 +86,8 @@ const coloresOscuros = ColoresApp(
   oscuro: true,
   // Café oscuro: en modo oscuro el blanco sobre dorado se lee mal.
   sobreDorado: Color(0xFF3B2400),
+  // Frambuesa más viva para destacar sobre los botones oscuros (6,5:1 con el blanco).
+  insignia: Color(0xFFC2185B),
   doradoPrincipal: Color(0xFFD99A16),
   doradoMedio: Color(0xFFE8A820),
   doradoClaro: Color(0xFF3A2E14),
@@ -88,7 +96,7 @@ const coloresOscuros = ColoresApp(
   textoPrincipal: Color(0xFFF4EADB),
   textoSecundario: Color(0xFFB9A585),
   textoTerciario: Color(0xFFE6BE6A),
-  textoAyuda: Color(0xFF9C8763),
+  textoAyuda: Color(0xFFAA9570),
   doradoBannerClaro: Color(0xFF2A2210),
   doradoBannerOscuro: Color(0xFF3D3015),
   tarjeta: Color(0xFF221C13),
@@ -108,6 +116,13 @@ class Paleta {
   /// Texto e íconos sobre dorado: blanco en modo claro (como siempre) y café
   /// oscuro en modo oscuro, donde el blanco sobre dorado se lee mal.
   static Color get sobreDorado => _actual.sobreDorado;
+
+  /// Fondo de las insignias con número.
+  static Color get insignia => _actual.insignia;
+
+  /// Aro claro de la insignia: la separa del degradado y del botón en ambos modos.
+  static Color get aroInsignia =>
+      esOscura ? _actual.textoPrincipal : _actual.tarjeta;
 
   /// Opacidad que depende del modo (los velos sobre dorado, p. ej.).
   static double alfa({required double claro, required double oscuro}) =>

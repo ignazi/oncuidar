@@ -63,25 +63,40 @@ class EncabezadoGradiente extends StatelessWidget {
                 lateral,
                 alturaBarraEstado + 4,
                 // Deja sitio a la insignia que sobresale del botón de la derecha.
-                accionDerecha == null ? lateral : 24,
+                accionDerecha == null ? lateral : 20,
                 4,
               ),
               // Logo y acciones en la misma fila: quedan a la misma altura.
-              child: accionDerecha == null
-                  ? FittedBox(fit: BoxFit.scaleDown, child: _izquierda())
-                  : Row(
-                      children: [
-                        Expanded(
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: _izquierda(),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        accionDerecha!,
-                      ],
+              // Logo y acciones en la misma fila y del mismo alto (48): solo el
+              // título se encoge cuando falta espacio, nunca el logo.
+              child: Row(
+                children: [
+                  if (logo != null) ...[
+                    if (alTocarLogo != null)
+                      GestureDetector(
+                        onTap: alTocarLogo,
+                        behavior: HitTestBehavior.opaque,
+                        child: _logoRedondo(),
+                      )
+                    else
+                      IgnorePointer(child: _logoRedondo()),
+                    const SizedBox(width: 10),
+                  ],
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: tituloCentrado
+                          ? Alignment.center
+                          : Alignment.centerLeft,
+                      child: IgnorePointer(child: _contenidoTitulo()),
                     ),
+                  ),
+                  if (accionDerecha != null) ...[
+                    const SizedBox(width: 10),
+                    accionDerecha!,
+                  ],
+                ],
+              ),
             ),
           ),
           if (mostrarRetroceso)
@@ -115,29 +130,9 @@ class EncabezadoGradiente extends StatelessWidget {
     );
   }
 
-  /// Logo (si hay) y título, sin las acciones de la derecha.
-  Widget _izquierda() {
-    if (logo == null) return IgnorePointer(child: _contenidoTitulo());
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (alTocarLogo != null)
-          GestureDetector(
-            onTap: alTocarLogo,
-            behavior: HitTestBehavior.opaque,
-            child: _logoRedondo(),
-          )
-        else
-          IgnorePointer(child: _logoRedondo()),
-        const SizedBox(width: 10),
-        IgnorePointer(child: _contenidoTitulo()),
-      ],
-    );
-  }
-
   Widget _logoRedondo() {
     return Container(
+      key: const Key('logoEncabezado'),
       width: 48,
       height: 48,
       decoration: BoxDecoration(

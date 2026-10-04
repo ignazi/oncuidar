@@ -4,36 +4,44 @@ import 'package:oncuidar/app/tema/paleta.dart';
 
 /// Número sobre la esquina de un botón del encabezado.
 ///
-/// Tiene su propio fondo café y un aro del color del botón: se distingue del
-/// degradado dorado y del botón, y se ve igual en modo claro y oscuro.
+/// Tiene su propio fondo (burdeos en claro, frambuesa en oscuro) y un aro claro:
+/// se distingue del degradado dorado y del botón, y el número blanco se lee bien
+/// en ambos modos.
 class InsigniaConteo extends StatelessWidget {
   const InsigniaConteo({super.key, required this.total});
 
   final int total;
 
-  /// Fondo de la insignia: café con el que el blanco del número se lee bien.
-  static const colorFondo = Color(0xFF8A5A05);
-
   /// Color del número.
   static const colorNumero = Colors.white;
 
+  /// Cuánto sobresale de la esquina del botón.
+  static const sobresale = 8.0;
+
   /// Posición sobre la esquina superior derecha del botón.
   static Widget enEsquina(int total, {Key? clave}) => Positioned(
-    top: -11,
-    right: -11,
+    top: -sobresale,
+    right: -sobresale,
     child: InsigniaConteo(key: clave, total: total),
   );
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+      constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
       padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        color: colorFondo,
-        borderRadius: BorderRadius.circular(13),
-        // El aro tiene el color del botón: separa la insignia del degradado.
-        border: Border.all(color: Paleta.tarjeta, width: 2),
+        color: Paleta.insignia,
+        borderRadius: BorderRadius.circular(12),
+        // Aro claro: separa la insignia del degradado y del botón.
+        border: Border.all(color: Paleta.aroInsignia, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       alignment: Alignment.center,
       child: Text(
