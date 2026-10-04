@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
+import 'package:oncuidar/caracteristicas/chat/dominio/respuestas_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/controlador_chat.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/proveedor_chat_activo.dart';
 import 'package:oncuidar/caracteristicas/chat/presentacion/widgets/burbujas_chat.dart';
@@ -217,7 +218,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         children: [
           EncabezadoGradiente(
             titulo: 'Chat de orientación',
-            subtitulo: _chat.tituloConversacion ?? 'Resuelve tus dudas',
+            subtitulo: switch (_chat.tituloConversacion) {
+              final titulo? when titulo.trim().isNotEmpty => resumirPalabras(
+                titulo,
+              ),
+              _ => 'Resuelve tus dudas',
+            },
             logo: const AssetImage('assets/images/OnCuidar.png'),
             tamanoTitulo: 20,
             alto: 100,

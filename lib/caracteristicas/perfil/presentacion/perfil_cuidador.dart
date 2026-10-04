@@ -2,21 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:oncuidar/app/enrutador/destino_aviso.dart';
-import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/proveedores_perfil.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/proveedores_perfil.dart';
-import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/boton_cerrar_sesion.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/dialogo_correos.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/dialogo_editar_cuidador.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/mensaje_error_datos.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/pie_version.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/tarjeta_configuracion.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/tarjeta_perfil_cuidador.dart';
-import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
 class PerfilCuidador extends ConsumerStatefulWidget {
@@ -30,7 +24,6 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
   Map<String, dynamic>? _cuidador;
   bool _cargando = true;
   bool _error = false;
-  bool _cerrandoSesion = false;
 
   @override
   void initState() {
@@ -138,8 +131,6 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
           const TarjetaConfiguracion(),
           const SizedBox(height: 28),
           const PieVersion(),
-          const SizedBox(height: 8),
-          BotonCerrarSesion(cargando: _cerrandoSesion, alPulsar: _cerrarSesion),
         ],
       ],
     );
@@ -240,38 +231,5 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
       editarRespaldo: editarRespaldo,
       alRefrescar: _cargar,
     );
-  }
-
-  // ── Cerrar sesión ──
-
-  Future<void> _cerrarSesion() async {
-    final confirmar = await mostrarDialogoConfirmacion(
-      context,
-      icono: Icons.logout_rounded,
-      titulo: 'Cerrar sesión',
-      mensaje: '¿Seguro que deseas cerrar tu sesión?',
-      textoConfirmar: 'Cerrar sesión',
-      colorConfirmar: Paleta.doradoOscuro,
-      iconoConfirmar: Icons.logout_rounded,
-    );
-    if (confirmar != true || !mounted) return;
-    setState(() => _cerrandoSesion = true);
-    await ref.read(idPacienteSeleccionadoProvider.notifier).seleccionar(null);
-    ref.read(servicioCifradoProvider).bloquear();
-    ref.read(bloqueoCifradoProvider.notifier).fijarDesbloqueado(false);
-    try {
-      await ref.read(servicioNotificacionesProvider).cancelarTodas();
-    } catch (_) {
-      // Al cerrar sesión no se deben dejar avisos programados (HU-18).
-    }
-    try {
-      await ref.read(firebaseAuthProvider).signOut();
-    } catch (_) {
-      // El estado de sesion se resuelve con el listener de autenticacion.
-    }
-    // Sin esto el gate de arranque queda abierto: un enlace profundo posterior
-    // entraría a una ruta protegida sin volver a pasar por el Splash.
-    EstadoArranque.reiniciar();
-    if (mounted && context.mounted) context.go('/bienvenida');
   }
 }

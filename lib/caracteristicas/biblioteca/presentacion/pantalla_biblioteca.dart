@@ -239,6 +239,12 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
     );
   }
 
+  /// Color del degradado de la cabecera donde queda el botón de favoritos.
+  Color _colorEncabezadoJuntoAlBoton() {
+    final colores = Paleta.degradadoCabecera.colors;
+    return Color.lerp(colores[1], colores[2], 0.55)!;
+  }
+
   Widget _botonFavoritos(int totalFavoritos) {
     return BotonCircular(
       clave: const Key('alternarFavoritos'),
@@ -247,6 +253,7 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
           : 'Ver materiales guardados',
       alTocar: () => setState(() => _soloFavoritos = !_soloFavoritos),
       hijo: Stack(
+        clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
           Icon(
@@ -257,14 +264,17 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
             size: 22,
           ),
           if (totalFavoritos > 0 && !_soloFavoritos)
+            // Color del degradado del encabezado en ese punto: la insignia se ve
+            // como un pedazo que le falta al botón y deja ver el fondo.
             Positioned(
-              top: 0,
-              right: 0,
+              top: -9,
+              right: -9,
               child: Container(
-                width: 18,
-                height: 18,
+                key: const Key('insigniaFavoritos'),
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
-                  color: Paleta.doradoOscuro,
+                  color: _colorEncabezadoJuntoAlBoton(),
                   shape: BoxShape.circle,
                 ),
                 child: Center(

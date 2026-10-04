@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_metadata.dart';
@@ -310,6 +311,23 @@ void main() {
     final doc = await firestore.collection('usuarios').doc(_uid).get();
     final favoritos = List<String>.from(doc.data()?['idsFavoritos']);
     expect(favoritos, contains('guias-manual-de-control-de-sintomas'));
+
+    // La insignia con el total toma el color del degradado del encabezado.
+    final insignia = tester.widget<Container>(
+      find.byKey(const Key('insigniaFavoritos')),
+    );
+    final colores = Paleta.degradadoCabecera.colors;
+    expect(
+      (insignia.decoration! as BoxDecoration).color,
+      Color.lerp(colores[1], colores[2], 0.55),
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('insigniaFavoritos')),
+        matching: find.text('1'),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(const Key('alternarFavoritos')));
     await tester.pumpAndSettle();

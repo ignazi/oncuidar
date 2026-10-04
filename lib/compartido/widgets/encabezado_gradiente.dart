@@ -130,13 +130,16 @@ class EncabezadoGradiente extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Paleta.tarjeta,
         shape: BoxShape.circle,
-        // El logo conserva el aro del modo claro también en oscuro.
-        border: Border.all(color: coloresClaros.doradoClaro, width: 1.5),
+        // En oscuro el aro es un dorado tenue: el claro se vería como borde negro.
+        border: Border.all(
+          color: Paleta.esOscura ? Paleta.bordeTarjeta : Paleta.doradoClaro,
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: coloresClaros.doradoOscuro.withValues(alpha: 0.25),
+            color: Paleta.doradoOscuro.withValues(alpha: 0.25),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),

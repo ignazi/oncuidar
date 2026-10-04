@@ -337,6 +337,9 @@ class _Tarjeta extends StatelessWidget {
 }
 
 /// Opción seleccionable con un dibujo arriba y su nombre abajo.
+///
+/// Anima igual que los chips de Preguntas frecuentes: el degradado, el borde, la
+/// sombra y los colores pasan de un estado al otro en vez de saltar.
 class _Opcion extends StatelessWidget {
   const _Opcion({
     required this.clave,
@@ -352,63 +355,82 @@ class _Opcion extends StatelessWidget {
   final VoidCallback alPulsar;
   final Widget Function(Color color) visual;
 
+  static const _duracion = Duration(milliseconds: 220);
+
   @override
   Widget build(BuildContext context) {
-    final color = activa ? Colors.white : Paleta.doradoOscuro;
+    final colorIcono = activa ? Colors.white : Paleta.doradoOscuro;
     return Semantics(
       button: true,
       selected: activa,
       label: etiqueta,
-      child: GestureDetector(
+      child: AnimatedContainer(
         key: clave,
-        onTap: alPulsar,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOut,
-          height: 74,
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          decoration: BoxDecoration(
-            gradient: activa
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Paleta.doradoPrincipal, Paleta.doradoRelleno],
-                  )
-                : null,
-            color: activa ? null : Paleta.fondoEntrada,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: activa ? Colors.transparent : Paleta.bordeTarjeta,
-            ),
-            boxShadow: activa
-                ? [
-                    BoxShadow(
-                      color: Paleta.doradoRelleno.withValues(alpha: 0.30),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : null,
+        duration: _duracion,
+        curve: Curves.easeOutCubic,
+        height: 74,
+        decoration: BoxDecoration(
+          // Ambos estados con degradado: así AnimatedContainer los mezcla.
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: activa
+                ? [Paleta.doradoPrincipal, Paleta.doradoRelleno]
+                : [Paleta.fondoEntrada, Paleta.fondoEntrada],
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 26, child: Center(child: visual(color))),
-              const SizedBox(height: 6),
-              // Con texto grande la etiqueta se reduce en vez de cortarse.
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  etiqueta,
-                  maxLines: 1,
-                  style: GoogleFonts.nunito(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                    color: activa ? Colors.white : Paleta.textoPrincipal,
-                  ),
-                ),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: activa ? Colors.transparent : Paleta.bordeTarjeta,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Paleta.doradoRelleno.withValues(
+                alpha: activa ? 0.30 : 0.0,
               ),
-            ],
+              blurRadius: activa ? 8 : 0,
+              offset: Offset(0, activa ? 3 : 0),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: alPulsar,
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 26,
+                    child: Center(
+                      child: TweenAnimationBuilder<Color?>(
+                        tween: ColorTween(end: colorIcono),
+                        duration: _duracion,
+                        curve: Curves.easeOutCubic,
+                        builder: (_, color, _) => visual(color ?? colorIcono),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  // Con texto grande la etiqueta se reduce en vez de cortarse.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: AnimatedDefaultTextStyle(
+                      duration: _duracion,
+                      curve: Curves.easeOutCubic,
+                      style: GoogleFonts.nunito(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: activa ? Colors.white : Paleta.textoPrincipal,
+                      ),
+                      child: Text(etiqueta, maxLines: 1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
@@ -51,6 +52,21 @@ void main() {
     final tema = Tema.obtener();
     expect(tema.brightness, Brightness.dark);
     expect(tema.scaffoldBackgroundColor, coloresOscuros.crema);
+  });
+
+  testWidgets('las transiciones de página son las nativas de cada plataforma', (
+    tester,
+  ) async {
+    final tema = Tema.obtener();
+    final builders = tema.pageTransitionsTheme.builders;
+    expect(
+      builders[TargetPlatform.android],
+      isA<FadeForwardsPageTransitionsBuilder>(),
+    );
+    expect(
+      builders[TargetPlatform.iOS],
+      isA<CupertinoPageTransitionsBuilder>(),
+    );
   });
 
   testWidgets('repintarArbol actualiza incluso los widgets const', (

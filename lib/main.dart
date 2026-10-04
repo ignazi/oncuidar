@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/enrutador/enrutador.dart';
+import 'package:oncuidar/app/tema/fundido_de_tema.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/app/tema/repintar.dart';
 import 'package:oncuidar/app/tema/tema.dart';
@@ -117,7 +118,10 @@ class _OncuidarAppState extends ConsumerState<OncuidarApp>
         ),
         child: Stack(
           children: [
-            child ?? const SizedBox.shrink(),
+            FundidoDeTema(
+              oscuro: Paleta.esOscura,
+              child: child ?? const SizedBox.shrink(),
+            ),
             if (usuario != null && !desbloqueado)
               const Positioned.fill(child: _GateClave()),
           ],

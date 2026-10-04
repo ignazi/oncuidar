@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/gestion_pacientes.dart';
+import 'package:oncuidar/caracteristicas/perfil/presentacion/cerrar_sesion.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/perfil_cuidador.dart';
+import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
 class Perfil extends ConsumerStatefulWidget {
@@ -18,6 +20,7 @@ enum _VistaPerfil { cuidador, pacientes }
 
 class _PerfilState extends ConsumerState<Perfil> {
   _VistaPerfil _vista = _VistaPerfil.pacientes;
+  bool _cerrandoSesion = false;
   final PageController _controladorPagina = PageController();
 
   @override
@@ -126,6 +129,33 @@ class _PerfilState extends ConsumerState<Perfil> {
               tamanoTitulo: 20,
               alto: 100,
               alTocarLogo: () => context.go('/dashboard'),
+              reservaDerecha: 72,
+              accionDerecha: BotonCircular(
+                clave: const Key('botonCerrarSesion'),
+                tooltip: 'Cerrar sesión',
+                alTocar: _cerrandoSesion
+                    ? () {}
+                    : () => cerrarSesionConfirmando(
+                        context,
+                        ref,
+                        alCambiarEstado: (en) {
+                          if (mounted) setState(() => _cerrandoSesion = en);
+                        },
+                      ),
+                hijo: _cerrandoSesion
+                    ? Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Paleta.doradoOscuro,
+                        ),
+                      )
+                    : Icon(
+                        Icons.logout_rounded,
+                        color: Paleta.doradoOscuro,
+                        size: 22,
+                      ),
+              ),
             ),
           ),
         ],

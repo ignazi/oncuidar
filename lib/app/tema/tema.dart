@@ -1,36 +1,7 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-
-/// Transición de pantalla fluida estilo WhatsApp.
-class _TransicionWhatsApp extends PageTransitionsBuilder {
-  const _TransicionWhatsApp();
-
-  @override
-  Widget buildTransitions<T>(
-    PageRoute<T> route,
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) {
-    final curva = CurvedAnimation(
-      parent: animation,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
-    return FadeTransition(
-      opacity: curva,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0.10, 0),
-          end: Offset.zero,
-        ).animate(curva),
-        child: child,
-      ),
-    );
-  }
-}
 
 class Tema {
   /// Tema armado con los colores vigentes de [Paleta] (claros u oscuros).
@@ -57,13 +28,22 @@ class Tema {
         modalBackgroundColor: Paleta.tarjeta,
       ),
       dividerColor: Paleta.bordeTarjeta,
-      pageTransitionsTheme: const PageTransitionsTheme(
+      // Android: transición de Android 14 (la pantalla entra y la anterior se
+      // desliza y se apaga). iPhone: la de iOS, con gesto de volver. El fondo
+      // evita el destello negro entre dos pantallas.
+      pageTransitionsTheme: PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: _TransicionWhatsApp(),
-          TargetPlatform.iOS: _TransicionWhatsApp(),
-          TargetPlatform.windows: _TransicionWhatsApp(),
-          TargetPlatform.macOS: _TransicionWhatsApp(),
-          TargetPlatform.linux: _TransicionWhatsApp(),
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(
+            backgroundColor: Paleta.crema,
+          ),
+          TargetPlatform.iOS: const CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: const CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(
+            backgroundColor: Paleta.crema,
+          ),
+          TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(
+            backgroundColor: Paleta.crema,
+          ),
         },
       ),
       textTheme: GoogleFonts.nunitoTextTheme().apply(

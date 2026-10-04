@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/app/enrutador/fundido_ramas.dart';
 import 'package:oncuidar/app/navegacion_principal.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_bienvenida.dart';
 import 'package:oncuidar/caracteristicas/autenticacion/presentacion/pantalla_carga.dart';
@@ -109,12 +110,17 @@ final router = GoRouter(
     // Shell con pestañas vivas: cada branch conserva su pila en un
     // IndexedStack, así cambiar de sección no desmonta la pantalla ni
     // recarga sus streams (cambio instantáneo, sin transición).
-    StatefulShellRoute.indexedStack(
+    StatefulShellRoute(
       builder: (context, state, navigationShell) => NavegacionPrincipal(
         shell: navigationShell,
         ubicacion: state.uri.path,
         child: navigationShell,
       ),
+      navigatorContainerBuilder: (context, navigationShell, ramas) =>
+          FundidoRamas(
+            indiceActivo: navigationShell.currentIndex,
+            ramas: ramas,
+          ),
       branches: [
         // Pestaña Inicio: dashboard + pantallas que se abren encima.
         StatefulShellBranch(

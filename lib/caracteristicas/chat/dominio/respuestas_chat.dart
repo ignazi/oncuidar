@@ -69,6 +69,17 @@ bool sugiereConsultarEquipo(String texto) {
   return _senalesParaConsultar.any(entrada.contains);
 }
 
+/// Primeras [maximo] palabras del [texto], con «…» si había más.
+String resumirPalabras(String texto, {int maximo = 3}) {
+  final palabras = texto
+      .trim()
+      .split(RegExp(r'\s+'))
+      .where((p) => p.isNotEmpty);
+  final lista = palabras.toList();
+  if (lista.length <= maximo) return lista.join(' ');
+  return '${lista.take(maximo).join(' ')}…';
+}
+
 /// Largo máximo del título automático de una conversación.
 const largoMaximoTituloConversacion = 40;
 

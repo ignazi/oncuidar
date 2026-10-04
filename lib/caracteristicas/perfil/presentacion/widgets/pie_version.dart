@@ -19,13 +19,12 @@ class PieVersion extends StatelessWidget {
               height: 40,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                // El logo conserva el aro del modo claro también en oscuro.
-                color: Colors.white,
+                color: Paleta.tarjeta,
                 shape: BoxShape.circle,
-                border: Border.all(color: coloresClaros.doradoClaro),
+                border: Border.all(color: Paleta.doradoClaro),
                 boxShadow: [
                   BoxShadow(
-                    color: coloresClaros.doradoOscuro.withValues(alpha: 0.08),
+                    color: Paleta.doradoOscuro.withValues(alpha: 0.08),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

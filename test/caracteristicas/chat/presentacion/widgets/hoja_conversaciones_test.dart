@@ -433,7 +433,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.textContaining('Hola, soy tu asistente'), findsOneWidget);
-        expect(find.text('Dudas de la semana'), findsOneWidget);
+        // El encabezado resume el nombre a tres palabras; el título guardado no.
+        expect(find.text('Dudas de la…'), findsOneWidget);
 
         await tester.tap(find.byKey(const Key('sugerencia_fiebre')));
         await tester.pump(const Duration(milliseconds: 1000));
