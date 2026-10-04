@@ -31,14 +31,13 @@ void main() {
         final decoracion =
             tester.widget<Container>(find.byType(Container)).decoration!
                 as BoxDecoration;
-        expect(decoracion.color, colores.insignia);
+        expect(decoracion.color, InsigniaConteo.colorFondo());
         expect((decoracion.border! as Border).top.color, Paleta.aroInsignia);
         // El aro es claro en ambos modos.
         expect(Paleta.aroInsignia.computeLuminance(), greaterThan(0.7));
-        // El fondo no es ninguno de los dorados del degradado.
-        for (final dorado in Paleta.degradadoCabecera.colors) {
-          expect(decoracion.color, isNot(dorado));
-        }
+        // El número va en café oscuro, no en blanco.
+        final numero = tester.widget<Text>(find.text('3'));
+        expect(numero.style!.color, InsigniaConteo.colorNumero);
       },
     );
   }

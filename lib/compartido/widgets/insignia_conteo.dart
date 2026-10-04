@@ -4,19 +4,26 @@ import 'package:oncuidar/app/tema/paleta.dart';
 
 /// Número sobre la esquina de un botón del encabezado.
 ///
-/// Tiene su propio fondo (burdeos en claro, frambuesa en oscuro) y un aro claro:
-/// se distingue del degradado dorado y del botón, y el número blanco se lee bien
-/// en ambos modos.
+/// El fondo es el color del degradado del encabezado, así parece un pedazo que le
+/// falta al botón. El aro claro y la sombra la separan del degradado, y el número
+/// va en café oscuro: se lee igual en modo claro y oscuro, porque el degradado
+/// dorado es el mismo en ambos.
 class InsigniaConteo extends StatelessWidget {
   const InsigniaConteo({super.key, required this.total});
 
   final int total;
 
-  /// Color del número.
-  static const colorNumero = Colors.white;
+  /// Color del número: café oscuro, el que mejor se lee sobre el dorado.
+  static const colorNumero = Color(0xFF3B2400);
 
   /// Cuánto sobresale de la esquina del botón.
   static const sobresale = 8.0;
+
+  /// Color del degradado de la cabecera donde queda un botón de la derecha.
+  static Color colorFondo() {
+    final colores = Paleta.degradadoCabecera.colors;
+    return Color.lerp(colores[1], colores[2], 0.55)!;
+  }
 
   /// Posición sobre la esquina superior derecha del botón.
   static Widget enEsquina(int total, {Key? clave}) => Positioned(
@@ -31,7 +38,7 @@ class InsigniaConteo extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
       padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
-        color: Paleta.insignia,
+        color: colorFondo(),
         borderRadius: BorderRadius.circular(12),
         // Aro claro: separa la insignia del degradado y del botón.
         border: Border.all(color: Paleta.aroInsignia, width: 2),

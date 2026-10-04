@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/compartido/widgets/insignia_conteo.dart';
 
 /// Relación de contraste WCAG entre dos colores (1 a 21).
 double contraste(Color a, Color b) {
@@ -91,23 +92,14 @@ void main() {
       ('claro', coloresClaros),
       ('oscuro', coloresOscuros),
     ]) {
-      test('en modo $nombre: número legible y fondo que destaca', () {
+      test('en modo $nombre: el número se lee sobre el fondo dorado', () {
         Paleta.usar(c);
-        const numero = Color(0xFFFFFFFF);
-        // El número blanco sobre el fondo de la insignia.
-        expect(contraste(numero, Paleta.insignia), greaterThanOrEqualTo(4.5));
-        // El fondo se distingue de su aro claro (que la separa del botón y del
-        // degradado) y del dorado del encabezado.
+        // El fondo es el del degradado (igual en ambos modos) y el número, café.
         expect(
-          contraste(Paleta.insignia, Paleta.aroInsignia),
+          contraste(InsigniaConteo.colorNumero, InsigniaConteo.colorFondo()),
           greaterThanOrEqualTo(4.5),
         );
-        expect(
-          contraste(Paleta.insignia, Paleta.doradoPrincipal),
-          greaterThanOrEqualTo(2.0),
-        );
-        // El aro se ve contra el botón oscuro; en claro es blanco sobre blanco y
-        // la insignia ya contrasta 8:1 con él.
+        // El aro claro la separa del botón en oscuro.
         if (c.oscuro) {
           expect(
             contraste(Paleta.aroInsignia, Paleta.tarjeta),
@@ -116,5 +108,11 @@ void main() {
         }
       });
     }
+
+    test('el fondo es el del degradado y no cambia con el modo', () {
+      final claro = InsigniaConteo.colorFondo();
+      Paleta.usar(coloresOscuros);
+      expect(InsigniaConteo.colorFondo(), claro);
+    });
   });
 }
