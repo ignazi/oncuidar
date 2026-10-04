@@ -50,7 +50,13 @@ class ControladorChat {
   /// Agrega la pregunta del usuario y devuelve la respuesta que corresponde.
   PreguntaBase? preguntar(String texto) {
     final respuesta = resolverPregunta(texto, preguntasFrecuentes);
-    _activo.agregarMensaje(MensajeConversacion(texto: texto, delUsuario: true));
+    _activo.agregarMensaje(
+      MensajeConversacion(
+        texto: texto,
+        delUsuario: true,
+        enviadoEn: DateTime.now(),
+      ),
+    );
     if (respuesta != null && _ref.read(chatActivoProvider).categoria == null) {
       _activo.fijarCategoria(respuesta.categoria);
     }
@@ -63,6 +69,7 @@ class ControladorChat {
       MensajeConversacion(
         texto: respuesta?.respuesta ?? mensajeSinCoincidencia,
         delUsuario: false,
+        enviadoEn: DateTime.now(),
       ),
     );
   }

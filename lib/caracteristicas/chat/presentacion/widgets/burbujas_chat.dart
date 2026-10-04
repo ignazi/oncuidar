@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
+import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
 /// Avatar redondo del asistente.
 class AvatarAsistente extends StatelessWidget {
@@ -87,17 +88,74 @@ class BurbujaMensaje extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Text(
-                mensaje.texto,
-                style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  color: delUsuario ? Colors.white : Paleta.textoPrincipal,
-                  height: 1.45,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      mensaje.texto,
+                      style: GoogleFonts.nunito(
+                        fontSize: 14,
+                        color: delUsuario
+                            ? Colors.white
+                            : Paleta.textoPrincipal,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                  if (mensaje.enviadoEn != null) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      hora12(mensaje.enviadoEn!),
+                      key: const Key('horaMensajeChat'),
+                      style: GoogleFonts.nunito(
+                        fontSize: 10.5,
+                        color: delUsuario
+                            ? Colors.white.withValues(alpha: 0.8)
+                            : Paleta.textoSecundario,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Píldora con el día que separa los mensajes de jornadas distintas.
+class SeparadorDia extends StatelessWidget {
+  const SeparadorDia({super.key, required this.fecha, required this.ahora});
+
+  final DateTime fecha;
+  final DateTime ahora;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 12),
+      child: Center(
+        child: Container(
+          key: const Key('separadorDiaChat'),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: Paleta.doradoClaro,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            etiquetaDia(fecha, ahora),
+            style: GoogleFonts.nunito(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: Paleta.doradoOscuro,
+            ),
+          ),
+        ),
       ),
     );
   }
