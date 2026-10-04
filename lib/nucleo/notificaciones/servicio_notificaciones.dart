@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:oncuidar/nucleo/notificaciones/calendario_avisos.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:oncuidar/nucleo/notificaciones/silencio_avisos.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -111,21 +111,13 @@ class ServicioNotificaciones {
   int _idRepetido(int idBase, int diaSemana) =>
       (idBase + diaSemana) & 0x7FFFFFFF;
 
-  /// ¿El cuidador silenció globalmente las notificaciones? Se lee de
-  /// SharedPreferences; ante cualquier fallo se asume no silenciado.
-  Future<bool> _notificacionesSilenciadas() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getBool('notificaciones_silenciadas') ?? false;
-    } catch (_) {
-      return false;
-    }
-  }
-
   /// Programa el recordatorio. Con [diasRepeticion] agenda UNA notificación
   /// por día (weekday) con repetición semanal; sin días, agenda una sola vez
   /// (pasada la hora, se desplaza a mañana). Con [mensual] agenda una
   /// notificación que repite el mismo día del mes.
+  ///
+  /// Si los avisos están silenciados en general o para el paciente
+  /// [idPaciente], no se programa y se cancela el que hubiera.
   Future<void> programar({
     required int id,
     required String titulo,
@@ -133,8 +125,9 @@ class ServicioNotificaciones {
     required DateTime fechaHora,
     List<String>? diasRepeticion,
     bool mensual = false,
+    String? idPaciente,
   }) async {
-    if (await _notificacionesSilenciadas()) {
+    if (await SilencioAvisos.silenciado(idPaciente: idPaciente)) {
       await cancelar(id);
       return;
     }

@@ -4,6 +4,7 @@ import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.d
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
+import 'package:oncuidar/nucleo/notificaciones/silencio_avisos.dart';
 
 /// Coordina el ciclo de vida del paciente con los avisos de sus recordatorios.
 class CicloDeVidaPaciente {
@@ -40,6 +41,8 @@ class CicloDeVidaPaciente {
       notificaciones,
     );
     await pacientes.eliminarPaciente(idPaciente);
+    // Su silencio ya no tiene a quién aplicarse.
+    await SilencioAvisos.fijarPaciente(idPaciente, false);
   }
 
   /// Vuelve a programar las notificaciones locales de todos los recordatorios
@@ -73,6 +76,7 @@ class CicloDeVidaPaciente {
               fechaHora: r.fechaHora,
               diasRepeticion: r.diasRepeticion,
               mensual: r.esMensual,
+              idPaciente: paciente.id,
             );
           }
         } catch (_) {

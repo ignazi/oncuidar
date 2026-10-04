@@ -7,10 +7,8 @@ import 'package:oncuidar/caracteristicas/recordatorios/datos/proveedores_recorda
 import 'package:oncuidar/caracteristicas/recordatorios/datos/repositorio_recordatorios.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
+import 'package:oncuidar/nucleo/notificaciones/silencio_avisos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-const _claveSilencio = 'notificaciones_silenciadas';
 
 /// Lo que el cuidador completó en el diálogo de recordatorio.
 class DatosRecordatorio {
@@ -72,6 +70,7 @@ class ControladorRecordatorios {
       fechaHora: r.fechaHora,
       diasRepeticion: r.diasRepeticion,
       mensual: r.esMensual,
+      idPaciente: r.pacienteId,
     );
   }
 
@@ -168,28 +167,33 @@ class ControladorRecordatorios {
     }
   }
 
-  /// Silencio global guardado en el dispositivo.
-  static Future<bool> silencioGuardado() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getBool(_claveSilencio) ?? false;
-    } catch (_) {
-      // Sin preferencias la pantalla funciona con notificaciones activas.
-      return false;
+  /// Silencio global guardado en el dispositivo (todos los pacientes).
+  static Future<bool> silencioGuardado() => SilencioAvisos.global();
+
+  /// Silencio guardado de un paciente.
+  static Future<bool> silencioPacienteGuardado(String idPaciente) =>
+      SilencioAvisos.pacienteSilenciado(idPaciente);
+
+  /// Apaga o reactiva los avisos de TODOS los pacientes sin tocar su estado
+  /// individual (`activo` en Firestore no cambia) ni el silencio de cada uno.
+  Future<void> fijarSilencio(bool silenciar) async {
+    await SilencioAvisos.fijarGlobal(silenciar);
+    if (silenciar) {
+      await notificaciones.cancelarTodas();
+    } else {
+      // Vuelven todos, salvo los pacientes que se silenciaron por separado.
+      await cicloDeVida.reagendarNotificaciones();
     }
   }
 
-  /// Apaga o reactiva los avisos de todos los recordatorios sin tocar su
-  /// estado individual (`activo` en Firestore no cambia).
-  Future<void> fijarSilencio(bool silenciar) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_claveSilencio, silenciar);
-    } catch (_) {
-      // Si no se puede persistir, el silencio sigue aplicándose en la sesión.
-    }
+  /// Apaga o reactiva solo los avisos de un paciente; los demás no se tocan.
+  Future<void> fijarSilencioPaciente(String idPaciente, bool silenciar) async {
+    await SilencioAvisos.fijarPaciente(idPaciente, silenciar);
     if (silenciar) {
-      await notificaciones.cancelarTodas();
+      await repositorio.cancelarNotificacionesPaciente(
+        idPaciente,
+        notificaciones,
+      );
     } else {
       await cicloDeVida.reagendarNotificaciones();
     }

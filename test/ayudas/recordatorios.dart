@@ -8,6 +8,7 @@ import 'package:oncuidar/caracteristicas/recordatorios/dominio/recordatorio.dart
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
+import 'package:oncuidar/nucleo/notificaciones/silencio_avisos.dart';
 
 const clavePruebaRecordatorios = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
 const uidRecordatorios = 'uid-recordatorios';
@@ -47,8 +48,15 @@ class NotificacionesFalsas implements ServicioNotificaciones {
     required DateTime fechaHora,
     List<String>? diasRepeticion,
     bool mensual = false,
+    String? idPaciente,
   }) async {
+    // Igual que el servicio real: un aviso silenciado no se programa.
+    if (await SilencioAvisos.silenciado(idPaciente: idPaciente)) {
+      cancelados.add(id);
+      return;
+    }
     programados.add({
+      'idPaciente': idPaciente,
       'id': id,
       'titulo': titulo,
       'cuerpo': cuerpo,

@@ -19,6 +19,7 @@ import 'package:oncuidar/caracteristicas/recordatorios/presentacion/pantalla_rec
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/notificaciones/servicio_notificaciones.dart';
+import 'package:oncuidar/nucleo/notificaciones/silencio_avisos.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -50,8 +51,15 @@ class _FakeNotificaciones implements ServicioNotificaciones {
     required DateTime fechaHora,
     List<String>? diasRepeticion,
     bool mensual = false,
+    String? idPaciente,
   }) async {
+    // Igual que el servicio real: un aviso silenciado no se programa.
+    if (await SilencioAvisos.silenciado(idPaciente: idPaciente)) {
+      cancelados.add(id);
+      return;
+    }
     programados.add({
+      'idPaciente': idPaciente,
       'id': id,
       'titulo': titulo,
       'cuerpo': cuerpo,
@@ -614,7 +622,7 @@ void main() {
       expect(notif.programados, isEmpty);
     });
 
-    testWidgets('la campanita silencia todas las notificaciones y se ve gris', (
+    testWidgets('la campanita silencia solo al paciente activo y se ve gris', (
       tester,
     ) async {
       final (base, _) = await _baseDatos();
@@ -641,9 +649,14 @@ void main() {
       await tester.tap(find.byKey(const Key('campanitaSilencio')));
       await tester.pumpAndSettle();
 
-      expect(notif.canceladasTodas, 1);
+      // Se cancelan los avisos de ese paciente, no todos los del teléfono.
+      expect(notif.canceladasTodas, 0);
+      expect(notif.cancelados, contains(ServicioNotificaciones.idSeguro(id)));
       expect(find.byIcon(Icons.notifications_off), findsOneWidget);
       expect(find.byIcon(Icons.notifications_active), findsNothing);
+      // El silencio general sigue apagado; solo se guardó el del paciente.
+      expect(await SilencioAvisos.global(), isFalse);
+      expect(await SilencioAvisos.pacientes(), {idPaciente});
 
       final opacidad = tester.widget<Opacity>(
         find
@@ -656,48 +669,75 @@ void main() {
       expect(opacidad.opacity, 0.55);
     });
 
+    testWidgets('al reactivar la campanita vuelven los avisos del paciente', (
+      tester,
+    ) async {
+      final (base, _) = await _baseDatos();
+      final idPaciente = await _sembrarPaciente(base);
+      final notif = _FakeNotificaciones();
+      // Una sola vez y vigente: los vencidos ya no se reprograman.
+      final fecha = DateTime.now().add(const Duration(days: 2));
+      final id = await RepositorioRecordatorios(base).agregarRecordatorio(
+        idPaciente,
+        Recordatorio(
+          id: '',
+          pacienteId: idPaciente,
+          tipo: 'medicamento',
+          titulo: 'Tomar jarabe',
+          fechaHora: fecha,
+          activo: true,
+          creadoEn: fecha,
+        ),
+      );
+      await _montar(tester, _pantalla(base, notif));
+
+      await tester.tap(find.byKey(const Key('campanitaSilencio')));
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.notifications_off), findsOneWidget);
+      expect(notif.programados, isEmpty);
+
+      await tester.tap(find.byKey(const Key('campanitaSilencio')));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.notifications_active), findsOneWidget);
+      expect(find.byIcon(Icons.notifications_off), findsNothing);
+      expect(await SilencioAvisos.pacientes(), isEmpty);
+      expect(notif.programados, hasLength(1));
+      expect(
+        notif.programados.single['id'],
+        ServicioNotificaciones.idSeguro(id),
+      );
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+      expect(find.text('Avisos de Paciente reactivados'), findsOneWidget);
+    });
+
     testWidgets(
-      'al reactivar la campanita vuelve a la configuración original',
+      'con el silencio general activo la campanita no cambia nada y avisa dónde quitarlo',
       (tester) async {
         final (base, _) = await _baseDatos();
-        final idPaciente = await _sembrarPaciente(base);
+        await _sembrarPaciente(base);
         final notif = _FakeNotificaciones();
-        // Una sola vez y vigente: los vencidos ya no se reprograman.
-        final fecha = DateTime.now().add(const Duration(days: 2));
-        final id = await RepositorioRecordatorios(base).agregarRecordatorio(
-          idPaciente,
-          Recordatorio(
-            id: '',
-            pacienteId: idPaciente,
-            tipo: 'medicamento',
-            titulo: 'Tomar jarabe',
-            fechaHora: fecha,
-            activo: true,
-            creadoEn: fecha,
-          ),
-        );
         await _montar(tester, _pantalla(base, notif));
-
-        await tester.tap(find.byKey(const Key('campanitaSilencio')));
+        SharedPreferences.setMockInitialValues({
+          SilencioAvisos.claveGlobal: true,
+        });
+        await tester.pumpWidget(_pantalla(base, notif));
         await tester.pumpAndSettle();
-        expect(notif.canceladasTodas, 1);
+
+        // La campanita se ve apagada porque todo está silenciado.
         expect(find.byIcon(Icons.notifications_off), findsOneWidget);
 
         await tester.tap(find.byKey(const Key('campanitaSilencio')));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.notifications_active), findsOneWidget);
-        expect(find.byIcon(Icons.notifications_off), findsNothing);
-        expect(notif.canceladasTodas, 2);
-        expect(notif.programados, hasLength(1));
         expect(
-          notif.programados.single['id'],
-          ServicioNotificaciones.idSeguro(id),
+          find.textContaining('Todos los avisos están silenciados'),
+          findsOneWidget,
         );
-
-        await tester.pump(const Duration(seconds: 5));
-        await tester.pumpAndSettle();
-        expect(find.text('Notificaciones reactivadas'), findsOneWidget);
+        expect(await SilencioAvisos.pacientes(), isEmpty);
+        expect(notif.canceladasTodas, 0);
       },
     );
   });
