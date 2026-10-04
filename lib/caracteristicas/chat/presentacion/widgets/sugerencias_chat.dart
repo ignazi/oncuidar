@@ -106,12 +106,14 @@ class PreguntasSugeridas extends StatelessWidget {
                     color: Paleta.doradoOscuro,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    'Ver todas las preguntas frecuentes',
-                    style: GoogleFonts.nunito(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Paleta.doradoOscuro,
+                  Flexible(
+                    child: Text(
+                      'Ver todas las preguntas frecuentes',
+                      style: GoogleFonts.nunito(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Paleta.doradoOscuro,
+                      ),
                     ),
                   ),
                 ],

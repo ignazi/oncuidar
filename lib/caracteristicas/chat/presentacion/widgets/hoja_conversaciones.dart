@@ -199,9 +199,10 @@ class _HojaConversacionesState extends ConsumerState<_HojaConversaciones> {
                   height: 120,
                   child: Center(child: CircularProgressIndicator()),
                 ),
-                error: (_, _) => _estadoError(),
+                // Desplazables: con texto grande no deben desbordar la hoja.
+                error: (_, _) => SingleChildScrollView(child: _estadoError()),
                 data: (conversaciones) => conversaciones.isEmpty
-                    ? _estadoVacio()
+                    ? SingleChildScrollView(child: _estadoVacio())
                     : _listaConversaciones(conversaciones),
               ),
             ),

@@ -593,20 +593,24 @@ class _BotonAccion extends StatelessWidget {
               : null,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icono, size: 17, color: colorTexto),
-            const SizedBox(width: 6),
-            Text(
-              etiqueta,
-              style: GoogleFonts.nunito(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: colorTexto,
+        // Con texto grande la fila se reduce en vez de desbordar.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icono, size: 17, color: colorTexto),
+              const SizedBox(width: 6),
+              Text(
+                etiqueta,
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: colorTexto,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

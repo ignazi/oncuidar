@@ -127,14 +127,18 @@ class TarjetaRecordatorio extends StatelessWidget {
                         color: Paleta.textoSecundario,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        r.esRecurrente
-                            ? hora12(r.fechaHora)
-                            : '${fechacorta(r.fechaHora)} · ${hora12(r.fechaHora)}',
-                        style: GoogleFonts.nunito(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Paleta.textoSecundario,
+                      Flexible(
+                        child: Text(
+                          r.esRecurrente
+                              ? hora12(r.fechaHora)
+                              : '${fechacorta(r.fechaHora)} · ${hora12(r.fechaHora)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.nunito(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Paleta.textoSecundario,
+                          ),
                         ),
                       ),
                     ],

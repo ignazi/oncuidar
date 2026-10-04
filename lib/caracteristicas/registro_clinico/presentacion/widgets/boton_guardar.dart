@@ -33,34 +33,38 @@ class BotonGuardar extends StatelessWidget {
           onTap: guardando ? null : onPressed,
           borderRadius: BorderRadius.circular(16),
           child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (guardando)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
+            // Con texto grande la fila se reduce en vez de desbordar.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (guardando)
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  else
+                    const Icon(Icons.save, size: 18, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    guardando
+                        ? 'Guardando…'
+                        : (esEdicion
+                              ? 'Actualizar registro'
+                              : 'Guardar registro'),
+                    style: GoogleFonts.nunito(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
                     ),
-                  )
-                else
-                  const Icon(Icons.save, size: 18, color: Colors.white),
-                const SizedBox(width: 8),
-                Text(
-                  guardando
-                      ? 'Guardando…'
-                      : (esEdicion
-                            ? 'Actualizar registro'
-                            : 'Guardar registro'),
-                  style: GoogleFonts.nunito(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
