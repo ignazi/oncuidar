@@ -149,7 +149,7 @@ class _SplashState extends ConsumerState<Splash>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Paleta.doradoOscuro,
+                Paleta.doradoRelleno,
                 Paleta.doradoPrincipal,
                 Paleta.doradoClaro,
               ],

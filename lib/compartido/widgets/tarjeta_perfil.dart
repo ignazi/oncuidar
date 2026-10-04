@@ -72,11 +72,7 @@ class CabeceraDorada extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Paleta.doradoOscuro,
-            Paleta.doradoPrincipal,
-            Paleta.doradoMedio,
-          ],
+          colors: Paleta.degradadoBanner,
         ),
       ),
       child: Row(

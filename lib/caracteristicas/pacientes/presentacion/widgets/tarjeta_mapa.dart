@@ -56,7 +56,7 @@ class TarjetaMapa extends StatelessWidget {
                             end: Alignment.bottomRight,
                             colors: [
                               Paleta.doradoPrincipal,
-                              Paleta.doradoOscuro,
+                              Paleta.doradoRelleno,
                             ],
                           ),
                           borderRadius: BorderRadius.circular(20),

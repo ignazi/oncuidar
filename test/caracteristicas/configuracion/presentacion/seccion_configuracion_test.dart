@@ -5,6 +5,7 @@ import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart
 import 'package:oncuidar/caracteristicas/configuracion/dominio/modo_tema.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/seccion_configuracion.dart';
+import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/tarjeta_configuracion.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -100,5 +101,22 @@ void main() {
       find.byKey(const Key('interruptorSilencio')),
     );
     expect(interruptor.value, isTrue);
+  });
+
+  testWidgets('la tarjeta del perfil abre los ajustes en una hoja', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: Scaffold(body: TarjetaConfiguracion())),
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('abrirConfiguracion')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('hojaConfiguracion')), findsOneWidget);
+    expect(find.byKey(const Key('modo_oscuro')), findsOneWidget);
+    expect(find.byKey(const Key('interruptorSilencio')), findsOneWidget);
   });
 }

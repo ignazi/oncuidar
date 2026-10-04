@@ -245,6 +245,18 @@ final _casos =
           await t.tap(find.text('Mi perfil'));
           await t.pumpAndSettle();
           await _alFinal(t);
+          await _verificar(t, 'mi perfil (final)');
+          final abrir = find.byKey(const Key('abrirConfiguracion'));
+          await t.ensureVisible(abrir);
+          await t.pumpAndSettle();
+          await t.tap(abrir);
+          await t.pumpAndSettle();
+          await _verificar(t, 'hoja de configuración');
+          await t.drag(
+            find.byType(SingleChildScrollView).last,
+            const Offset(0, -2000),
+          );
+          await t.pumpAndSettle();
         },
       ),
       (

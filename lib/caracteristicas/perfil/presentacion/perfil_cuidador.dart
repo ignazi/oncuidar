@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
-import 'package:oncuidar/caracteristicas/configuracion/presentacion/seccion_configuracion.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/proveedores_pacientes.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/proveedores_perfil.dart';
 import 'package:oncuidar/caracteristicas/perfil/datos/repositorio_cuidador.dart';
@@ -15,6 +14,7 @@ import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/dialogo_cor
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/dialogo_editar_cuidador.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/mensaje_error_datos.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/pie_version.dart';
+import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/tarjeta_configuracion.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/tarjeta_perfil_cuidador.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -135,7 +135,7 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
         else ...[
           _tarjetaPerfil(),
           const SizedBox(height: 16),
-          const SeccionConfiguracion(),
+          const TarjetaConfiguracion(),
           const SizedBox(height: 28),
           const PieVersion(),
           const SizedBox(height: 8),

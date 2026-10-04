@@ -27,10 +27,20 @@ void main() {
     expect(Paleta.usar(coloresOscuros), isFalse);
   });
 
-  test('el relleno dorado bajo texto blanco no cambia con el modo', () {
+  test('en oscuro, los rellenos bajo texto blanco son más profundos', () {
     final claro = Paleta.doradoRelleno;
+    final bannerClaro = Paleta.degradadoBanner;
     Paleta.usar(coloresOscuros);
-    expect(Paleta.doradoRelleno, claro);
+    expect(
+      Paleta.doradoRelleno.computeLuminance(),
+      lessThan(claro.computeLuminance()),
+    );
+    for (final (i, color) in Paleta.degradadoBanner.indexed) {
+      expect(
+        color.computeLuminance(),
+        lessThan(bannerClaro[i].computeLuminance()),
+      );
+    }
   });
 
   // Con binding de widgets: Tema usa Google Fonts.

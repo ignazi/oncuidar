@@ -79,7 +79,7 @@ class _HojaRenombrarConversacionState extends State<HojaRenombrarConversacion> {
                             end: Alignment.bottomRight,
                             colors: [
                               Paleta.doradoPrincipal,
-                              Paleta.doradoOscuro,
+                              Paleta.doradoRelleno,
                             ],
                           ),
                           shape: BoxShape.circle,

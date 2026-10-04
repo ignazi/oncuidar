@@ -9,7 +9,105 @@ import 'package:oncuidar/caracteristicas/configuracion/dominio/modo_tema.dart';
 import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/caracteristicas/recordatorios/presentacion/controlador_recordatorios.dart';
 
-/// Ajustes de la app dentro de «Mi perfil»: apariencia, texto y avisos.
+/// Abre los ajustes en una hoja inferior, como «Mis conversaciones».
+Future<void> mostrarHojaConfiguracion(BuildContext context) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Paleta.crema,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (contexto) => SafeArea(
+      key: const Key('hojaConfiguracion'),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(contexto).size.height * 0.88,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12),
+              decoration: BoxDecoration(
+                color: Paleta.bordeTarjeta,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const _EncabezadoHoja(),
+            const Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20, 4, 20, 20),
+                child: SeccionConfiguracion(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _EncabezadoHoja extends StatelessWidget {
+  const _EncabezadoHoja();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 8, 12),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Paleta.doradoPrincipal, Paleta.doradoRelleno],
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.tune_rounded, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Configuración de la app',
+                  style: GoogleFonts.nunito(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Paleta.textoPrincipal,
+                  ),
+                ),
+                Text(
+                  'Ajusta OnCuidar a tu gusto',
+                  style: GoogleFonts.nunito(
+                    fontSize: 12.5,
+                    color: Paleta.textoSecundario,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            key: const Key('cerrarConfiguracion'),
+            tooltip: 'Cerrar',
+            onPressed: () => Navigator.of(context).pop(),
+            icon: Icon(Icons.close_rounded, color: Paleta.textoSecundario),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Ajustes de la app: apariencia, tamaño de texto y silencio de los avisos.
 class SeccionConfiguracion extends ConsumerStatefulWidget {
   const SeccionConfiguracion({super.key});
 
@@ -37,6 +135,12 @@ class _SeccionConfiguracionState extends ConsumerState<SeccionConfiguracion> {
     await ref.read(controladorRecordatoriosProvider).fijarSilencio(silenciar);
   }
 
+  static const _iconosModo = {
+    ModoTema.sistema: Icons.brightness_auto_rounded,
+    ModoTema.claro: Icons.light_mode_rounded,
+    ModoTema.oscuro: Icons.dark_mode_rounded,
+  };
+
   @override
   Widget build(BuildContext context) {
     final escala = ref.watch(escalaTextoProvider);
@@ -45,88 +149,96 @@ class _SeccionConfiguracionState extends ConsumerState<SeccionConfiguracion> {
       key: const Key('seccionConfiguracion'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 12),
-          child: Text(
-            'Configuración de la app',
-            style: GoogleFonts.nunito(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: Paleta.textoPrincipal,
-            ),
+        _Tarjeta(
+          icono: Icons.palette_outlined,
+          titulo: 'Apariencia',
+          descripcion: 'Automático sigue el modo claro u oscuro del teléfono.',
+          child: Row(
+            children: [
+              for (final opcion in ModoTema.values) ...[
+                if (opcion != ModoTema.values.first) const SizedBox(width: 8),
+                Expanded(
+                  child: _Opcion(
+                    clave: Key('modo_${opcion.name}'),
+                    etiqueta: opcion.etiqueta,
+                    activa: opcion == modo,
+                    alPulsar: () => unawaited(
+                      ref.read(modoTemaProvider.notifier).fijar(opcion),
+                    ),
+                    visual: (color) =>
+                        Icon(_iconosModo[opcion], color: color, size: 24),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
-        const _TituloSeccion('Apariencia'),
+        const SizedBox(height: 14),
         _Tarjeta(
+          icono: Icons.text_fields_rounded,
+          titulo: 'Tamaño del texto',
+          descripcion: 'Se aplica a toda la app y se suma al del teléfono.',
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              Row(
                 children: [
-                  for (final opcion in ModoTema.values)
-                    _Opcion(
-                      clave: Key('modo_${opcion.name}'),
-                      etiqueta: opcion.etiqueta,
-                      activa: opcion == modo,
-                      alPulsar: () => unawaited(
-                        ref.read(modoTemaProvider.notifier).fijar(opcion),
+                  for (final (i, opcion) in EscalaTexto.values.indexed) ...[
+                    if (i > 0) const SizedBox(width: 8),
+                    Expanded(
+                      child: _Opcion(
+                        clave: Key('escala_${opcion.name}'),
+                        etiqueta: opcion.etiqueta,
+                        activa: opcion == escala,
+                        alPulsar: () => unawaited(
+                          ref.read(escalaTextoProvider.notifier).fijar(opcion),
+                        ),
+                        // La «A» crece con cada opción, sin depender de la escala vigente.
+                        visual: (color) => Text(
+                          'A',
+                          textScaler: TextScaler.noScaling,
+                          style: GoogleFonts.nunito(
+                            fontSize: 16 + i * 4.0,
+                            height: 1,
+                            fontWeight: FontWeight.w800,
+                            color: color,
+                          ),
+                        ),
                       ),
                     ),
+                  ],
                 ],
               ),
               const SizedBox(height: 12),
-              Text(
-                'Automático sigue el modo claro u oscuro del teléfono.',
-                style: GoogleFonts.nunito(
-                  fontSize: 12.5,
-                  color: Paleta.textoSecundario,
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Paleta.fondoEntrada,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Así se verá el texto en toda la app.',
+                  key: const Key('vistaPreviaTexto'),
+                  style: GoogleFonts.nunito(
+                    fontSize: 14,
+                    color: Paleta.textoPrincipal,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
-        const _TituloSeccion('Tamaño del texto'),
+        const SizedBox(height: 14),
         _Tarjeta(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final opcion in EscalaTexto.values)
-                    _Opcion(
-                      clave: Key('escala_${opcion.name}'),
-                      etiqueta: opcion.etiqueta,
-                      activa: opcion == escala,
-                      alPulsar: () => unawaited(
-                        ref.read(escalaTextoProvider.notifier).fijar(opcion),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'Así se verá el texto en toda la app.',
-                key: const Key('vistaPreviaTexto'),
-                style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  color: Paleta.textoPrincipal,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        const _TituloSeccion('Notificaciones'),
-        _Tarjeta(
+          icono: _silenciadas
+              ? Icons.notifications_off_outlined
+              : Icons.notifications_none_rounded,
+          titulo: 'Notificaciones',
           child: SwitchListTile(
             key: const Key('interruptorSilencio'),
             contentPadding: EdgeInsets.zero,
-            activeThumbColor: Paleta.doradoPrincipal,
+            activeThumbColor: Colors.white,
+            activeTrackColor: Paleta.doradoPrincipal,
             title: Text(
               'Silenciar avisos',
               style: GoogleFonts.nunito(
@@ -151,80 +263,151 @@ class _SeccionConfiguracionState extends ConsumerState<SeccionConfiguracion> {
   }
 }
 
-class _TituloSeccion extends StatelessWidget {
-  const _TituloSeccion(this.texto);
+/// Tarjeta de un grupo de ajustes con ícono, título y descripción.
+class _Tarjeta extends StatelessWidget {
+  const _Tarjeta({
+    required this.icono,
+    required this.titulo,
+    required this.child,
+    this.descripcion,
+  });
 
-  final String texto;
+  final IconData icono;
+  final String titulo;
+  final String? descripcion;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        texto,
-        style: GoogleFonts.nunito(
-          fontSize: 13,
-          fontWeight: FontWeight.w800,
-          color: Paleta.textoSecundario,
+    final descripcion = this.descripcion;
+    // Material (no DecoratedBox) para que el SwitchListTile pinte sobre ella.
+    return Material(
+      color: Paleta.tarjeta,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: Paleta.bordeTarjeta),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Paleta.doradoClaro,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icono, size: 18, color: Paleta.doradoOscuro),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    titulo,
+                    style: GoogleFonts.nunito(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: Paleta.textoPrincipal,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (descripcion != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                descripcion,
+                style: GoogleFonts.nunito(
+                  fontSize: 12.5,
+                  color: Paleta.textoSecundario,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            child,
+          ],
         ),
       ),
     );
   }
 }
 
-class _Tarjeta extends StatelessWidget {
-  const _Tarjeta({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    // Material (no DecoratedBox) para que el SwitchListTile pinte sobre ella.
-    return Material(
-      color: Paleta.tarjeta,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: Paleta.bordeTarjeta),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SizedBox(width: double.infinity, child: child),
-      ),
-    );
-  }
-}
-
+/// Opción seleccionable con un dibujo arriba y su nombre abajo.
 class _Opcion extends StatelessWidget {
   const _Opcion({
     required this.clave,
     required this.etiqueta,
     required this.activa,
     required this.alPulsar,
+    required this.visual,
   });
 
   final Key clave;
   final String etiqueta;
   final bool activa;
   final VoidCallback alPulsar;
+  final Widget Function(Color color) visual;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      key: clave,
-      onTap: alPulsar,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          color: activa ? Paleta.doradoPrincipal : Paleta.doradoClaro,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          etiqueta,
-          style: GoogleFonts.nunito(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: activa ? Colors.white : Paleta.doradoOscuro,
+    final color = activa ? Colors.white : Paleta.doradoOscuro;
+    return Semantics(
+      button: true,
+      selected: activa,
+      label: etiqueta,
+      child: GestureDetector(
+        key: clave,
+        onTap: alPulsar,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          height: 74,
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          decoration: BoxDecoration(
+            gradient: activa
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Paleta.doradoPrincipal, Paleta.doradoRelleno],
+                  )
+                : null,
+            color: activa ? null : Paleta.fondoEntrada,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: activa ? Colors.transparent : Paleta.bordeTarjeta,
+            ),
+            boxShadow: activa
+                ? [
+                    BoxShadow(
+                      color: Paleta.doradoRelleno.withValues(alpha: 0.30),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 26, child: Center(child: visual(color))),
+              const SizedBox(height: 6),
+              // Con texto grande la etiqueta se reduce en vez de cortarse.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  etiqueta,
+                  maxLines: 1,
+                  style: GoogleFonts.nunito(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: activa ? Colors.white : Paleta.textoPrincipal,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

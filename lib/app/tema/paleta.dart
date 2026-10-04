@@ -73,8 +73,9 @@ const coloresClaros = ColoresApp(
 /// Fondos cálidos casi negros; el dorado se aclara para leerse sobre ellos.
 const coloresOscuros = ColoresApp(
   oscuro: true,
-  doradoPrincipal: Color(0xFFD99A16),
-  doradoMedio: Color(0xFFE8A820),
+  // Dorado algo más apagado: sobre fondo oscuro el original encandila.
+  doradoPrincipal: Color(0xFFC48A14),
+  doradoMedio: Color(0xFFCF961C),
   doradoClaro: Color(0xFF3A2E14),
   doradoOscuro: Color(0xFFF0B843),
   crema: Color(0xFF15110B),
@@ -114,8 +115,14 @@ class Paleta {
   static Color get doradoOscuro => _actual.doradoOscuro;
   static Color get crema => _actual.crema;
 
-  /// Dorado oscuro fijo para rellenos con texto blanco encima.
-  static Color get doradoRelleno => const Color(0xFFC08808);
+  /// Dorado oscuro para rellenos con texto blanco encima.
+  static Color get doradoRelleno =>
+      esOscura ? const Color(0xFF9C6C0E) : const Color(0xFFC08808);
+
+  /// Degradado de las cabeceras de tarjeta con texto blanco: ámbar profundo en oscuro.
+  static List<Color> get degradadoBanner => esOscura
+      ? const [Color(0xFF6E4A08), Color(0xFF8A5E0C), Color(0xFF9E6C10)]
+      : [doradoRelleno, doradoPrincipal, doradoMedio];
 
   /// Fondo, borde y texto de controles deshabilitados o pausados.
   static Color get deshabilitado =>
@@ -130,7 +137,7 @@ class Paleta {
     begin: const Alignment(-0.6, -0.8),
     end: Alignment.bottomRight,
     colors: esOscura
-        ? const [Color(0xFFC98C12), Color(0xFFB57D0C), Color(0xFF94650A)]
+        ? const [Color(0xFFA87410), Color(0xFF8E620C), Color(0xFF6E4A08)]
         : [doradoMedio, doradoPrincipal, doradoOscuro],
   );
 
