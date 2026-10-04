@@ -1,0 +1,90 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/configuracion/dominio/escala_texto.dart';
+import 'package:oncuidar/caracteristicas/configuracion/presentacion/pantalla_configuracion.dart';
+import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
+import 'package:oncuidar/nucleo/proveedores.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../ayudas/recordatorios.dart';
+
+Future<(ProviderContainer, NotificacionesFalsas)> _montar(
+  WidgetTester tester,
+) async {
+  final (base, _) = await baseRecordatorios();
+  final notif = NotificacionesFalsas();
+  final contenedor = ProviderContainer(
+    overrides: [
+      baseDatosSeguraProvider.overrideWith((_) => base),
+      servicioNotificacionesProvider.overrideWithValue(notif),
+    ],
+  );
+  addTearDown(contenedor.dispose);
+  final router = GoRouter(
+    initialLocation: '/configuracion',
+    routes: [
+      GoRoute(
+        path: '/configuracion',
+        builder: (c, s) => const PantallaConfiguracion(),
+      ),
+    ],
+  );
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: contenedor,
+      child: MaterialApp.router(routerConfig: router),
+    ),
+  );
+  await tester.pumpAndSettle();
+  return (contenedor, notif);
+}
+
+void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  testWidgets('elegir un tamaño lo aplica y lo guarda', (tester) async {
+    final (contenedor, _) = await _montar(tester);
+    expect(contenedor.read(escalaTextoProvider), EscalaTexto.normal);
+
+    await tester.tap(find.byKey(const Key('escala_grande')));
+    await tester.pumpAndSettle();
+
+    expect(contenedor.read(escalaTextoProvider), EscalaTexto.grande);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(claveEscalaTexto), 'grande');
+  });
+
+  testWidgets('el tamaño guardado se restaura al abrir la app', (tester) async {
+    SharedPreferences.setMockInitialValues({claveEscalaTexto: 'muyGrande'});
+    final (contenedor, _) = await _montar(tester);
+
+    expect(contenedor.read(escalaTextoProvider), EscalaTexto.muyGrande);
+  });
+
+  testWidgets('silenciar avisos cancela los programados y se recuerda', (
+    tester,
+  ) async {
+    final (_, notif) = await _montar(tester);
+
+    await tester.tap(find.byKey(const Key('interruptorSilencio')));
+    await tester.pumpAndSettle();
+
+    expect(notif.canceladasTodas, 1);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getBool('notificaciones_silenciadas'), isTrue);
+  });
+
+  testWidgets('el interruptor refleja el silencio ya guardado', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'notificaciones_silenciadas': true,
+    });
+    await _montar(tester);
+
+    final interruptor = tester.widget<SwitchListTile>(
+      find.byKey(const Key('interruptorSilencio')),
+    );
+    expect(interruptor.value, isTrue);
+  });
+}

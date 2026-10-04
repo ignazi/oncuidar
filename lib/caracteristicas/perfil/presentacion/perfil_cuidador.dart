@@ -14,6 +14,7 @@ import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/dialogo_cor
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/dialogo_editar_cuidador.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/mensaje_error_datos.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/pie_version.dart';
+import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/tarjeta_configuracion.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/tarjeta_perfil_cuidador.dart';
 import 'package:oncuidar/compartido/widgets/dialogo_confirmacion.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -133,6 +134,8 @@ class _PerfilCuidadorState extends ConsumerState<PerfilCuidador> {
           MensajeErrorDatos(alReintentar: _cargar)
         else ...[
           _tarjetaPerfil(),
+          const SizedBox(height: 16),
+          const TarjetaConfiguracion(),
           const SizedBox(height: 28),
           const PieVersion(),
           const SizedBox(height: 8),

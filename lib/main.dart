@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:oncuidar/app/enrutador/destino_aviso.dart';
 import 'package:oncuidar/app/enrutador/enrutador.dart';
 import 'package:oncuidar/app/tema/tema.dart';
+import 'package:oncuidar/caracteristicas/configuracion/presentacion/proveedores_configuracion.dart';
 import 'package:oncuidar/firebase_options.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 
@@ -69,18 +70,27 @@ class _OncuidarAppState extends ConsumerState<OncuidarApp> {
   Widget build(BuildContext context) {
     final usuario = ref.watch(estadoAutenticacionProvider).value;
     final desbloqueado = ref.watch(bloqueoCifradoProvider);
+    final escalaTexto = ref.watch(escalaTextoProvider).factor;
     if (usuario != null) ref.watch(orquestadorSincronizacionProvider);
     return MaterialApp.router(
       title: 'Oncuidar',
       debugShowCheckedModeBanner: false,
       theme: Tema.obtener(),
       routerConfig: router,
-      builder: (context, child) => Stack(
-        children: [
-          child ?? const SizedBox.shrink(),
-          if (usuario != null && !desbloqueado)
-            const Positioned.fill(child: _GateClave()),
-        ],
+      builder: (context, child) => MediaQuery(
+        // La elección del cuidador se suma al tamaño de texto del sistema.
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(
+            MediaQuery.textScalerOf(context).scale(1) * escalaTexto,
+          ),
+        ),
+        child: Stack(
+          children: [
+            child ?? const SizedBox.shrink(),
+            if (usuario != null && !desbloqueado)
+              const Positioned.fill(child: _GateClave()),
+          ],
+        ),
       ),
     );
   }
