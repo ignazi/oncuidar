@@ -21,7 +21,7 @@ class IconoDorado extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Icon(icono, size: 17, color: Colors.white),
+      child: Icon(icono, size: 17, color: Paleta.sobreDorado),
     );
   }
 }

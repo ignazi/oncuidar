@@ -30,7 +30,7 @@ class TituloSeccionRegistro extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icono, size: 15, color: Colors.white),
+          child: Icon(icono, size: 15, color: Paleta.sobreDorado),
         ),
         const SizedBox(width: 8),
         Expanded(

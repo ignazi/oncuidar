@@ -279,7 +279,7 @@ class _SelectorMultiSintomaState extends State<SelectorMultiSintoma> {
               },
               style: FilledButton.styleFrom(
                 backgroundColor: Paleta.doradoPrincipal,
-                foregroundColor: Colors.white,
+                foregroundColor: Paleta.sobreDorado,
                 minimumSize: const Size.fromHeight(44),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

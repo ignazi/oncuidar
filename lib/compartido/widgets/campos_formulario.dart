@@ -51,10 +51,10 @@ class TarjetaSeccion extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.22),
+                    color: Colors.white.withValues(alpha: 0.35),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(icono, color: Colors.white, size: 26),
+                  child: Icon(icono, color: Paleta.sobreDorado, size: 26),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -64,7 +64,7 @@ class TarjetaSeccion extends StatelessWidget {
                     style: GoogleFonts.nunito(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: Paleta.sobreDorado,
                     ),
                   ),
                 ),

@@ -64,7 +64,7 @@ class HojaDialogo extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(icono, color: Colors.white, size: 18),
+                    child: Icon(icono, color: Paleta.sobreDorado, size: 18),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
