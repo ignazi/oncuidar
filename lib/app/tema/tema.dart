@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/app/tema/transicion_fundido.dart';
 
 class Tema {
   /// Tema armado con los colores vigentes de [Paleta] (claros u oscuros).
@@ -28,22 +28,15 @@ class Tema {
         modalBackgroundColor: Paleta.tarjeta,
       ),
       dividerColor: Paleta.bordeTarjeta,
-      // Android: transición de Android 14 (la pantalla entra y la anterior se
-      // desliza y se apaga). iPhone: la de iOS, con gesto de volver. El fondo
-      // evita el destello negro entre dos pantallas.
-      pageTransitionsTheme: PageTransitionsTheme(
+      // Todas las pantallas entran con el mismo fundido suave.
+      pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(
-            backgroundColor: Paleta.crema,
-          ),
-          TargetPlatform.iOS: const CupertinoPageTransitionsBuilder(),
-          TargetPlatform.macOS: const CupertinoPageTransitionsBuilder(),
-          TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(
-            backgroundColor: Paleta.crema,
-          ),
-          TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(
-            backgroundColor: Paleta.crema,
-          ),
+          TargetPlatform.android: TransicionFundido(),
+          TargetPlatform.iOS: TransicionFundido(),
+          TargetPlatform.macOS: TransicionFundido(),
+          TargetPlatform.windows: TransicionFundido(),
+          TargetPlatform.linux: TransicionFundido(),
+          TargetPlatform.fuchsia: TransicionFundido(),
         },
       ),
       textTheme: GoogleFonts.nunitoTextTheme().apply(

@@ -14,7 +14,6 @@ class EncabezadoGradiente extends StatelessWidget {
     this.accionDerecha,
     this.logo,
     this.iconoRetroceso = Icons.home_rounded,
-    this.reservaDerecha = 0,
     this.tituloCentrado = false,
     this.alTocarLogo,
   });
@@ -32,7 +31,6 @@ class EncabezadoGradiente extends StatelessWidget {
   final Widget? accionDerecha;
   final ImageProvider? logo;
   final IconData iconoRetroceso;
-  final double reservaDerecha;
   final bool tituloCentrado;
   final VoidCallback? alTocarLogo;
 
@@ -40,10 +38,6 @@ class EncabezadoGradiente extends StatelessWidget {
   Widget build(BuildContext context) {
     final alturaBarraEstado = MediaQuery.of(context).padding.top;
     final lateral = mostrarRetroceso ? 48.0 : 20.0;
-
-    final derecha = reservaDerecha > 0
-        ? (reservaDerecha > lateral ? reservaDerecha : lateral)
-        : lateral;
 
     return SizedBox(
       height: alturaBarraEstado + alto,
@@ -68,30 +62,25 @@ class EncabezadoGradiente extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(
                 lateral,
                 alturaBarraEstado + 4,
-                derecha,
+                accionDerecha == null ? lateral : 12,
                 4,
               ),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: logo != null
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          if (alTocarLogo != null)
-                            GestureDetector(
-                              onTap: alTocarLogo,
-                              behavior: HitTestBehavior.opaque,
-                              child: _logoRedondo(),
-                            )
-                          else
-                            IgnorePointer(child: _logoRedondo()),
-                          const SizedBox(width: 10),
-                          IgnorePointer(child: _contenidoTitulo()),
-                        ],
-                      )
-                    : IgnorePointer(child: _contenidoTitulo()),
-              ),
+              // Logo y acciones en la misma fila: quedan a la misma altura.
+              child: accionDerecha == null
+                  ? FittedBox(fit: BoxFit.scaleDown, child: _izquierda())
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: _izquierda(),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        accionDerecha!,
+                      ],
+                    ),
             ),
           ),
           if (mostrarRetroceso)
@@ -114,14 +103,29 @@ class EncabezadoGradiente extends StatelessWidget {
                 ),
               ),
             ),
-          if (accionDerecha != null)
-            Positioned(
-              top: alturaBarraEstado + 26,
-              right: 12,
-              child: accionDerecha!,
-            ),
         ],
       ),
+    );
+  }
+
+  /// Logo (si hay) y título, sin las acciones de la derecha.
+  Widget _izquierda() {
+    if (logo == null) return IgnorePointer(child: _contenidoTitulo());
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (alTocarLogo != null)
+          GestureDetector(
+            onTap: alTocarLogo,
+            behavior: HitTestBehavior.opaque,
+            child: _logoRedondo(),
+          )
+        else
+          IgnorePointer(child: _logoRedondo()),
+        const SizedBox(width: 10),
+        IgnorePointer(child: _contenidoTitulo()),
+      ],
     );
   }
 

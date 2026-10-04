@@ -11,6 +11,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/presentacion/acciones_materi
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_imagen.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
+import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
 class PantallaDetalleMaterial extends ConsumerStatefulWidget {
@@ -84,17 +85,18 @@ class _PantallaDetalleMaterialState
           EncabezadoGradiente(
             titulo: 'Material educativo',
             subtitulo: materialActual?.tema,
-            reservaDerecha: 48,
-            accionDerecha: GestureDetector(
-              onTap: () =>
+            accionDerecha: BotonCircular(
+              tooltip: esFavorito
+                  ? 'Quitar de favoritos'
+                  : 'Guardar en favoritos',
+              alTocar: () =>
                   unawaited(alternarFavoritoMaterial(ref, context, widget.id)),
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  esFavorito ? Icons.bookmark : Icons.bookmark_border,
-                  color: esFavorito ? Paleta.doradoClaro : Colors.white,
-                  size: 24,
-                ),
+              hijo: Icon(
+                esFavorito ? Icons.bookmark : Icons.bookmark_border,
+                color: esFavorito
+                    ? Paleta.doradoOscuro
+                    : Paleta.textoSecundario,
+                size: 22,
               ),
             ),
           ),

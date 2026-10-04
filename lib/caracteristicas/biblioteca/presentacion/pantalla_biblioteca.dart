@@ -17,6 +17,7 @@ import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/encabez
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/tarjeta_material.dart';
 import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
+import 'package:oncuidar/compartido/widgets/insignia_conteo.dart';
 
 class BibliotecaScreen extends ConsumerStatefulWidget {
   const BibliotecaScreen({super.key, this.abrirId});
@@ -186,7 +187,6 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
             logo: const AssetImage('assets/images/OnCuidar.png'),
             tamanoTitulo: 20,
             alto: 100,
-            reservaDerecha: 104,
             alTocarLogo: () => context.go('/dashboard'),
             accionDerecha: Row(
               children: [
@@ -239,12 +239,6 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
     );
   }
 
-  /// Color del degradado de la cabecera donde queda el botón de favoritos.
-  Color _colorEncabezadoJuntoAlBoton() {
-    final colores = Paleta.degradadoCabecera.colors;
-    return Color.lerp(colores[1], colores[2], 0.55)!;
-  }
-
   Widget _botonFavoritos(int totalFavoritos) {
     return BotonCircular(
       clave: const Key('alternarFavoritos'),
@@ -264,30 +258,9 @@ class _BibliotecaScreenState extends ConsumerState<BibliotecaScreen> {
             size: 22,
           ),
           if (totalFavoritos > 0 && !_soloFavoritos)
-            // Color del degradado del encabezado en ese punto: la insignia se ve
-            // como un pedazo que le falta al botón y deja ver el fondo.
-            Positioned(
-              top: -9,
-              right: -9,
-              child: Container(
-                key: const Key('insigniaFavoritos'),
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: _colorEncabezadoJuntoAlBoton(),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '$totalFavoritos',
-                    style: GoogleFonts.nunito(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
+            InsigniaConteo.enEsquina(
+              totalFavoritos,
+              clave: const Key('insigniaFavoritos'),
             ),
         ],
       ),

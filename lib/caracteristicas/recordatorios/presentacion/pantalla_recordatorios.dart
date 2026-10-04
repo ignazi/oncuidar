@@ -66,7 +66,6 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
         subtitulo: 'Programa avisos para el cuidado',
         logo: const AssetImage('assets/images/OnCuidar.png'),
         tamanoTitulo: 20,
-        reservaDerecha: 64,
         alTocarLogo: () => context.go('/dashboard'),
         accionDerecha: BotonCircular(
           clave: const Key('campanitaSilencio'),
@@ -74,7 +73,6 @@ class _RecordatoriosScreenState extends ConsumerState<RecordatoriosScreen> {
               ? 'Activar notificaciones'
               : 'Silenciar notificaciones',
           alTocar: _alternarSilencio,
-          tamano: 44,
           hijo: Icon(
             _silenciadas ? Icons.notifications_off : Icons.notifications_active,
             color: _silenciadas ? Paleta.textoSecundario : Paleta.doradoOscuro,

@@ -314,7 +314,10 @@ void main() {
 
     // La insignia con el total toma el color del degradado del encabezado.
     final insignia = tester.widget<Container>(
-      find.byKey(const Key('insigniaFavoritos')),
+      find.descendant(
+        of: find.byKey(const Key('insigniaFavoritos')),
+        matching: find.byType(Container),
+      ),
     );
     final colores = Paleta.degradadoCabecera.colors;
     expect(

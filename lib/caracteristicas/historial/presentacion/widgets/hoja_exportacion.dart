@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/compartido/widgets/buscador.dart';
 import 'package:oncuidar/compartido/widgets/fondo_hoja.dart';
 
 /// Qué hacer con el archivo exportado.
@@ -40,7 +40,7 @@ Future<AccionExportacion?> mostrarHojaExportacion(BuildContext context) {
   );
 }
 
-/// Botón blanco «Nuevo registro» del encabezado.
+/// Botón «Nuevo registro» del encabezado: solo el ícono de Registro de la barra inferior.
 class BotonNuevoRegistro extends StatelessWidget {
   const BotonNuevoRegistro({super.key, required this.alPulsar});
 
@@ -48,42 +48,11 @@ class BotonNuevoRegistro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: 'Nuevo registro',
-      child: GestureDetector(
-        key: const Key('botonNuevoRegistro'),
-        onTap: alPulsar,
-        child: Container(
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: Paleta.tarjeta,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: Paleta.doradoOscuro.withValues(alpha: 0.25),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.add_rounded, color: Paleta.doradoOscuro, size: 17),
-              const SizedBox(width: 6),
-              Text(
-                'Nuevo registro',
-                style: GoogleFonts.nunito(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: Paleta.doradoOscuro,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return BotonCircular(
+      clave: const Key('botonNuevoRegistro'),
+      tooltip: 'Nuevo registro',
+      alTocar: alPulsar,
+      hijo: Icon(Icons.edit_note_rounded, color: Paleta.doradoOscuro, size: 26),
     );
   }
 }

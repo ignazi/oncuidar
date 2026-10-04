@@ -112,7 +112,6 @@ class _HistorialScreenState extends ConsumerState<HistorialScreen> {
         subtitulo: 'Tus registros clínicos',
         logo: const AssetImage('assets/images/OnCuidar.png'),
         tamanoTitulo: 20,
-        reservaDerecha: 140,
         alTocarLogo: () => context.go('/dashboard'),
         accionDerecha: BotonNuevoRegistro(
           alPulsar: () => context.push('/registro-clinico'),

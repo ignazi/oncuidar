@@ -151,7 +151,7 @@ class _SplashState extends ConsumerState<Splash>
               colors: [
                 Paleta.doradoRelleno,
                 Paleta.doradoPrincipal,
-                Paleta.doradoClaro,
+                coloresClaros.doradoClaro,
               ],
               stops: const [0.0, 0.5, 1.0],
             ),

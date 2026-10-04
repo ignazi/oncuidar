@@ -1,9 +1,9 @@
-import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/app/tema/repintar.dart';
 import 'package:oncuidar/app/tema/tema.dart';
+import 'package:oncuidar/app/tema/transicion_fundido.dart';
 import 'package:oncuidar/compartido/widgets/fondo_hoja.dart';
 
 /// Pinta un cuadro con el color de tarjeta vigente.
@@ -29,23 +29,18 @@ void main() {
     expect(Paleta.usar(coloresOscuros), isFalse);
   });
 
-  test('en oscuro, los rellenos bajo texto blanco son más profundos', () {
-    final claro = Paleta.doradoRelleno;
-    final bannerClaro = Paleta.degradadoBanner;
+  test('los degradados dorados son los mismos en modo claro y oscuro', () {
+    final cabecera = Paleta.degradadoCabecera.colors;
+    final banner = Paleta.degradadoBanner;
+    final relleno = Paleta.doradoRelleno;
     Paleta.usar(coloresOscuros);
-    expect(
-      Paleta.doradoRelleno.computeLuminance(),
-      lessThan(claro.computeLuminance()),
-    );
-    for (final (i, color) in Paleta.degradadoBanner.indexed) {
-      expect(
-        color.computeLuminance(),
-        lessThan(bannerClaro[i].computeLuminance()),
-      );
-    }
+    expect(Paleta.degradadoCabecera.colors, cabecera);
+    expect(Paleta.degradadoBanner, banner);
+    expect(Paleta.doradoRelleno, relleno);
+    expect(Paleta.doradoPrincipal, coloresClaros.doradoPrincipal);
+    expect(Paleta.doradoMedio, coloresClaros.doradoMedio);
   });
 
-  // Con binding de widgets: Tema usa Google Fonts.
   testWidgets('el tema sigue el brillo de la paleta', (tester) async {
     expect(Tema.obtener().brightness, Brightness.light);
     Paleta.usar(coloresOscuros);
@@ -54,18 +49,20 @@ void main() {
     expect(tema.scaffoldBackgroundColor, coloresOscuros.crema);
   });
 
-  testWidgets('las transiciones de página son las nativas de cada plataforma', (
+  testWidgets('todas las pantallas entran con el mismo fundido', (
     tester,
   ) async {
-    final tema = Tema.obtener();
-    final builders = tema.pageTransitionsTheme.builders;
+    final builders = Tema.obtener().pageTransitionsTheme.builders;
+    for (final plataforma in [
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+      TargetPlatform.macOS,
+    ]) {
+      expect(builders[plataforma], isA<TransicionFundido>());
+    }
     expect(
-      builders[TargetPlatform.android],
-      isA<FadeForwardsPageTransitionsBuilder>(),
-    );
-    expect(
-      builders[TargetPlatform.iOS],
-      isA<CupertinoPageTransitionsBuilder>(),
+      const TransicionFundido().transitionDuration,
+      TransicionFundido.duracion,
     );
   });
 

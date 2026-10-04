@@ -6,7 +6,7 @@ import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/pacientes/presentacion/gestion_pacientes.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/cerrar_sesion.dart';
 import 'package:oncuidar/caracteristicas/perfil/presentacion/perfil_cuidador.dart';
-import 'package:oncuidar/compartido/widgets/buscador.dart';
+import 'package:oncuidar/caracteristicas/perfil/presentacion/widgets/boton_salir.dart';
 import 'package:oncuidar/compartido/widgets/encabezado_gradiente.dart';
 
 class Perfil extends ConsumerStatefulWidget {
@@ -124,37 +124,20 @@ class _PerfilState extends ConsumerState<Perfil> {
             right: 0,
             child: EncabezadoGradiente(
               titulo: 'Perfiles',
-              subtitulo: 'Gestiona la información',
+              subtitulo: 'Información general',
               logo: const AssetImage('assets/images/OnCuidar.png'),
               tamanoTitulo: 20,
               alto: 100,
               alTocarLogo: () => context.go('/dashboard'),
-              reservaDerecha: 72,
-              accionDerecha: BotonCircular(
-                clave: const Key('botonCerrarSesion'),
-                tooltip: 'Cerrar sesión',
-                alTocar: _cerrandoSesion
-                    ? () {}
-                    : () => cerrarSesionConfirmando(
-                        context,
-                        ref,
-                        alCambiarEstado: (en) {
-                          if (mounted) setState(() => _cerrandoSesion = en);
-                        },
-                      ),
-                hijo: _cerrandoSesion
-                    ? Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: Paleta.doradoOscuro,
-                        ),
-                      )
-                    : Icon(
-                        Icons.logout_rounded,
-                        color: Paleta.doradoOscuro,
-                        size: 22,
-                      ),
+              accionDerecha: BotonSalir(
+                cargando: _cerrandoSesion,
+                alPulsar: () => cerrarSesionConfirmando(
+                  context,
+                  ref,
+                  alCambiarEstado: (en) {
+                    if (mounted) setState(() => _cerrandoSesion = en);
+                  },
+                ),
               ),
             ),
           ),

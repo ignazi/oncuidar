@@ -91,7 +91,6 @@ class _FaqScreenState extends State<FaqScreen> {
             logo: const AssetImage('assets/images/OnCuidar.png'),
             tamanoTitulo: 20,
             alto: 100,
-            reservaDerecha: 64,
             alTocarLogo: () => context.go('/dashboard'),
             accionDerecha: _botonBusqueda(),
           ),
