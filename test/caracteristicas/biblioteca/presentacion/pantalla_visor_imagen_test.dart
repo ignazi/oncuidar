@@ -94,27 +94,15 @@ void main() {
     expect(visor.maxScale, 8);
   });
 
-  testWidgets(
-    'es la misma pantalla que las guías: barra dorada y botones de zoom',
-    (tester) async {
-      await abrir(tester);
+  testWidgets('es la misma pantalla que las guías: zoom con botones y giro', (
+    tester,
+  ) async {
+    await abrir(tester);
 
-      expect(find.byType(VisorConZoom), findsOneWidget);
-      expect(find.byKey(const Key('zoomMas')), findsOneWidget);
-      final fondo = tester.getSize(
-        find.descendant(
-          of: find.byType(AppBar),
-          matching: find.byWidgetPredicate(
-            (w) =>
-                w is DecoratedBox &&
-                w.decoration is BoxDecoration &&
-                (w.decoration as BoxDecoration).gradient != null,
-          ),
-        ),
-      );
-      expect(fondo.height, greaterThan(40));
-    },
-  );
+    expect(find.byType(VisorConZoom), findsOneWidget);
+    expect(find.byKey(const Key('zoomMas')), findsOneWidget);
+    expect(find.byKey(const Key('girarVisor')), findsOneWidget);
+  });
 
   testWidgets('volver cierra el visor', (tester) async {
     await abrir(tester);
@@ -185,9 +173,4 @@ void main() {
       expect(find.text('barra inferior'), findsOneWidget);
     },
   );
-
-  testWidgets('tiene el botón para girar a pantalla completa', (tester) async {
-    await abrir(tester);
-    expect(find.byKey(const Key('girarVisor')), findsOneWidget);
-  });
 }

@@ -1,5 +1,7 @@
 // Ayudas compartidas por las pruebas de recordatorios y avisos locales.
 
+import 'dart:convert';
+
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
@@ -125,4 +127,37 @@ Recordatorio recordatorioDe(
     activo: activo,
     creadoEn: fecha,
   );
+}
+
+/// Documento tal como queda guardado en Firestore (con lo sensible cifrado).
+Future<Map<String, dynamic>?> docRecordatorio(
+  FakeFirebaseFirestore firestore,
+  String idPaciente,
+  String idRecordatorio,
+) async {
+  return (await firestore
+          .collection('usuarios')
+          .doc(uidRecordatorios)
+          .collection('pacientes')
+          .doc(idPaciente)
+          .collection('recordatorios')
+          .doc(idRecordatorio)
+          .get())
+      .data();
+}
+
+/// Descifra el payload programático (`datos_cifrados`) del recordatorio.
+Future<Map<String, dynamic>> payloadRecordatorio(
+  FakeFirebaseFirestore firestore,
+  String idPaciente,
+  String idRecordatorio,
+) async {
+  final datos = await docRecordatorio(firestore, idPaciente, idRecordatorio);
+  final cifrado = ServicioCifrado(clavePrueba: clavePruebaRecordatorios);
+  await cifrado.fijarClave(uidRecordatorios, clavePruebaRecordatorios);
+  final texto = await cifrado.descifrar(
+    uidRecordatorios,
+    datos!['datos_cifrados'] as String,
+  );
+  return (jsonDecode(texto) as Map<String, dynamic>).cast<String, dynamic>();
 }

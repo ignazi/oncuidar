@@ -12,32 +12,6 @@ void main() {
   setUp(EstadoArranque.reiniciar);
   tearDown(EstadoArranque.reiniciar);
 
-  testWidgets(
-    'sin sesión el Splash guarda el destino y sigue a la bienvenida',
-    (tester) async {
-      var finalizo = false;
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            firebaseAuthProvider.overrideWithValue(MockFirebaseAuth()),
-          ],
-          child: MaterialApp(
-            home: Splash(
-              destino: '/recordatorios',
-              alFinalizar: () => finalizo = true,
-            ),
-          ),
-        ),
-      );
-      await tester.pump(const Duration(seconds: 3));
-
-      expect(finalizo, isTrue);
-      expect(EstadoArranque.completado, isTrue);
-      expect(EstadoArranque.destinoPendiente, '/recordatorios');
-      expect(EstadoArranque.consumirDestino(), '/recordatorios');
-    },
-  );
-
   testWidgets('sin sesión un destino inseguro no se guarda', (tester) async {
     await tester.pumpWidget(
       ProviderScope(

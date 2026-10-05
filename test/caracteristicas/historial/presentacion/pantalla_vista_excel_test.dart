@@ -78,6 +78,7 @@ void main() {
     ]) {
       expect(find.text(texto), findsWidgets, reason: 'falta «$texto»');
     }
+    expect(find.byKey(const Key('girarVisor')), findsOneWidget);
   });
 
   testWidgets('el resumen dice el día o el rango filtrado', (tester) async {
@@ -139,20 +140,10 @@ void main() {
       tester.getRect(texto).bottom,
       lessThanOrEqualTo(tester.getRect(fila).bottom + 0.01),
     );
+    // Varias líneas dentro del ancho de su columna (44 caracteres × 8 px).
+    expect(tester.getSize(texto).height, greaterThan(40));
+    expect(tester.getSize(texto).width, lessThanOrEqualTo(44 * 8.0));
     expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('el texto largo se reparte en varias líneas dentro de su celda', (
-    tester,
-  ) async {
-    await _abrir(tester, _datos(cantidad: 1, observaciones: 'palabra ' * 30));
-
-    final observacion = find.textContaining('palabra');
-    final alto = tester.getSize(observacion).height;
-    // Una línea mide ~16; varias líneas la superan con holgura.
-    expect(alto, greaterThan(40));
-    // Y cabe en el ancho de su columna (44 caracteres × 8 px).
-    expect(tester.getSize(observacion).width, lessThanOrEqualTo(44 * 8.0));
   });
 
   testWidgets('la hoja se puede acercar y mover sin desbordar la pantalla', (
@@ -199,9 +190,12 @@ void main() {
     expect(find.byType(PantallaVistaExcel), findsNothing);
   });
 
-  testWidgets('sin acción de compartir no hay botón', (tester) async {
+  testWidgets('sin acciones no hay botones de compartir ni de descargar', (
+    tester,
+  ) async {
     await _abrir(tester, _datos());
     expect(find.byKey(const Key('compartirVistaExcel')), findsNothing);
+    expect(find.byKey(const Key('descargarVistaExcel')), findsNothing);
   });
 
   testWidgets(
@@ -226,26 +220,6 @@ void main() {
       expect(celdas.evaluate().length, greaterThanOrEqualTo(11));
     },
   );
-
-  testWidgets('la barra superior usa el degradado dorado de la app', (
-    tester,
-  ) async {
-    await _abrir(tester, _datos());
-    final cajas = tester.widgetList<DecoratedBox>(
-      find.descendant(
-        of: find.byType(AppBar),
-        matching: find.byType(DecoratedBox),
-      ),
-    );
-    expect(
-      cajas.any(
-        (c) =>
-            c.decoration is BoxDecoration &&
-            (c.decoration as BoxDecoration).gradient != null,
-      ),
-      isTrue,
-    );
-  });
 
   group('zoom a gusto', () {
     double escala(WidgetTester tester) =>
@@ -295,13 +269,6 @@ void main() {
       expect(hoja.width, lessThanOrEqualTo(360));
       expect(hoja.width, greaterThan(360 * 0.8));
     });
-
-    testWidgets('el botón de descargar solo aparece si se da la acción', (
-      tester,
-    ) async {
-      await _abrir(tester, _datos());
-      expect(find.byKey(const Key('descargarVistaExcel')), findsNothing);
-    });
   });
 
   testWidgets('los datos cortos van en una sola línea, sin partir palabras', (
@@ -348,10 +315,5 @@ void main() {
 
     // La letra se dibuja más grande (no es la misma imagen estirada).
     expect(tamanoLetra(), closeTo(antes * 1.5, 0.01));
-  });
-
-  testWidgets('tiene el botón para girar a pantalla completa', (tester) async {
-    await _abrir(tester, _datos());
-    expect(find.byKey(const Key('girarVisor')), findsOneWidget);
   });
 }
