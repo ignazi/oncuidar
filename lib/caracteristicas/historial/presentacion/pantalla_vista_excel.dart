@@ -83,15 +83,6 @@ const zoomMaximoHoja = 8.0;
 /// Escala con la que se abre la hoja: legible, y con el resto a un deslizamiento.
 const zoomInicialHoja = 0.8;
 
-/// Ancho total de la hoja (números de fila y las diez columnas).
-final _anchoHoja =
-    _anchoNumeros +
-    anchosColumnasExcel.fold<double>(0, (a, b) => a + b * _pxPorCaracter);
-
-/// Escala con la que toda la hoja cabe a lo ancho de la pantalla.
-double _escalaAjuste(Size zona) =>
-    (zona.width / _anchoHoja).clamp(zoomMinimoHoja, zoomMaximoHoja);
-
 /// Una celda de la hoja, que puede abarcar varias columnas (como las combinadas de Excel).
 class _Celda {
   const _Celda(
@@ -319,9 +310,8 @@ Color _colorEstado(String estado) => switch (estado) {
   _ => _texto,
 };
 
-/// La hoja del historial como en Excel: letras de columna, números de fila, cuadrícula
-/// y pestaña «Historial». Se acerca y aleja con los dedos, con los botones o con
-/// doble toque, y se mueve en ambas direcciones.
+/// La hoja del historial como en Excel: letras de columna, números de fila y
+/// cuadrícula. Se acerca y aleja con los dedos, con los botones o con doble toque.
 class PantallaVistaExcel extends StatelessWidget {
   const PantallaVistaExcel({
     super.key,
@@ -336,6 +326,13 @@ class PantallaVistaExcel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filas = _construirFilas(datos);
+    final anchos = _medirAnchos(filas, MediaQuery.textScalerOf(context));
+    final anchoHoja = _anchoNumeros + anchos.fold<double>(0, (a, b) => a + b);
+    // Toda la hoja a lo ancho de la pantalla.
+    double ajuste(Size zona) =>
+        (zona.width / anchoHoja).clamp(zoomMinimoHoja, zoomMaximoHoja);
+
     return Scaffold(
       backgroundColor: _fondoRotulos,
       appBar: barraVisor(
@@ -363,71 +360,87 @@ class PantallaVistaExcel extends StatelessWidget {
         claveVisor: const Key('zoomVistaExcel'),
         sobreOscuro: false,
         // Lo más lejos: toda la hoja a lo ancho, como el botón «Ajustar».
-        zoomMinimo: _escalaAjuste,
+        zoomMinimo: ajuste,
         zoomMaximo: zoomMaximoHoja,
         escalaInicial: (zona) =>
-            zoomInicialHoja.clamp(_escalaAjuste(zona), zoomMaximoHoja),
-        escalaAjuste: _escalaAjuste,
+            zoomInicialHoja.clamp(ajuste(zona), zoomMaximoHoja),
+        escalaAjuste: ajuste,
         alineacion: Alignment.topLeft,
-        constructor: (_) => _Hoja(filas: _construirFilas(datos)),
-      ),
-      bottomNavigationBar: const _PestanaHoja(),
-    );
-  }
-}
-
-/// Pestaña «Historial» al pie, como la de las hojas de Excel.
-class _PestanaHoja extends StatelessWidget {
-  const _PestanaHoja();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 38 + MediaQuery.of(context).padding.bottom,
-      padding: EdgeInsets.only(
-        left: 12,
-        bottom: MediaQuery.of(context).padding.bottom,
-      ),
-      decoration: const BoxDecoration(
-        color: _fondoRotulos,
-        border: Border(top: BorderSide(color: _rejilla)),
-      ),
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(bottom: BorderSide(color: _dorado, width: 3)),
-        ),
-        child: Text(
-          'Historial',
-          style: GoogleFonts.nunito(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            color: _texto,
-          ),
-        ),
+        // La hoja se dibuja al tamaño del zoom: el texto queda nítido.
+        constructor: (_, factor) =>
+            _Hoja(filas: filas, anchos: anchos, factor: factor),
       ),
     );
   }
 }
+
+/// Estilo del texto de una celda al tamaño [factor].
+TextStyle _estilo(_Celda c, double factor) => GoogleFonts.nunito(
+  fontSize: c.tamano * factor,
+  fontWeight: c.negrita ? FontWeight.w800 : FontWeight.w500,
+  color: c.color,
+  height: _altoLinea / c.tamano,
+);
+
+/// Celdas de datos cortos (fecha, hora, tipo, estado, signos y etiquetas): van en
+/// una sola línea y su columna se ensancha hasta que el texto quepa entero.
+bool _enUnaLinea(_Celda c) => c.desde == c.hasta && c.desde < 8;
+
+/// Ancho de cada columna: el del archivo Excel o, si un dato corto no cabe, el
+/// que necesita ese dato (con holgura por si la letra aún no terminó de cargar).
+List<double> _medirAnchos(List<_Fila> filas, TextScaler escala) {
+  final anchos = [for (final a in anchosColumnasExcel) a * _pxPorCaracter];
+  for (final fila in filas) {
+    for (final c in fila.celdas) {
+      if (!_enUnaLinea(c)) continue;
+      final medida = TextPainter(
+        text: TextSpan(text: c.texto, style: _estilo(c, 1)),
+        textDirection: TextDirection.ltr,
+        textScaler: escala,
+        maxLines: 1,
+      )..layout();
+      final necesario = medida.width * 1.15 + 2 * _margenCelda + 4;
+      medida.dispose();
+      anchos[c.desde] = math.max(anchos[c.desde], necesario);
+    }
+  }
+  return anchos;
+}
+
+/// Margen interior de las celdas.
+const _margenCelda = 7.0;
 
 class _Hoja extends StatelessWidget {
-  const _Hoja({required this.filas});
+  const _Hoja({
+    required this.filas,
+    required this.anchos,
+    required this.factor,
+  });
 
   final List<_Fila> filas;
+  final List<double> anchos;
 
-  static BorderSide get _borde => const BorderSide(color: _rejilla, width: 0.8);
+  /// Tamaño al que se dibuja la hoja (1 = normal).
+  final double factor;
+
+  static const _borde = BorderSide(color: _rejilla, width: 0.8);
 
   /// Letra de la columna: A, B, C…
   static String _letra(int i) => String.fromCharCode(65 + i);
+
+  double _ancho(int desde, int hasta) {
+    var total = 0.0;
+    for (var i = desde; i <= hasta; i++) {
+      total += anchos[i];
+    }
+    return total * factor;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       key: const Key('hojaExcel'),
-      width: _anchoHoja,
+      width: _anchoNumeros * factor + _ancho(0, anchos.length - 1),
       color: Colors.white,
       child: Column(
         key: const Key('tablaExcel'),
@@ -444,14 +457,16 @@ class _Hoja extends StatelessWidget {
     width: ancho,
     height: alto,
     alignment: Alignment.center,
-    decoration: BoxDecoration(
+    decoration: const BoxDecoration(
       color: _fondoRotulos,
       border: Border(right: _borde, bottom: _borde),
     ),
     child: Text(
       texto,
+      maxLines: 1,
+      softWrap: false,
       style: GoogleFonts.nunito(
-        fontSize: 11,
+        fontSize: 11 * factor,
         fontWeight: FontWeight.w700,
         color: _textoRotulos,
       ),
@@ -460,24 +475,24 @@ class _Hoja extends StatelessWidget {
 
   Widget _letras() => Row(
     children: [
-      _rotulo('', _anchoNumeros, _altoLetras),
-      for (var i = 0; i < anchosColumnasExcel.length; i++)
-        _rotulo(_letra(i), _anchoColumnas(i, i), _altoLetras),
+      _rotulo('', _anchoNumeros * factor, _altoLetras * factor),
+      for (var i = 0; i < anchos.length; i++)
+        _rotulo(_letra(i), _ancho(i, i), _altoLetras * factor),
     ],
   );
 
   Widget _fila(int numero, _Fila fila) {
     final porInicio = {for (final c in fila.celdas) c.desde: c};
-    final partes = <Widget>[_rotulo('$numero', _anchoNumeros)];
+    final partes = <Widget>[_rotulo('$numero', _anchoNumeros * factor)];
     var columna = 0;
-    while (columna < anchosColumnasExcel.length) {
+    while (columna < anchos.length) {
       final celda = porInicio[columna];
       if (celda == null) {
         partes.add(
           Container(
-            width: _anchoColumnas(columna, columna),
-            constraints: BoxConstraints(minHeight: fila.alto),
-            decoration: BoxDecoration(
+            width: _ancho(columna, columna),
+            constraints: BoxConstraints(minHeight: fila.alto * factor),
+            decoration: const BoxDecoration(
               border: Border(right: _borde, bottom: _borde),
             ),
           ),
@@ -499,31 +514,31 @@ class _Hoja extends StatelessWidget {
   }
 
   Widget _celda(_Celda c, double alto) {
-    final texto = Text(
-      c.texto,
-      textAlign: c.centrado ? TextAlign.center : TextAlign.left,
-      style: GoogleFonts.nunito(
-        fontSize: c.tamano,
-        fontWeight: c.negrita ? FontWeight.w800 : FontWeight.w500,
-        color: c.color,
-        height: _altoLinea / c.tamano,
-      ),
-    );
+    final unaLinea = _enUnaLinea(c);
     return Container(
-      width: _anchoColumnas(c.desde, c.hasta),
-      constraints: BoxConstraints(minHeight: alto),
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+      width: _ancho(c.desde, c.hasta),
+      constraints: BoxConstraints(minHeight: alto * factor),
+      padding: EdgeInsets.symmetric(
+        horizontal: _margenCelda * factor,
+        vertical: 5 * factor,
+      ),
       alignment: c.centrado ? Alignment.center : Alignment.centerLeft,
       decoration: BoxDecoration(
         color: c.fondo,
         // Con fondo no se ve la cuadrícula; solo la línea propia de la celda.
         border: c.fondo == null
-            ? Border(right: _borde, bottom: _borde)
+            ? const Border(right: _borde, bottom: _borde)
             : Border(
                 bottom: BorderSide(color: c.linea ?? c.fondo!, width: 0.8),
               ),
       ),
-      child: texto,
+      child: Text(
+        c.texto,
+        maxLines: unaLinea ? 1 : null,
+        softWrap: !unaLinea,
+        textAlign: c.centrado ? TextAlign.center : TextAlign.left,
+        style: _estilo(c, factor),
+      ),
     );
   }
 }

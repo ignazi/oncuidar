@@ -76,11 +76,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  double escala(WidgetTester tester) => tester
-      .widget<InteractiveViewer>(find.byType(InteractiveViewer))
-      .transformationController!
-      .value
-      .getMaxScaleOnAxis();
+  double escala(WidgetTester tester) =>
+      tester.state<EstadoVisorConZoom>(find.byType(VisorConZoom)).escalaTotal;
 
   testWidgets('se abre a pantalla completa sobre fondo oscuro', (tester) async {
     await abrir(tester);

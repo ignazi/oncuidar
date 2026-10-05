@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_vista_excel.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/compartido/widgets/visor_con_zoom.dart';
 
 // La hoja de Excel dentro de la app: misma ficha, resumen y tabla del archivo.
 
@@ -213,8 +215,8 @@ void main() {
       // Números de fila a la izquierda: el 1 es el título.
       expect(find.text('1'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
-      // Pestaña de la hoja al pie.
-      expect(find.text('Historial'), findsOneWidget);
+      // Sin pestaña al pie: no aporta nada en la app.
+      expect(find.text('Historial'), findsNothing);
       // Cada celda de la tabla tiene su propio recuadro (cuadrícula).
       final fila = find.byKey(const Key('filaRegistroExcel_0'));
       final celdas = find.descendant(
@@ -246,11 +248,8 @@ void main() {
   });
 
   group('zoom a gusto', () {
-    double escala(WidgetTester tester) => tester
-        .widget<InteractiveViewer>(find.byKey(const Key('zoomVistaExcel')))
-        .transformationController!
-        .value
-        .getMaxScaleOnAxis();
+    double escala(WidgetTester tester) =>
+        tester.state<EstadoVisorConZoom>(find.byType(VisorConZoom)).escalaTotal;
 
     testWidgets('abre con una escala legible', (tester) async {
       await _abrir(tester, _datos());
@@ -287,11 +286,9 @@ void main() {
       }
       await tester.pump();
       // Lo más lejos es ver toda la hoja a lo ancho de la pantalla.
-      final visor = tester.widget<InteractiveViewer>(
-        find.byKey(const Key('zoomVistaExcel')),
-      );
-      expect(escala(tester), closeTo(visor.minScale, 1e-9));
-      expect(visor.minScale, lessThan(0.4));
+      expect(escala(tester), lessThan(0.4));
+      final hoja = tester.getRect(find.byKey(const Key('hojaExcel')));
+      expect(hoja.width, closeTo(360, 1));
     });
 
     testWidgets('«Ajustar» deja toda la hoja a lo ancho de la pantalla', (
@@ -335,12 +332,14 @@ void main() {
 
     testWidgets('el rango de zoom del visor es amplio', (tester) async {
       await _abrir(tester, _datos());
+      // Los límites del visor son relativos a lo ya dibujado: por la escala total.
       final visor = tester.widget<InteractiveViewer>(
         find.byKey(const Key('zoomVistaExcel')),
       );
-      expect(visor.maxScale, zoomMaximoHoja);
-      expect(visor.minScale, lessThan(0.3));
-      expect(visor.maxScale, greaterThanOrEqualTo(6));
+      final dibujado = escala(tester);
+      expect(visor.maxScale * dibujado, closeTo(zoomMaximoHoja, 1e-9));
+      expect(visor.minScale * dibujado, lessThan(0.4));
+      expect(zoomMaximoHoja, greaterThanOrEqualTo(6));
     });
 
     testWidgets('el botón de descargar solo aparece si se da la acción', (
@@ -349,5 +348,51 @@ void main() {
       await _abrir(tester, _datos());
       expect(find.byKey(const Key('descargarVistaExcel')), findsNothing);
     });
+  });
+
+  testWidgets('los datos cortos van en una sola línea, sin partir palabras', (
+    tester,
+  ) async {
+    // Letra grande del teléfono: aun así «Programado» no se parte.
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(
+          size: Size(360, 800),
+          textScaler: TextScaler.linear(1.6),
+        ),
+        child: MaterialApp(home: PantallaVistaExcel(datos: _datos())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    for (final texto in ['Programado', 'Normal', 'Alerta', '38.2°C']) {
+      final celda = find.text(texto).first;
+      final parrafo = tester.renderObject<RenderParagraph>(celda);
+      final lineas = parrafo.getBoxesForSelection(
+        TextSelection(baseOffset: 0, extentOffset: texto.length),
+      );
+      final filas = lineas.map((c) => c.top.round()).toSet();
+      expect(filas, hasLength(1), reason: '«$texto» se partió en dos líneas');
+      expect(parrafo.didExceedMaxLines, isFalse, reason: '«$texto» no cabe');
+    }
+  });
+
+  testWidgets('al acercar, la hoja se redibuja más grande (texto nítido)', (
+    tester,
+  ) async {
+    await _abrir(tester, _datos());
+    double tamanoLetra() =>
+        tester.widget<Text>(find.text('HISTORIAL ONCUIDAR')).style!.fontSize!;
+    final antes = tamanoLetra();
+
+    await tester.tap(find.byKey(const Key('zoomMas')));
+    await tester.pumpAndSettle();
+
+    // La letra se dibuja más grande (no es la misma imagen estirada).
+    expect(tamanoLetra(), closeTo(antes * 1.5, 0.01));
   });
 }

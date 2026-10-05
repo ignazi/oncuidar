@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oncuidar/compartido/widgets/controles_zoom.dart';
 import 'package:oncuidar/compartido/widgets/visor_con_zoom.dart';
 
 // El pellizco con dos dedos tiene que acercar y alejar de verdad (era la queja
 // de los visores de PDF y Excel).
 
 void main() {
-  Future<TransformationController> abrir(
-    WidgetTester tester, {
-    double inicial = 1,
-  }) async {
+  double total(WidgetTester tester) =>
+      tester.state<EstadoVisorConZoom>(find.byType(VisorConZoom)).escalaTotal;
+
+  Future<void> abrir(WidgetTester tester, {double inicial = 1}) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -24,16 +23,13 @@ void main() {
             zoomMaximo: 6,
             escalaInicial: (_) => inicial,
             escalaAjuste: (_) => 1,
-            constructor: (_) =>
+            constructor: (_, factor) =>
                 Container(width: 400, height: 1600, color: Colors.teal),
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
-    return tester
-        .widget<InteractiveViewer>(find.byKey(const Key('visor')))
-        .transformationController!;
   }
 
   Future<void> pellizco(
@@ -58,55 +54,55 @@ void main() {
   }
 
   testWidgets('separar los dedos acerca', (tester) async {
-    final t = await abrir(tester);
+    await abrir(tester);
     await pellizco(tester, desde: 40, hasta: 120);
-    expect(escalaDe(t.value), greaterThan(1.5));
+    expect(total(tester), greaterThan(1.5));
   });
 
   testWidgets('juntar los dedos aleja', (tester) async {
-    final t = await abrir(tester, inicial: 2);
+    await abrir(tester, inicial: 2);
     await pellizco(tester, desde: 120, hasta: 40);
-    expect(escalaDe(t.value), lessThan(1.5));
-    expect(escalaDe(t.value), greaterThanOrEqualTo(0.5));
+    expect(total(tester), lessThan(1.5));
+    expect(total(tester), greaterThanOrEqualTo(0.5));
   });
 
   testWidgets('el pellizco no pasa del máximo', (tester) async {
-    final t = await abrir(tester);
+    await abrir(tester);
     for (var i = 0; i < 4; i++) {
       await pellizco(tester, desde: 20, hasta: 150);
     }
-    expect(escalaDe(t.value), lessThanOrEqualTo(6.0001));
+    expect(total(tester), lessThanOrEqualTo(6.0001));
   });
 
   testWidgets('doble toque acerca y otro doble toque vuelve', (tester) async {
-    final t = await abrir(tester);
+    await abrir(tester);
     final zona = find.byKey(const Key('visor'));
 
     await tester.tap(zona);
     await tester.pump(const Duration(milliseconds: 50));
     await tester.tap(zona);
     await tester.pumpAndSettle();
-    expect(escalaDe(t.value), closeTo(2, 0.05));
+    expect(total(tester), closeTo(2, 0.05));
 
     await tester.tap(zona);
     await tester.pump(const Duration(milliseconds: 50));
     await tester.tap(zona);
     await tester.pumpAndSettle();
-    expect(escalaDe(t.value), closeTo(1, 0.05));
+    expect(total(tester), closeTo(1, 0.05));
   });
 
   testWidgets('los botones acercan, alejan y ajustan', (tester) async {
-    final t = await abrir(tester);
+    await abrir(tester);
 
     await tester.tap(find.byKey(const Key('zoomMas')));
     await tester.tap(find.byKey(const Key('zoomMas')));
-    expect(escalaDe(t.value), closeTo(2.25, 0.01));
+    expect(total(tester), closeTo(2.25, 0.01));
 
     await tester.tap(find.byKey(const Key('zoomMenos')));
-    expect(escalaDe(t.value), closeTo(1.5, 0.01));
+    expect(total(tester), closeTo(1.5, 0.01));
 
     await tester.tap(find.byKey(const Key('zoomAjustar')));
-    expect(escalaDe(t.value), closeTo(1, 0.01));
+    expect(total(tester), closeTo(1, 0.01));
   });
 
   testWidgets(
@@ -122,21 +118,21 @@ void main() {
           home: Scaffold(
             body: VisorConZoom(
               claveVisor: const Key('visor'),
-              constructor: (zona) =>
-                  Container(width: zona.width, height: 250, color: Colors.teal),
+              constructor: (zona, factor) => Container(
+                width: zona.width * factor,
+                height: 250 * factor,
+                color: Colors.teal,
+              ),
             ),
           ),
         ),
       );
       await tester.pumpAndSettle();
-      final t = tester
-          .widget<InteractiveViewer>(find.byKey(const Key('visor')))
-          .transformationController!;
 
       // Arrastrar con un dedo no cambia el zoom (antes saltaba a ~3x).
       await tester.drag(find.byKey(const Key('visor')), const Offset(0, 30));
       await tester.pumpAndSettle();
-      expect(escalaDe(t.value), closeTo(1, 0.01));
+      expect(total(tester), closeTo(1, 0.01));
 
       // Acercar con los dedos y volver a alejar hasta el inicio.
       Future<void> pellizco(double desde, double hasta) async {
@@ -155,9 +151,9 @@ void main() {
       }
 
       await pellizco(40, 120);
-      expect(escalaDe(t.value), greaterThan(1.5));
+      expect(total(tester), greaterThan(1.5));
       await pellizco(120, 20);
-      expect(escalaDe(t.value), closeTo(1, 0.05));
+      expect(total(tester), closeTo(1, 0.05));
     },
   );
 }

@@ -1,13 +1,26 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:oncuidar/compartido/widgets/controles_zoom.dart';
 
 /// Escala a la que acerca el doble toque.
 const _escalaDobleToque = 2.0;
 
+/// Espera tras el último movimiento antes de redibujar nítido al nuevo tamaño.
+const _esperaNitidez = Duration(milliseconds: 300);
+
+/// Dibuja el contenido para la zona visible y un [factor] de tamaño (1 = normal).
+typedef ConstructorZoom = Widget Function(Size zona, double factor);
+
 /// Contenido con zoom a gusto: pellizco, doble toque y botones de acercar/alejar.
 ///
 /// Es el visor de todos los documentos (PDF, Excel e infografías), así el pellizco
 /// y el arrastre se sienten igual en todos.
+///
+/// Mientras los dedos se mueven el contenido solo se estira (es fluido); al soltar,
+/// el tamaño alcanzado pasa a [constructor] como `factor` para que el contenido se
+/// vuelva a dibujar a ese tamaño real. Así el texto y las páginas quedan nítidos
+/// a cualquier zoom en vez de verse como una imagen agrandada.
 class VisorConZoom extends StatefulWidget {
   const VisorConZoom({
     super.key,
@@ -23,8 +36,7 @@ class VisorConZoom extends StatefulWidget {
     this.pie,
   });
 
-  /// Dibuja el contenido según el tamaño de la zona visible.
-  final Widget Function(Size zona) constructor;
+  final ConstructorZoom constructor;
 
   /// Escala con la que se abre.
   final double Function(Size zona) escalaInicial;
@@ -41,8 +53,8 @@ class VisorConZoom extends StatefulWidget {
   final bool sobreOscuro;
   final Key? claveVisor;
 
-  /// Avisa cada vez que cambia el zoom o la posición.
-  final void Function(Matrix4 matriz, Size zona)? alMover;
+  /// Avisa cada vez que cambia la posición: matriz del visor, zona y factor dibujado.
+  final void Function(Matrix4 matriz, Size zona, double factor)? alMover;
 
   /// Lo que va fijo sobre el contenido, abajo al centro (p. ej. el número de página).
   final Widget? pie;
@@ -50,16 +62,21 @@ class VisorConZoom extends StatefulWidget {
   static double _uno(Size _) => 1;
 
   @override
-  State<VisorConZoom> createState() => _EstadoVisorConZoom();
+  State<VisorConZoom> createState() => EstadoVisorConZoom();
 }
 
-class _EstadoVisorConZoom extends State<VisorConZoom>
+class EstadoVisorConZoom extends State<VisorConZoom>
     with SingleTickerProviderStateMixin {
   TransformationController? _transformacion;
   late final AnimationController _animacion;
   Animation<Matrix4>? _animacionMatriz;
   Size _zona = Size.zero;
   Offset _puntoDobleToque = Offset.zero;
+
+  /// Tamaño al que está dibujado el contenido (el zoom ya «asentado»).
+  double _factor = 1;
+  Timer? _temporizador;
+  bool _asentando = false;
 
   @override
   void initState() {
@@ -76,59 +93,91 @@ class _EstadoVisorConZoom extends State<VisorConZoom>
 
   @override
   void dispose() {
+    _temporizador?.cancel();
     _animacion.dispose();
-    _transformacion?.removeListener(_avisarMovimiento);
+    _transformacion?.removeListener(_alCambiar);
     _transformacion?.dispose();
     super.dispose();
   }
 
-  void _avisarMovimiento() {
-    final t = _transformacion;
-    if (t != null) widget.alMover?.call(t.value, _zona);
-  }
+  /// Escala total que se ve: lo dibujado por lo estirado.
+  @visibleForTesting
+  double get escalaTotal => _factor * escalaDe(_transformacion!.value);
 
   double get _minimo => widget.zoomMinimo(_zona);
 
-  Matrix4 _matrizInicial() => escalaUniforme(widget.escalaInicial(_zona));
-
-  void _irA(Matrix4 destino, {bool animar = false}) {
+  void _alCambiar() {
     final t = _transformacion;
     if (t == null) return;
+    widget.alMover?.call(t.value, _zona, _factor);
+    if (_asentando) return;
+    // Cuando se deja de mover, se redibuja nítido al tamaño alcanzado.
+    _temporizador?.cancel();
+    _temporizador = Timer(_esperaNitidez, _asentar);
+  }
+
+  /// Pasa el estirado al tamaño real del contenido, sin mover nada en pantalla.
+  void _asentar() {
+    final t = _transformacion;
+    if (!mounted || t == null || _animacion.isAnimating) return;
+    final estirado = escalaDe(t.value);
+    if ((estirado - 1).abs() < 0.001) return;
+    final traslado = t.value.getTranslation();
+    _asentando = true;
+    setState(() {
+      _factor *= estirado;
+      t.value = Matrix4.translationValues(traslado.x, traslado.y, 0);
+    });
+    _asentando = false;
+    widget.alMover?.call(t.value, _zona, _factor);
+  }
+
+  /// Muestra la escala total [escala] desde arriba a la izquierda, ya asentada.
+  void _irAEscala(double escala) {
+    _temporizador?.cancel();
     _animacion.stop();
-    if (!animar) {
-      t.value = destino;
-      return;
-    }
-    _animacionMatriz = Matrix4Tween(
-      begin: t.value,
-      end: destino,
-    ).animate(CurvedAnimation(parent: _animacion, curve: Curves.easeOut));
-    _animacion.forward(from: 0);
+    _asentando = true;
+    setState(() {
+      _factor = escala;
+      _transformacion?.value = Matrix4.identity();
+    });
+    _asentando = false;
+    final t = _transformacion;
+    if (t != null) widget.alMover?.call(t.value, _zona, _factor);
   }
 
   Matrix4 _zoomHacia(double factor, Offset centro) => zoomAlrededor(
     _transformacion!.value,
     factor,
     centro,
-    minima: _minimo,
-    maxima: widget.zoomMaximo,
+    minima: _minimo / _factor,
+    maxima: widget.zoomMaximo / _factor,
   );
 
-  void _acercar(double factor) =>
-      _irA(_zoomHacia(factor, Offset(_zona.width / 2, _zona.height / 2)));
+  void _acercar(double factor) {
+    _animacion.stop();
+    _transformacion!.value = _zoomHacia(
+      factor,
+      Offset(_zona.width / 2, _zona.height / 2),
+    );
+    _asentar();
+  }
 
-  void _ajustar() => _irA(escalaUniforme(widget.escalaAjuste(_zona)));
+  void _animarA(Matrix4 destino) {
+    _animacionMatriz = Matrix4Tween(
+      begin: _transformacion!.value,
+      end: destino,
+    ).animate(CurvedAnimation(parent: _animacion, curve: Curves.easeOut));
+    _animacion.forward(from: 0).whenComplete(_asentar);
+  }
 
   /// Doble toque: acerca hacia el punto tocado o, si ya está cerca, vuelve al inicio.
   void _alDobleToque() {
-    final escala = escalaDe(_transformacion!.value);
+    final escala = escalaTotal;
     if (escala < _escalaDobleToque * 0.7) {
-      _irA(
-        _zoomHacia(_escalaDobleToque / escala, _puntoDobleToque),
-        animar: true,
-      );
+      _animarA(_zoomHacia(_escalaDobleToque / escala, _puntoDobleToque));
     } else {
-      _irA(_matrizInicial(), animar: true);
+      _irAEscala(widget.escalaInicial(_zona));
     }
   }
 
@@ -139,16 +188,18 @@ class _EstadoVisorConZoom extends State<VisorConZoom>
         final zonaAnterior = _zona;
         _zona = restricciones.biggest;
         if (_transformacion == null) {
-          _transformacion = TransformationController(_matrizInicial())
-            ..addListener(_avisarMovimiento);
+          _factor = widget.escalaInicial(_zona);
+          _transformacion = TransformationController()..addListener(_alCambiar);
           WidgetsBinding.instance.addPostFrameCallback(
-            (_) => mounted ? _avisarMovimiento() : null,
+            (_) => mounted
+                ? widget.alMover?.call(_transformacion!.value, _zona, _factor)
+                : null,
           );
         } else if (zonaAnterior.width != _zona.width &&
             zonaAnterior != Size.zero) {
           // Al girar el teléfono se vuelve a la escala inicial de la nueva zona.
           WidgetsBinding.instance.addPostFrameCallback(
-            (_) => mounted ? _irA(_matrizInicial()) : null,
+            (_) => mounted ? _irAEscala(widget.escalaInicial(_zona)) : null,
           );
         }
         final minimo = _minimo;
@@ -162,22 +213,23 @@ class _EstadoVisorConZoom extends State<VisorConZoom>
                   key: widget.claveVisor,
                   transformationController: _transformacion,
                   constrained: false,
-                  minScale: minimo,
-                  maxScale: widget.zoomMaximo,
+                  // Los límites son de la escala total: se dividen por lo ya dibujado.
+                  minScale: minimo / _factor,
+                  maxScale: widget.zoomMaximo / _factor,
                   // El lienzo mide al menos lo que se ve al alejar al máximo. Si el
                   // contenido es más bajo que la pantalla (un PDF apaisado, una hoja
                   // con pocas filas), el zoom de Flutter forzaba una escala mínima
                   // para llenarla: el primer toque «saltaba» y no dejaba alejar.
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      minWidth: _zona.width / minimo,
-                      minHeight: _zona.height / minimo,
+                      minWidth: _zona.width * _factor / minimo,
+                      minHeight: _zona.height * _factor / minimo,
                     ),
                     child: Align(
                       alignment: widget.alineacion,
                       widthFactor: 1,
                       heightFactor: 1,
-                      child: widget.constructor(_zona),
+                      child: widget.constructor(_zona, _factor),
                     ),
                   ),
                 ),
@@ -190,7 +242,7 @@ class _EstadoVisorConZoom extends State<VisorConZoom>
                 sobreOscuro: widget.sobreOscuro,
                 alAcercar: () => _acercar(1.5),
                 alAlejar: () => _acercar(1 / 1.5),
-                alAjustar: _ajustar,
+                alAjustar: () => _irAEscala(widget.escalaAjuste(_zona)),
               ),
             ),
             if (widget.pie != null)

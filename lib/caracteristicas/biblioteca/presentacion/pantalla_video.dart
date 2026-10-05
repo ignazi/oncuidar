@@ -195,6 +195,16 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
     setState(() {});
   }
 
+  /// Vuelve al inicio del video y lo reproduce.
+  void _reiniciar() {
+    final controlador = _controlador;
+    if (controlador == null || !_inicializado) return;
+    controlador.seekTo(Duration.zero);
+    controlador.play();
+    _reiniciarTimerControles();
+    setState(() {});
+  }
+
   void _retroceder() {
     final controlador = _controlador;
     if (controlador == null || !_inicializado) return;
@@ -441,6 +451,16 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
                       ),
                     ),
                     const Spacer(),
+                    IconButton(
+                      key: const Key('reiniciarVideo'),
+                      tooltip: 'Reiniciar',
+                      onPressed: _reiniciar,
+                      icon: const Icon(
+                        Icons.restart_alt_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
                     _chipVelocidad(controlador.value.playbackSpeed),
                     const SizedBox(width: 4),
                     IconButton(

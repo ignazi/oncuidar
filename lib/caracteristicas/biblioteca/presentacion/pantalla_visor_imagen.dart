@@ -56,10 +56,10 @@ class PantallaVisorImagen extends StatelessWidget {
       ),
       body: VisorConZoom(
         claveVisor: const Key('zoomVisorImagen'),
-        constructor: (zona) => SizedBox(
+        constructor: (zona, factor) => SizedBox(
           key: const Key('areaVisorImagen'),
-          width: zona.width,
-          height: zona.height,
+          width: zona.width * factor,
+          height: zona.height * factor,
           child: ImagenCacheada(
             url: url,
             ajuste: BoxFit.contain,

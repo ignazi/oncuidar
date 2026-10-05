@@ -305,4 +305,24 @@ void main() {
 
     await cerrar(tester);
   });
+
+  testWidgets('el botón reiniciar vuelve al inicio y reproduce', (
+    tester,
+  ) async {
+    await abrir(tester);
+    video.posicion = const Duration(seconds: 45);
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.byIcon(Icons.pause_rounded));
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('reiniciarVideo')));
+    await tester.pump();
+
+    final busqueda = video.llamadas.lastIndexOf('seek:0');
+    expect(busqueda, greaterThanOrEqualTo(0));
+    // Después de volver al inicio, se reproduce.
+    expect(video.llamadas.sublist(busqueda), contains('play'));
+
+    await cerrar(tester);
+  });
 }
