@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/chat/dominio/conversacion.dart';
@@ -20,7 +21,8 @@ void main() {
       ),
     );
 
-    expect(find.text('9:05 PM'), findsOneWidget);
+    final hora = tester.widget<Text>(find.byKey(const Key('horaMensajeChat')));
+    expect(hora.data, '9:05 PM');
   });
 
   testWidgets('sin hora de envío no muestra marca de hora', (tester) async {
@@ -145,13 +147,27 @@ void main() {
   group('hora al estilo WhatsApp', () {
     Future<void> montar(
       WidgetTester tester,
-      MensajeConversacion mensaje,
-    ) async {
-      tester.view.physicalSize = const Size(360, 800);
+      MensajeConversacion mensaje, {
+      // Alta: con texto grande el mensaje no debe quedar recortado por la
+      // pantalla de la prueba (eso falsearía las medidas).
+      Size tamano = const Size(360, 4000),
+      double escala = 1.0,
+    }) async {
+      tester.view.physicalSize = tamano;
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(_envolver(BurbujaMensaje(mensaje: mensaje)));
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, hijo) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(escala)),
+            child: hijo!,
+          ),
+          home: Scaffold(body: BurbujaMensaje(mensaje: mensaje)),
+        ),
+      );
     }
 
     MensajeConversacion mensaje(String texto, {bool usuario = true}) =>
@@ -161,16 +177,34 @@ void main() {
           enviadoEn: DateTime(2026, 10, 4, 21, 5),
         );
 
+    /// Cajas que ocupa cada línea del texto del mensaje, en pantalla.
+    List<Rect> cajasDelTexto(WidgetTester tester, String texto) {
+      final parrafo = tester.renderObject<RenderParagraph>(
+        find
+            .descendant(
+              of: find.byKey(const Key('burbujaMensajeChat')),
+              matching: find.byType(RichText),
+            )
+            .first,
+      );
+      return [
+        for (final caja in parrafo.getBoxesForSelection(
+          TextSelection(baseOffset: 0, extentOffset: texto.length),
+        ))
+          caja.toRect().shift(parrafo.localToGlobal(Offset.zero)),
+      ];
+    }
+
     testWidgets('en un mensaje corto la hora comparte la línea del texto', (
       tester,
     ) async {
       await montar(tester, mensaje('Hola'));
 
       final hora = tester.getRect(find.byKey(const Key('horaMensajeChat')));
-      final texto = tester.getRect(find.text('Hola'));
-      // Mismo renglón: la hora queda dentro de la altura del texto, a su derecha.
+      final texto = cajasDelTexto(tester, 'Hola').single;
+      // Mismo renglón: la hora queda a la derecha del texto, a su altura.
+      expect(hora.left, greaterThanOrEqualTo(texto.right));
       expect(hora.center.dy, closeTo(texto.center.dy, texto.height));
-      expect(hora.left, greaterThan(texto.right));
       // La burbuja es compacta: una sola línea más el relleno.
       final burbuja = tester.getSize(
         find.byKey(const Key('burbujaMensajeChat')),
@@ -186,51 +220,61 @@ void main() {
         await montar(tester, mensaje(largo));
 
         final hora = tester.getRect(find.byKey(const Key('horaMensajeChat')));
-        final texto = tester.getRect(find.text(largo));
-        expect(hora.top, greaterThanOrEqualTo(texto.bottom - 1));
-        // Pegada al borde derecho de la burbuja.
+        final cajas = cajasDelTexto(tester, largo);
+        for (final caja in cajas) {
+          expect(hora.overlaps(caja), isFalse, reason: 'la hora pisa el texto');
+        }
+        expect(hora.top, greaterThanOrEqualTo(cajas.last.bottom - 1));
         final burbuja = tester.getRect(
           find.byKey(const Key('burbujaMensajeChat')),
         );
-        expect(hora.right, lessThanOrEqualTo(burbuja.right));
         expect(burbuja.right - hora.right, lessThan(20));
       },
     );
 
-    testWidgets(
-      'la hora queda abajo a la derecha de un texto de varias líneas',
-      (tester) async {
-        await montar(tester, mensaje('palabra ' * 20, usuario: false));
-
-        final hora = tester.getRect(find.byKey(const Key('horaMensajeChat')));
-        final burbuja = tester.getRect(
-          find.byKey(const Key('burbujaMensajeChat')),
+    // El caso que se veía mal en el teléfono: una pregunta larga del usuario.
+    final preguntas = [
+      '¿Qué temperatura se considera fiebre y cuándo debo llamar al médico?',
+      '¿Cómo debo cuidar el catéter y qué hago si se moja o se sale?',
+      'Mi hijo no quiere comer desde ayer y hoy tiene mucho sueño',
+      ('palabra ' * 25).trim(),
+      'Hola, ¿puedes decirme si es normal que tenga fiebre después de la quimio?',
+    ];
+    for (final (ancho, escala) in [
+      (360.0, 1.0),
+      (320.0, 1.0),
+      (320.0, 1.3),
+      (280.0, 1.6),
+      (411.0, 1.15),
+    ]) {
+      for (final usuario in [true, false]) {
+        testWidgets(
+          'la hora nunca pisa el texto (${ancho.toInt()} px, x$escala, '
+          '${usuario ? 'usuario' : 'asistente'})',
+          (tester) async {
+            for (final pregunta in preguntas) {
+              await montar(
+                tester,
+                mensaje(pregunta, usuario: usuario),
+                tamano: Size(ancho, 4000),
+                escala: escala,
+              );
+              final hora = tester.getRect(
+                find.byKey(const Key('horaMensajeChat')),
+              );
+              for (final caja in cajasDelTexto(tester, pregunta)) {
+                expect(
+                  hora.overlaps(caja),
+                  isFalse,
+                  reason: 'la hora pisa «$pregunta»',
+                );
+              }
+              expect(tester.takeException(), isNull);
+            }
+          },
         );
-        expect(hora.bottom, greaterThan(burbuja.center.dy));
-        expect(burbuja.right - hora.right, lessThan(20));
-      },
-    );
-
-    testWidgets('con texto muy grande tampoco desborda', (tester) async {
-      tester.view.physicalSize = const Size(320, 568);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(
-        MaterialApp(
-          builder: (context, hijo) => MediaQuery(
-            data: MediaQuery.of(
-              context,
-            ).copyWith(textScaler: const TextScaler.linear(1.6)),
-            child: hijo!,
-          ),
-          home: Scaffold(
-            body: BurbujaMensaje(mensaje: mensaje('palabra ' * 12)),
-          ),
-        ),
-      );
-      expect(tester.takeException(), isNull);
-    });
+      }
+    }
   });
 
   group('letra del usuario', () {

@@ -193,8 +193,11 @@ class BurbujaMensaje extends StatelessWidget {
 
 /// Texto con la hora pegada abajo a la derecha, como en WhatsApp.
 ///
-/// Se mide la última línea del texto: si tiene sitio para la hora, comparte esa
-/// línea con ella; si no, la hora queda sola en una línea nueva, a la derecha.
+/// Al final del texto va un hueco invisible del tamaño exacto de la hora, dentro
+/// del mismo párrafo: si la última línea tiene sitio, la hora comparte esa línea;
+/// si no, el hueco pasa a una línea nueva y la hora queda sola, a la derecha. Como
+/// el hueco se resuelve al dibujar el texto, nunca se desfasa (ni siquiera cuando
+/// la fuente termina de cargar), y por eso la hora no puede pisar el texto.
 class TextoConHora extends StatelessWidget {
   const TextoConHora({
     super.key,
@@ -216,60 +219,38 @@ class TextoConHora extends StatelessWidget {
   Widget build(BuildContext context) {
     final hora = this.hora;
     if (hora == null) return Text(texto, style: estiloTexto);
-    final escala = MediaQuery.textScalerOf(context);
-    final etiquetaHora = Text(
-      hora,
-      key: const Key('horaMensajeChat'),
-      style: estiloHora,
-    );
-    return LayoutBuilder(
-      builder: (context, restricciones) {
-        final maximo = restricciones.maxWidth;
-        final medidaTexto = TextPainter(
-          text: TextSpan(text: texto, style: estiloTexto),
-          textDirection: TextDirection.ltr,
-          textScaler: escala,
-          textWidthBasis: TextWidthBasis.longestLine,
-        )..layout(maxWidth: maximo);
-        final anchoHora = (TextPainter(
-          text: TextSpan(text: hora, style: estiloHora),
-          textDirection: TextDirection.ltr,
-          textScaler: escala,
-        )..layout()).width;
-        final lineas = medidaTexto.computeLineMetrics();
-        final ultima = lineas.isEmpty ? 0.0 : lineas.last.width;
-        final necesario = ultima + separacion + anchoHora;
-        final contenido = Text(
-          texto,
-          style: estiloTexto,
-          textWidthBasis: TextWidthBasis.longestLine,
-        );
-
-        if (necesario <= maximo) {
-          // La hora cabe en la última línea: se apoya en su esquina derecha.
-          final ancho = necesario > medidaTexto.width
-              ? necesario
-              : medidaTexto.width;
-          return SizedBox(
-            width: ancho,
-            child: Stack(
-              children: [
-                contenido,
-                Positioned(right: 0, bottom: 0, child: etiquetaHora),
-              ],
-            ),
-          );
-        }
-        // No cabe: línea propia, alineada a la derecha, como WhatsApp.
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Align(alignment: Alignment.centerLeft, child: contenido),
-            etiquetaHora,
-          ],
-        );
-      },
+    return Stack(
+      children: [
+        Text.rich(
+          TextSpan(
+            style: estiloTexto,
+            children: [
+              TextSpan(text: texto),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.baseline,
+                baseline: TextBaseline.alphabetic,
+                // La hora, invisible: reserva justo su ancho al final del texto.
+                child: Padding(
+                  padding: const EdgeInsets.only(left: separacion),
+                  child: Opacity(
+                    opacity: 0,
+                    child: Text(hora, style: estiloHora),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          right: 0,
+          bottom: 0,
+          child: Text(
+            hora,
+            key: const Key('horaMensajeChat'),
+            style: estiloHora,
+          ),
+        ),
+      ],
     );
   }
 }

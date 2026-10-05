@@ -184,7 +184,7 @@ void main() {
       await tester.tap(find.byKey(const Key('sugerencia_fiebre')));
       await tester.pump();
 
-      expect(find.text(_preguntaFiebre), findsOneWidget);
+      expect(find.textContaining(_preguntaFiebre), findsOneWidget);
       expect(find.byKey(const Key('indicadorEscribiendo')), findsOneWidget);
       expect(find.byKey(const Key('sugerencia_fiebre')), findsNothing);
 
@@ -258,7 +258,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1000));
     await tester.pumpAndSettle();
 
-    expect(find.text('temperatura de 38'), findsOneWidget);
+    expect(find.textContaining('temperatura de 38'), findsOneWidget);
     expect(find.textContaining('Se considera fiebre'), findsOneWidget);
   });
 
@@ -280,7 +280,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Hola, soy tu asistente'), findsNothing);
-    expect(find.text(_preguntaFiebre), findsOneWidget);
+    expect(find.textContaining(_preguntaFiebre), findsOneWidget);
     expect(find.textContaining('Se considera fiebre'), findsOneWidget);
     expect(find.byKey(const Key('sugerencia_cateter')), findsNothing);
   });
