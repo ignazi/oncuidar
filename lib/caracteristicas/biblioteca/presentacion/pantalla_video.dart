@@ -492,12 +492,13 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
       ),
       child: Row(
         children: [
+          // En vez de volver, el botón para volver a vertical.
           IconButton(
-            tooltip: 'Salir de pantalla completa',
+            key: const Key('alternarPantallaCompleta'),
+            tooltip: 'Volver a vertical',
             icon: const Icon(
-              Icons.arrow_back_ios_new,
+              Icons.screen_lock_portrait_rounded,
               color: Colors.white,
-              size: 20,
             ),
             onPressed: _alternarPantallaCompleta,
           ),
@@ -513,15 +514,6 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
                 color: Colors.white,
               ),
             ),
-          ),
-          IconButton(
-            key: const Key('alternarPantallaCompleta'),
-            tooltip: 'Volver a vertical',
-            icon: const Icon(
-              Icons.screen_lock_portrait_rounded,
-              color: Colors.white,
-            ),
-            onPressed: _alternarPantallaCompleta,
           ),
         ],
       ),

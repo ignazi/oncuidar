@@ -9,6 +9,8 @@ PreferredSizeWidget barraVisor({
   required VoidCallback alVolver,
   Key? claveVolver,
   List<Widget> acciones = const [],
+  IconData iconoVolver = Icons.arrow_back_rounded,
+  String ayudaVolver = 'Volver',
 }) {
   final color = Paleta.sobreDorado;
   return AppBar(
@@ -32,8 +34,8 @@ PreferredSizeWidget barraVisor({
     titleSpacing: 0,
     leading: IconButton(
       key: claveVolver,
-      tooltip: 'Volver',
-      icon: const Icon(Icons.arrow_back_rounded),
+      tooltip: ayudaVolver,
+      icon: Icon(iconoVolver),
       onPressed: alVolver,
     ),
     title: Text(

@@ -68,27 +68,31 @@ class _MarcoVisorState extends State<MarcoVisor> {
       child: Scaffold(
         backgroundColor: widget.fondo,
         // Girado también se ve la barra: volver, el título y las acciones.
-        appBar: barraVisor(
-          titulo: widget.titulo,
-          claveVolver: widget.claveVolver,
-          alVolver: () => Navigator.of(context).maybePop(),
-          acciones: [
-            // Orden: girar, descargar, compartir.
-            IconButton(
-              key: const Key('girarVisor'),
-              tooltip: _horizontal
-                  ? 'Volver a vertical'
-                  : 'Girar a pantalla completa',
-              icon: Icon(
-                _horizontal
-                    ? Icons.screen_lock_portrait_rounded
-                    : Icons.screen_rotation_rounded,
+        // Girado, el botón de volver se cambia por el de volver a vertical.
+        appBar: _horizontal
+            ? barraVisor(
+                titulo: widget.titulo,
+                claveVolver: const Key('girarVisor'),
+                iconoVolver: Icons.screen_lock_portrait_rounded,
+                ayudaVolver: 'Volver a vertical',
+                alVolver: _alternarGiro,
+                acciones: widget.acciones,
+              )
+            : barraVisor(
+                titulo: widget.titulo,
+                claveVolver: widget.claveVolver,
+                alVolver: () => Navigator.of(context).maybePop(),
+                acciones: [
+                  // Orden: girar, descargar, compartir.
+                  IconButton(
+                    key: const Key('girarVisor'),
+                    tooltip: 'Girar a pantalla completa',
+                    icon: const Icon(Icons.screen_rotation_rounded),
+                    onPressed: _alternarGiro,
+                  ),
+                  ...widget.acciones,
+                ],
               ),
-              onPressed: _alternarGiro,
-            ),
-            ...widget.acciones,
-          ],
-        ),
         body: widget.cuerpo,
       ),
     );

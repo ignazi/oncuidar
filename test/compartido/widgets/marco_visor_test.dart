@@ -69,9 +69,13 @@ void main() {
     expect(llamadas.last.arguments, 'SystemUiMode.immersiveSticky');
     // Girado sigue la barra: volver, título y el botón (ahora para volver a vertical).
     expect(find.byType(AppBar), findsOneWidget);
-    expect(find.byKey(const Key('volver')), findsOneWidget);
     expect(find.text('Guía'), findsOneWidget);
+    // En el lugar de volver queda el botón para volver a vertical; no hay otro.
+    expect(find.byKey(const Key('volver')), findsNothing);
     expect(find.byIcon(Icons.screen_lock_portrait_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.screen_rotation_rounded), findsNothing);
+    final boton = tester.getRect(find.byKey(const Key('girarVisor')));
+    expect(boton.left, lessThan(60));
   });
 
   testWidgets('el mismo botón vuelve a vertical', (tester) async {
