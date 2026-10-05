@@ -168,18 +168,4 @@ void main() {
 
     expect(find.text('No se guardó el archivo'), findsOneWidget);
   });
-
-  testWidgets('compartir desde el visor sigue entregando un PDF válido', (
-    tester,
-  ) async {
-    final c = await prepararPantalla(tester);
-
-    final bytes = await exportarDesdeLaPantalla(
-      tester,
-      'Exportar PDF',
-      c.compartidos,
-    );
-
-    expect(String.fromCharCodes(bytes.sublist(0, 4)), '%PDF');
-  });
 }

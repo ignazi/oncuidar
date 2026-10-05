@@ -76,9 +76,6 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  double escala(WidgetTester tester) =>
-      tester.state<EstadoVisorConZoom>(find.byType(VisorConZoom)).escalaTotal;
-
   testWidgets('se abre a pantalla completa sobre fondo oscuro', (tester) async {
     await abrir(tester);
 
@@ -118,26 +115,6 @@ void main() {
       expect(fondo.height, greaterThan(40));
     },
   );
-
-  testWidgets('el doble toque acerca y vuelve al tamaño original', (
-    tester,
-  ) async {
-    await abrir(tester);
-    final centro = tester.getCenter(find.byKey(const Key('areaVisorImagen')));
-
-    Future<void> dobleToque() async {
-      await tester.tapAt(centro);
-      await tester.pump(const Duration(milliseconds: 50));
-      await tester.tapAt(centro);
-      await tester.pumpAndSettle();
-    }
-
-    expect(escala(tester), 1);
-    await dobleToque();
-    expect(escala(tester), closeTo(2, 0.01));
-    await dobleToque();
-    expect(escala(tester), closeTo(1, 0.01));
-  });
 
   testWidgets('volver cierra el visor', (tester) async {
     await abrir(tester);

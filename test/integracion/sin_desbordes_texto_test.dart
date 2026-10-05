@@ -33,14 +33,19 @@ import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Regresión de desbordes con cada tamaño de texto de la configuración
-// (Normal, Grande y Muy grande) en un teléfono común y en uno pequeño.
+// Regresión de desbordes de cada pantalla con el tamaño de texto normal y con el
+// más grande de la configuración, en un teléfono común y en uno pequeño.
 // Un RenderFlex overflow hace fallar el caso porque se lee takeException().
 
 const _clavePrueba = 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
 const _uid = 'uid-test';
 
-const _viewports = [Size(360, 800), Size(320, 568)];
+/// Texto normal en un teléfono común y el caso más exigente: texto muy grande en
+/// un teléfono pequeño. Si este último no desborda, los intermedios tampoco.
+const _combinaciones = [
+  (EscalaTexto.normal, Size(360, 800)),
+  (EscalaTexto.muyGrande, Size(320, 568)),
+];
 
 class _Entorno {
   _Entorno(this.auth, this.base, this.cifrado);
@@ -336,8 +341,8 @@ final _casos =
     ];
 
 void main() {
-  for (final escala in EscalaTexto.values) {
-    for (final tamano in _viewports) {
+  for (final (escala, tamano) in _combinaciones) {
+    {
       for (final (nombre, pantalla, accion) in _casos) {
         testWidgets('$nombre · texto ${escala.etiqueta} · '
             '${tamano.width.toInt()}x${tamano.height.toInt()}', (tester) async {

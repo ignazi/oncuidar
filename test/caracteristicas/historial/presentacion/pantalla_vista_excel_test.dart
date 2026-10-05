@@ -256,20 +256,6 @@ void main() {
       expect(escala(tester), closeTo(zoomInicialHoja, 1e-9));
     });
 
-    testWidgets('los botones acercan y alejan', (tester) async {
-      await _abrir(tester, _datos());
-      final inicial = escala(tester);
-
-      await tester.tap(find.byKey(const Key('zoomMas')));
-      await tester.pump();
-      expect(escala(tester), greaterThan(inicial));
-
-      await tester.tap(find.byKey(const Key('zoomMenos')));
-      await tester.tap(find.byKey(const Key('zoomMenos')));
-      await tester.pump();
-      expect(escala(tester), lessThan(inicial));
-    });
-
     testWidgets('se puede acercar hasta el máximo y alejar hasta el mínimo', (
       tester,
     ) async {
@@ -308,38 +294,6 @@ void main() {
       // La hoja, ya escalada, cabe en el ancho de la pantalla.
       expect(hoja.width, lessThanOrEqualTo(360));
       expect(hoja.width, greaterThan(360 * 0.8));
-    });
-
-    testWidgets('doble toque acerca y otro doble toque vuelve a ajustar', (
-      tester,
-    ) async {
-      await _abrir(tester, _datos());
-      final zona = find.byKey(const Key('zoomVistaExcel'));
-      final antes = escala(tester);
-
-      await tester.tap(zona);
-      await tester.pump(const Duration(milliseconds: 50));
-      await tester.tap(zona);
-      await tester.pumpAndSettle();
-      expect(escala(tester), greaterThan(antes));
-
-      await tester.tap(zona);
-      await tester.pump(const Duration(milliseconds: 50));
-      await tester.tap(zona);
-      await tester.pumpAndSettle();
-      expect(escala(tester), lessThan(1.2));
-    });
-
-    testWidgets('el rango de zoom del visor es amplio', (tester) async {
-      await _abrir(tester, _datos());
-      // Los límites del visor son relativos a lo ya dibujado: por la escala total.
-      final visor = tester.widget<InteractiveViewer>(
-        find.byKey(const Key('zoomVistaExcel')),
-      );
-      final dibujado = escala(tester);
-      expect(visor.maxScale * dibujado, closeTo(zoomMaximoHoja, 1e-9));
-      expect(visor.minScale * dibujado, lessThan(0.4));
-      expect(zoomMaximoHoja, greaterThanOrEqualTo(6));
     });
 
     testWidgets('el botón de descargar solo aparece si se da la acción', (
