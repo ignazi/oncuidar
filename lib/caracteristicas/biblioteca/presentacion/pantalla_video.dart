@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/proveedores_navegacion.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
+import 'package:oncuidar/compartido/widgets/barra_visor.dart';
 import 'package:video_player/video_player.dart';
 
 String formatearDuracion(Duration d) {
@@ -298,26 +299,7 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
   }
 
   PreferredSizeWidget _barraSuperior() {
-    return AppBar(
-      backgroundColor: Colors.black,
-      foregroundColor: Colors.white,
-      elevation: 0,
-      leading: IconButton(
-        tooltip: 'Volver',
-        icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-        onPressed: _cerrar,
-      ),
-      title: Text(
-        widget.titulo,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: GoogleFonts.nunito(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-        ),
-      ),
-    );
+    return barraVisor(titulo: widget.titulo, alVolver: _cerrar);
   }
 
   Widget _vistaError() {

@@ -100,9 +100,11 @@ void main() {
       expect(find.text(encabezado), findsOneWidget);
     }
     expect(find.text('Sat. O₂'), findsOneWidget);
-    final tabla = tester.widget<Table>(find.byKey(const Key('tablaExcel')));
-    // Encabezado más una fila por registro.
-    expect(tabla.children, hasLength(5));
+    // Una fila de la hoja por registro.
+    for (var i = 0; i < 4; i++) {
+      expect(find.byKey(Key('filaRegistroExcel_$i')), findsOneWidget);
+    }
+    expect(find.byKey(const Key('filaRegistroExcel_4')), findsNothing);
     expect(find.text('38.2°C'), findsNWidgets(4));
   });
 
@@ -183,6 +185,49 @@ void main() {
   testWidgets('sin acción de compartir no hay botón', (tester) async {
     await _abrir(tester, _datos());
     expect(find.byKey(const Key('compartirVistaExcel')), findsNothing);
+  });
+
+  testWidgets(
+    'se ve como Excel: letras de columna, números de fila y pestaña',
+    (tester) async {
+      await _abrir(tester, _datos());
+
+      for (final letra in ['A', 'B', 'E', 'J']) {
+        expect(find.text(letra), findsOneWidget, reason: 'columna $letra');
+      }
+      // Números de fila a la izquierda: el 1 es el título.
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('2'), findsOneWidget);
+      // Pestaña de la hoja al pie.
+      expect(find.text('Historial'), findsOneWidget);
+      // Cada celda de la tabla tiene su propio recuadro (cuadrícula).
+      final fila = find.byKey(const Key('filaRegistroExcel_0'));
+      final celdas = find.descendant(
+        of: fila,
+        matching: find.byType(Container),
+      );
+      expect(celdas.evaluate().length, greaterThanOrEqualTo(11));
+    },
+  );
+
+  testWidgets('la barra superior usa el degradado dorado de la app', (
+    tester,
+  ) async {
+    await _abrir(tester, _datos());
+    final cajas = tester.widgetList<DecoratedBox>(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.byType(DecoratedBox),
+      ),
+    );
+    expect(
+      cajas.any(
+        (c) =>
+            c.decoration is BoxDecoration &&
+            (c.decoration as BoxDecoration).gradient != null,
+      ),
+      isTrue,
+    );
   });
 
   group('zoom a gusto', () {

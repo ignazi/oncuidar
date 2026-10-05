@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
+import 'package:oncuidar/compartido/widgets/barra_visor.dart';
 
 /// Etiqueta del Hero que comparten la tarjeta y el visor.
 String etiquetaHeroImagen(String idMaterial) => 'imagen-material-$idMaterial';
@@ -144,44 +144,12 @@ class _PantallaVisorImagenState extends State<PantallaVisorImagen>
         key: const Key('barraVisorImagen'),
         opacity: _mostrarBarra ? 1 : 0,
         duration: const Duration(milliseconds: 200),
-        child: Container(
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 4,
-            left: 4,
-            right: 4,
-            bottom: 8,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withValues(alpha: 0.75),
-                Colors.black.withValues(alpha: 0),
-              ],
-            ),
-          ),
-          child: Row(
-            children: [
-              IconButton(
-                key: const Key('cerrarVisorImagen'),
-                tooltip: 'Volver',
-                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                onPressed: () => Navigator.of(context).maybePop(),
-              ),
-              Expanded(
-                child: Text(
-                  widget.titulo,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.nunito(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+        child: SizedBox(
+          height: MediaQuery.of(context).padding.top + kToolbarHeight,
+          child: barraVisor(
+            titulo: widget.titulo,
+            claveVolver: const Key('cerrarVisorImagen'),
+            alVolver: () => Navigator.of(context).maybePop(),
           ),
         ),
       ),

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/caracteristicas/historial/datos/exportador_excel.dart';
@@ -6,7 +8,8 @@ import 'package:oncuidar/caracteristicas/historial/dominio/orden_registros.dart'
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/compartido/widgets/accion_descargar.dart';
-import 'package:oncuidar/compartido/widgets/controles_zoom.dart';
+import 'package:oncuidar/compartido/widgets/barra_visor.dart';
+import 'package:oncuidar/compartido/widgets/visor_con_zoom.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
 /// Lo que lleva el Excel exportado; con esto se dibuja la misma hoja sin salir de la app.
@@ -54,23 +57,268 @@ const _doradoClaro = Color(0xFFFFF4D0);
 const _crema = Color(0xFFFFF9E8);
 const _texto = Color(0xFF2C1A00);
 const _textoSuave = Color(0xFF6B5330);
-const _linea = Color(0xFFE8DCC0);
+const _lineaSuave = Color(0xFFE8DCC0);
+
+// Cuadrícula y bordes como en Excel.
+const _rejilla = Color(0xFFD4D4D4);
+const _fondoRotulos = Color(0xFFF1F1F1);
+const _textoRotulos = Color(0xFF555555);
 
 /// Píxeles por carácter de ancho de columna del Excel.
 const _pxPorCaracter = 7.2;
+
+/// Ancho de la columna con los números de fila.
+const _anchoNumeros = 38.0;
+
+/// Alto de la fila con las letras de columna.
+const _altoLetras = 24.0;
+
+/// Alto de una línea de texto dentro de una celda.
+const _altoLinea = 16.0;
 
 /// Zoom de la hoja: desde ver casi toda la tabla hasta leer cada celda grande.
 const zoomMinimoHoja = 0.15;
 const zoomMaximoHoja = 8.0;
 
 /// Escala con la que se abre la hoja: legible, y con el resto a un deslizamiento.
-const zoomInicialHoja = 0.6;
+const zoomInicialHoja = 0.8;
 
-/// La hoja del historial como en Excel: ficha en dos columnas, resumen y tabla.
-///
-/// Se acerca y aleja con los dedos, con los botones o con doble toque, y se mueve
-/// en ambas direcciones.
-class PantallaVistaExcel extends StatefulWidget {
+/// Ancho total de la hoja (números de fila y las diez columnas).
+final _anchoHoja =
+    _anchoNumeros +
+    anchosColumnasExcel.fold<double>(0, (a, b) => a + b * _pxPorCaracter);
+
+/// Una celda de la hoja, que puede abarcar varias columnas (como las combinadas de Excel).
+class _Celda {
+  const _Celda(
+    this.desde,
+    this.hasta,
+    this.texto, {
+    this.fondo,
+    this.color = _texto,
+    this.negrita = false,
+    this.tamano = 12,
+    this.centrado = false,
+    this.ajustar = false,
+    this.linea,
+  });
+
+  final int desde;
+  final int hasta;
+  final String texto;
+  final Color? fondo;
+  final Color color;
+  final bool negrita;
+  final double tamano;
+  final bool centrado;
+
+  /// Si el texto largo se reparte en varias líneas dentro de la celda.
+  final bool ajustar;
+
+  /// Borde inferior propio (las celdas con fondo no muestran la cuadrícula).
+  final Color? linea;
+}
+
+class _Fila {
+  const _Fila(this.alto, this.celdas, {this.clave});
+
+  final double alto;
+  final List<_Celda> celdas;
+  final Key? clave;
+}
+
+double _anchoColumnas(int desde, int hasta) {
+  var total = 0.0;
+  for (var i = desde; i <= hasta; i++) {
+    total += anchosColumnasExcel[i] * _pxPorCaracter;
+  }
+  return total;
+}
+
+/// Líneas que ocupa [texto] en las columnas [desde]–[hasta] (mínimo una).
+int _lineas(String texto, int desde, int hasta) {
+  final caracteres = ((_anchoColumnas(desde, hasta) - 14) / 6.8).floor();
+  return lineasNecesarias(texto, math.max(4, caracteres));
+}
+
+/// Una fila de dato de la ficha: etiqueta en [desde] y valor hasta [hasta].
+double _altoDato(String valor, int desde, int hasta) =>
+    math.max(26, _lineas(valor, desde + 1, hasta) * _altoLinea + 10);
+
+/// Pasa los datos a las filas de la hoja, igual que las escribe el archivo Excel.
+List<_Fila> _construirFilas(DatosHojaExcel datos) {
+  final filas = <_Fila>[];
+  const ultima = 9;
+  const ultimaIzquierda = 4;
+  const hueco = _Fila(12, []);
+
+  final nombre = datos.paciente?.nombreCompleto.trim();
+  filas
+    ..add(
+      const _Fila(36, [
+        _Celda(
+          0,
+          ultima,
+          'HISTORIAL ONCUIDAR',
+          fondo: _dorado,
+          color: Colors.white,
+          negrita: true,
+          tamano: 17,
+        ),
+      ]),
+    )
+    ..add(
+      _Fila(26, [
+        _Celda(
+          0,
+          ultima,
+          [
+            if (nombre != null && nombre.isNotEmpty) 'Paciente: $nombre',
+            'Generado: ${fechacorta(datos.generadoEn)} '
+                '${hora12(datos.generadoEn)}',
+          ].join('   ·   '),
+          color: _textoSuave,
+          tamano: 11,
+        ),
+      ]),
+    )
+    ..add(hueco);
+
+  // Ficha en dos columnas, alineada por filas como en el archivo.
+  final izquierda = bloquesPacienteYCuidador(
+    datos.paciente,
+    datos.nombreCuidador,
+  );
+  final derecha = bloquesCentroYContacto(datos.paciente);
+  for (var i = 0; i < math.max(izquierda.length, derecha.length); i++) {
+    final bloqueIzq = i < izquierda.length ? izquierda[i] : null;
+    final bloqueDer = i < derecha.length ? derecha[i] : null;
+    final cuantas = math.max(
+      bloqueIzq == null ? 0 : bloqueIzq.filas.length + 1,
+      bloqueDer == null ? 0 : bloqueDer.filas.length + 1,
+    );
+    for (var k = 0; k < cuantas; k++) {
+      final celdas = <_Celda>[];
+      var alto = 26.0;
+      void lado(BloqueInfo? bloque, int desde, int hasta) {
+        if (bloque == null || k > bloque.filas.length) return;
+        if (k == 0) {
+          celdas.add(
+            _Celda(
+              desde,
+              hasta,
+              bloque.titulo,
+              fondo: _doradoClaro,
+              color: _doradoTexto,
+              negrita: true,
+              tamano: 12.5,
+            ),
+          );
+          return;
+        }
+        final (etiqueta, valor) = bloque.filas[k - 1];
+        celdas
+          ..add(
+            _Celda(desde, desde, etiqueta, color: _doradoTexto, negrita: true),
+          )
+          ..add(_Celda(desde + 1, hasta, valor, ajustar: true));
+        alto = math.max(alto, _altoDato(valor, desde, hasta));
+      }
+
+      lado(bloqueIzq, 0, ultimaIzquierda);
+      lado(bloqueDer, ultimaIzquierda + 1, ultima);
+      filas.add(_Fila(alto, celdas));
+    }
+    filas.add(hueco);
+  }
+
+  // Resumen: lo que se filtró y cuántos registros hay.
+  filas.add(
+    const _Fila(26, [
+      _Celda(
+        0,
+        ultima,
+        'RESUMEN',
+        fondo: _doradoClaro,
+        color: _doradoTexto,
+        negrita: true,
+        tamano: 12.5,
+      ),
+    ]),
+  );
+  for (final (etiqueta, valor) in <FilaInfo>[
+    (
+      rotuloPeriodo(datos.fechaInicio, datos.fechaFin),
+      etiquetaPeriodo(datos.fechaInicio, datos.fechaFin),
+    ),
+    ('Registros', '${datos.registros.length}'),
+  ]) {
+    filas.add(
+      _Fila(_altoDato(valor, 0, ultimaIzquierda), [
+        _Celda(0, 0, etiqueta, color: _doradoTexto, negrita: true),
+        _Celda(1, ultimaIzquierda, valor, ajustar: true),
+      ]),
+    );
+  }
+  filas.add(const _Fila(14, []));
+
+  // Tabla de registros: encabezado dorado y filas alternadas.
+  filas.add(
+    _Fila(30, [
+      for (var i = 0; i < encabezadosRegistro.length; i++)
+        _Celda(
+          i,
+          i,
+          encabezadosRegistro[i].replaceAll('O2', 'O₂'),
+          fondo: _doradoEncabezado,
+          color: Colors.white,
+          negrita: true,
+          centrado: true,
+          ajustar: true,
+          linea: _doradoEncabezado,
+        ),
+    ]),
+  );
+  for (final (n, registro) in ordenarCronologicamente(
+    datos.registros,
+  ).indexed) {
+    final celdas = celdasRegistro(registro, vacio: '–');
+    final lineas = math.max(_lineas(celdas[8], 8, 8), _lineas(celdas[9], 9, 9));
+    filas.add(
+      _Fila(
+        math.max(28, lineas * _altoLinea + 12),
+        clave: Key('filaRegistroExcel_$n'),
+        [
+          for (var i = 0; i < celdas.length; i++)
+            _Celda(
+              i,
+              i,
+              celdas[i],
+              fondo: n.isOdd ? _crema : Colors.white,
+              color: i == 3 ? _colorEstado(celdas[i]) : _texto,
+              negrita: i == 3,
+              centrado: i < 8,
+              ajustar: true,
+              linea: _lineaSuave,
+            ),
+        ],
+      ),
+    );
+  }
+  return filas;
+}
+
+Color _colorEstado(String estado) => switch (estado) {
+  'Normal' => const Color(0xFF168A63),
+  'Alerta' => const Color(0xFFB77900),
+  'Crítico' => const Color(0xFFD1103F),
+  _ => _texto,
+};
+
+/// La hoja del historial como en Excel: letras de columna, números de fila, cuadrícula
+/// y pestaña «Historial». Se acerca y aleja con los dedos, con los botones o con
+/// doble toque, y se mueve en ambas direcciones.
+class PantallaVistaExcel extends StatelessWidget {
   const PantallaVistaExcel({
     super.key,
     required this.datos,
@@ -83,393 +331,191 @@ class PantallaVistaExcel extends StatefulWidget {
   final Future<bool> Function()? alDescargar;
 
   @override
-  State<PantallaVistaExcel> createState() => _PantallaVistaExcelState();
-}
-
-class _PantallaVistaExcelState extends State<PantallaVistaExcel> {
-  /// Ancho de la hoja más el margen que la rodea.
-  static final _anchoContenido = _Hoja.anchoTotal + 32;
-
-  final _transformacion = TransformationController(
-    escalaUniforme(zoomInicialHoja),
-  );
-  Size _zona = Size.zero;
-  Offset _puntoDobleToque = Offset.zero;
-
-  @override
-  void dispose() {
-    _transformacion.dispose();
-    super.dispose();
-  }
-
-  void _acercar(double factor, [Offset? centro]) {
-    _transformacion.value = zoomAlrededor(
-      _transformacion.value,
-      factor,
-      centro ?? Offset(_zona.width / 2, _zona.height / 2),
-      minima: zoomMinimoHoja,
-      maxima: zoomMaximoHoja,
-    );
-  }
-
-  /// Deja toda la hoja a lo ancho de la pantalla.
-  void _ajustarAlAncho() {
-    final escala = (_zona.width / _anchoContenido).clamp(
-      zoomMinimoHoja,
-      zoomMaximoHoja,
-    );
-    _transformacion.value = escalaUniforme(escala);
-  }
-
-  /// Doble toque: acerca hacia el punto tocado o, si ya está cerca, vuelve a ajustar.
-  void _alDobleToque() {
-    final escala = escalaDe(_transformacion.value);
-    if (escala >= 1.2) {
-      _ajustarAlAncho();
-    } else {
-      _acercar(1.0 / escala, _puntoDobleToque);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEE3),
-      appBar: AppBar(
-        leading: IconButton(
-          key: const Key('cerrarVistaExcel'),
-          tooltip: 'Volver',
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        title: Text(
-          'Historial en Excel',
-          style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          if (widget.alDescargar != null)
+      backgroundColor: _fondoRotulos,
+      appBar: barraVisor(
+        titulo: 'Historial en Excel',
+        claveVolver: const Key('cerrarVistaExcel'),
+        alVolver: () => Navigator.of(context).maybePop(),
+        acciones: [
+          if (alDescargar != null)
             IconButton(
               key: const Key('descargarVistaExcel'),
               tooltip: 'Descargar',
               icon: const Icon(Icons.download_rounded),
-              onPressed: () => descargarConAviso(context, widget.alDescargar!),
+              onPressed: () => descargarConAviso(context, alDescargar!),
             ),
-          if (widget.alCompartir != null)
+          if (alCompartir != null)
             IconButton(
               key: const Key('compartirVistaExcel'),
               tooltip: 'Compartir',
               icon: const Icon(Icons.share_rounded),
-              onPressed: widget.alCompartir,
+              onPressed: alCompartir,
             ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, restricciones) {
-          _zona = restricciones.biggest;
-          return Stack(
-            children: [
-              Positioned.fill(
-                child: GestureDetector(
-                  onDoubleTapDown: (d) => _puntoDobleToque = d.localPosition,
-                  onDoubleTap: _alDobleToque,
-                  child: InteractiveViewer(
-                    key: const Key('zoomVistaExcel'),
-                    transformationController: _transformacion,
-                    constrained: false,
-                    minScale: zoomMinimoHoja,
-                    maxScale: zoomMaximoHoja,
-                    // Margen amplio: se puede mover la hoja aunque quede pequeña.
-                    boundaryMargin: const EdgeInsets.all(120),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: _Hoja(datos: widget.datos),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 12,
-                bottom: MediaQuery.of(context).padding.bottom + 16,
-                child: ControlesZoom(
-                  sobreOscuro: false,
-                  alAcercar: () => _acercar(1.5),
-                  alAlejar: () => _acercar(1 / 1.5),
-                  alAjustar: _ajustarAlAncho,
-                ),
-              ),
-            ],
-          );
-        },
+      body: VisorConZoom(
+        claveVisor: const Key('zoomVistaExcel'),
+        sobreOscuro: false,
+        zoomMinimo: zoomMinimoHoja,
+        zoomMaximo: zoomMaximoHoja,
+        escalaInicial: (_) => zoomInicialHoja,
+        // Toda la hoja a lo ancho de la pantalla.
+        escalaAjuste: (zona) =>
+            (zona.width / _anchoHoja).clamp(zoomMinimoHoja, zoomMaximoHoja),
+        margen: const EdgeInsets.all(40),
+        hijo: _Hoja(filas: _construirFilas(datos)),
+      ),
+      bottomNavigationBar: const _PestanaHoja(),
+    );
+  }
+}
+
+/// Pestaña «Historial» al pie, como la de las hojas de Excel.
+class _PestanaHoja extends StatelessWidget {
+  const _PestanaHoja();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 38 + MediaQuery.of(context).padding.bottom,
+      padding: EdgeInsets.only(
+        left: 12,
+        bottom: MediaQuery.of(context).padding.bottom,
+      ),
+      decoration: const BoxDecoration(
+        color: _fondoRotulos,
+        border: Border(top: BorderSide(color: _rejilla)),
+      ),
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(bottom: BorderSide(color: _dorado, width: 3)),
+        ),
+        child: Text(
+          'Historial',
+          style: GoogleFonts.nunito(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            color: _texto,
+          ),
+        ),
       ),
     );
   }
 }
 
 class _Hoja extends StatelessWidget {
-  const _Hoja({required this.datos});
+  const _Hoja({required this.filas});
 
-  final DatosHojaExcel datos;
+  final List<_Fila> filas;
 
-  /// Ancho total de la hoja en píxeles.
-  static double get anchoTotal => _ancho(0, 9);
+  static BorderSide get _borde => const BorderSide(color: _rejilla, width: 0.8);
 
-  static double _ancho(int desde, int hasta) {
-    var total = 0.0;
-    for (var i = desde; i <= hasta; i++) {
-      total += anchosColumnasExcel[i] * _pxPorCaracter;
-    }
-    return total;
-  }
+  /// Letra de la columna: A, B, C…
+  static String _letra(int i) => String.fromCharCode(65 + i);
 
   @override
   Widget build(BuildContext context) {
-    final anchoIzquierda = _ancho(0, 4);
-    final izquierda = bloquesPacienteYCuidador(
-      datos.paciente,
-      datos.nombreCuidador,
-    );
-    final derecha = bloquesCentroYContacto(datos.paciente);
-    final nombre = datos.paciente?.nombreCompleto.trim();
-
     return Container(
       key: const Key('hojaExcel'),
-      width: _ancho(0, 9),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: _linea),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+      width: _anchoHoja,
+      color: Colors.white,
       child: Column(
+        key: const Key('tablaExcel'),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 34,
-            color: _dorado,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'HISTORIAL ONCUIDAR',
-              style: GoogleFonts.nunito(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 6, 8, 10),
-            child: Text(
-              [
-                if (nombre != null && nombre.isNotEmpty) 'Paciente: $nombre',
-                'Generado: ${fechacorta(datos.generadoEn)} '
-                    '${hora12(datos.generadoEn)}',
-              ].join('   ·   '),
-              style: GoogleFonts.nunito(fontSize: 12, color: _textoSuave),
-            ),
-          ),
-          for (
-            var i = 0;
-            i <
-                (izquierda.length > derecha.length
-                    ? izquierda.length
-                    : derecha.length);
-            i++
-          )
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: anchoIzquierda,
-                    child: i < izquierda.length
-                        ? _Bloque(
-                            bloque: izquierda[i],
-                            anchoEtiqueta:
-                                anchosColumnasExcel[0] * _pxPorCaracter,
-                          )
-                        : null,
-                  ),
-                  // Expanded (no ancho fijo): el borde de la hoja resta 2 px.
-                  Expanded(
-                    child: i < derecha.length
-                        ? _Bloque(
-                            bloque: derecha[i],
-                            anchoEtiqueta:
-                                anchosColumnasExcel[5] * _pxPorCaracter,
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-            ),
-          _Bloque(
-            bloque: (
-              titulo: 'RESUMEN',
-              filas: <FilaInfo>[
-                (
-                  rotuloPeriodo(datos.fechaInicio, datos.fechaFin),
-                  etiquetaPeriodo(datos.fechaInicio, datos.fechaFin),
-                ),
-                ('Registros', '${datos.registros.length}'),
-              ],
-            ),
-            anchoEtiqueta: anchosColumnasExcel[0] * _pxPorCaracter,
-          ),
-          const SizedBox(height: 12),
-          _Tabla(registros: datos.registros),
+          _letras(),
+          for (final (n, fila) in filas.indexed) _fila(n + 1, fila),
         ],
       ),
     );
   }
-}
 
-/// Un bloque de la ficha: banda con el título y una fila por dato.
-class _Bloque extends StatelessWidget {
-  const _Bloque({required this.bloque, required this.anchoEtiqueta});
-
-  final BloqueInfo bloque;
-  final double anchoEtiqueta;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          color: _doradoClaro,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-          child: Text(
-            bloque.titulo,
-            style: GoogleFonts.nunito(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w800,
-              color: _doradoTexto,
-            ),
-          ),
-        ),
-        for (final (etiqueta, valor) in bloque.filas)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: anchoEtiqueta,
-                  child: Text(
-                    etiqueta,
-                    style: GoogleFonts.nunito(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: _doradoTexto,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    valor,
-                    style: GoogleFonts.nunito(fontSize: 12, color: _texto),
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// Tabla de registros: encabezado dorado, filas alternadas y texto largo en varias líneas.
-class _Tabla extends StatelessWidget {
-  const _Tabla({required this.registros});
-
-  final List<RegistroClinico> registros;
-
-  static Color _colorEstado(String estado) => switch (estado) {
-    'Normal' => const Color(0xFF168A63),
-    'Alerta' => const Color(0xFFB77900),
-    'Crítico' => const Color(0xFFD1103F),
-    _ => _texto,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final datos = [
-      for (final r in ordenarCronologicamente(registros))
-        celdasRegistro(r, vacio: '–'),
-    ];
-
-    Widget celda(
-      String texto, {
-      required int columna,
-      Color? color,
-      bool negrita = false,
-      bool encabezado = false,
-    }) {
-      final esTexto = columna >= 8;
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-        alignment: esTexto && !encabezado
-            ? Alignment.centerLeft
-            : Alignment.center,
-        child: Text(
-          texto,
-          textAlign: esTexto && !encabezado ? TextAlign.left : TextAlign.center,
-          style: GoogleFonts.nunito(
-            fontSize: 12,
-            fontWeight: negrita || encabezado
-                ? FontWeight.w800
-                : FontWeight.w500,
-            color: encabezado ? Colors.white : (color ?? _texto),
-          ),
-        ),
-      );
-    }
-
-    return Table(
-      key: const Key('tablaExcel'),
-      columnWidths: {
-        for (var i = 0; i < anchosColumnasExcel.length; i++)
-          i: FixedColumnWidth(anchosColumnasExcel[i] * _pxPorCaracter),
-      },
-      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      border: const TableBorder(
-        horizontalInside: BorderSide(color: _linea, width: 0.6),
-        bottom: BorderSide(color: _linea, width: 0.6),
+  Widget _rotulo(String texto, double ancho, double alto) => Container(
+    width: ancho,
+    height: alto,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: _fondoRotulos,
+      border: Border(right: _borde, bottom: _borde),
+    ),
+    child: Text(
+      texto,
+      style: GoogleFonts.nunito(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: _textoRotulos,
       ),
-      children: [
-        TableRow(
-          decoration: const BoxDecoration(color: _doradoEncabezado),
-          children: [
-            for (var i = 0; i < encabezadosRegistro.length; i++)
-              celda(
-                encabezadosRegistro[i].replaceAll('O2', 'O₂'),
-                columna: i,
-                encabezado: true,
-              ),
-          ],
-        ),
-        for (final (n, fila) in datos.indexed)
-          TableRow(
-            decoration: BoxDecoration(color: n.isOdd ? _crema : Colors.white),
-            children: [
-              for (var i = 0; i < fila.length; i++)
-                celda(
-                  fila[i],
-                  columna: i,
-                  negrita: i == 3,
-                  color: i == 3 ? _colorEstado(fila[i]) : null,
-                ),
-            ],
+    ),
+  );
+
+  Widget _letras() => Row(
+    children: [
+      _rotulo('', _anchoNumeros, _altoLetras),
+      for (var i = 0; i < anchosColumnasExcel.length; i++)
+        _rotulo(_letra(i), _anchoColumnas(i, i), _altoLetras),
+    ],
+  );
+
+  Widget _fila(int numero, _Fila fila) {
+    final porInicio = {for (final c in fila.celdas) c.desde: c};
+    final partes = <Widget>[_rotulo('$numero', _anchoNumeros, fila.alto)];
+    var columna = 0;
+    while (columna < anchosColumnasExcel.length) {
+      final celda = porInicio[columna];
+      if (celda == null) {
+        partes.add(
+          Container(
+            width: _anchoColumnas(columna, columna),
+            height: fila.alto,
+            decoration: BoxDecoration(
+              border: Border(right: _borde, bottom: _borde),
+            ),
           ),
-      ],
+        );
+        columna++;
+      } else {
+        partes.add(_celda(celda, fila.alto));
+        columna = celda.hasta + 1;
+      }
+    }
+    return Row(key: fila.clave, children: partes);
+  }
+
+  Widget _celda(_Celda c, double alto) {
+    final texto = Text(
+      c.texto,
+      maxLines: c.ajustar ? null : 1,
+      softWrap: c.ajustar,
+      overflow: TextOverflow.clip,
+      textAlign: c.centrado ? TextAlign.center : TextAlign.left,
+      style: GoogleFonts.nunito(
+        fontSize: c.tamano,
+        fontWeight: c.negrita ? FontWeight.w800 : FontWeight.w500,
+        color: c.color,
+        height: _altoLinea / c.tamano,
+      ),
+    );
+    return Container(
+      width: _anchoColumnas(c.desde, c.hasta),
+      height: alto,
+      padding: const EdgeInsets.symmetric(horizontal: 7),
+      alignment: c.centrado ? Alignment.center : Alignment.centerLeft,
+      decoration: BoxDecoration(
+        color: c.fondo,
+        // Con fondo no se ve la cuadrícula; solo la línea propia de la celda.
+        border: c.fondo == null
+            ? Border(right: _borde, bottom: _borde)
+            : Border(
+                bottom: BorderSide(color: c.linea ?? c.fondo!, width: 0.8),
+              ),
+      ),
+      child: texto,
     );
   }
 }
