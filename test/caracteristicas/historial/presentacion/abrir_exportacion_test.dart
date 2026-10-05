@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_pdf.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_vista_excel.dart';
@@ -6,84 +7,100 @@ import 'package:oncuidar/caracteristicas/registro_clinico/datos/repositorio_regi
 
 import '../../../ayudas/exportacion.dart';
 
-// «Abrir» en las exportaciones no depende de otra app del teléfono: el PDF se ve
-// con el visor de la app y el Excel se dibuja como hoja dentro de la app.
-
-/// Deja correr el disco real hasta que [aparece] se cumpla (generar es espera real).
-Future<void> _esperar(WidgetTester tester, Finder aparece) async {
-  for (var vuelta = 0; vuelta < 80 && aparece.evaluate().isEmpty; vuelta++) {
-    await tester.pump(const Duration(milliseconds: 50));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 20)),
-    );
-  }
-  await tester.pumpAndSettle();
-}
+// Exportar abre el archivo directo dentro de la app (sin menú ni otra app del
+// teléfono); desde la barra del visor se comparte o se descarga al teléfono.
 
 void main() {
-  Future<List<String>> prepararPantalla(WidgetTester tester) async {
+  Future<({List<String> compartidos, List<Map<Object?, Object?>> guardados})>
+  prepararPantalla(WidgetTester tester) async {
     tallerDePrueba(tester);
     final (base, cifrado, activo, _) = await baseConDosPacientes();
-    final compartidos = instalarCanalesDeExportacion();
+    final guardados = <Map<Object?, Object?>>[];
+    final compartidos = instalarCanalesDeExportacion(guardados: guardados);
     await RepositorioRegistrosClinicos(base).guardarRegistroClinico(
       activo,
       registroDe('2026-09-01', activo, DateTime(2026, 9, 1, 8)),
     );
     await tester.pumpWidget(
-      pantallaHistorial(
-        base,
-        cifrado,
-        pacienteActivo: activo,
-        overridesExtra: [
-          // pdfx no se puede dibujar en pruebas: un documento falso lo reemplaza.
-          constructorDocumentoPdfProvider.overrideWithValue(
-            (ruta) => Center(child: Text('documento en $ruta')),
-          ),
-        ],
-      ),
+      pantallaHistorial(base, cifrado, pacienteActivo: activo),
     );
     await tester.pumpAndSettle();
-    return compartidos;
+    return (compartidos: compartidos, guardados: guardados);
   }
 
-  testWidgets('abrir el PDF lo muestra en el visor de la app', (tester) async {
-    final compartidos = await prepararPantalla(tester);
+  testWidgets('exportar el PDF lo abre en el visor de la app', (tester) async {
+    final c = await prepararPantalla(tester);
 
     await tester.tap(find.byTooltip('Exportar PDF'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('botonAbrirExportacion')));
-    await _esperar(tester, find.byType(PantallaVisorPdf));
+    await esperarHasta(tester, find.byType(PantallaVisorPdf));
 
     expect(find.byType(PantallaVisorPdf), findsOneWidget);
     expect(find.text('Historial clínico'), findsOneWidget);
     expect(find.textContaining('documento en '), findsOneWidget);
     expect(find.textContaining('.pdf'), findsOneWidget);
-    // Abrir no comparte nada por sí solo.
-    expect(compartidos, isEmpty);
-
-    // Desde el visor se puede compartir el mismo archivo.
-    await tester.tap(find.byKey(const Key('compartirVisorPdf')));
-    for (var vuelta = 0; vuelta < 50 && compartidos.isEmpty; vuelta++) {
-      await tester.pump();
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)),
-      );
-    }
-    expect(compartidos, hasLength(1));
-    expect(compartidos.single, endsWith('.pdf'));
+    // Abrir no comparte ni guarda nada por sí solo.
+    expect(c.compartidos, isEmpty);
+    expect(c.guardados, isEmpty);
 
     await tester.tap(find.byKey(const Key('cerrarVisorPdf')));
     await tester.pumpAndSettle();
     expect(find.byType(PantallaVisorPdf), findsNothing);
   });
 
-  testWidgets('abrir el Excel dibuja la hoja dentro de la app', (tester) async {
-    final compartidos = await prepararPantalla(tester);
+  testWidgets('desde el visor del PDF se comparte el mismo archivo', (
+    tester,
+  ) async {
+    final c = await prepararPantalla(tester);
+    await tester.tap(find.byTooltip('Exportar PDF'));
+    await esperarHasta(tester, find.byType(PantallaVisorPdf));
+
+    await tester.tap(find.byKey(const Key('compartirVisorPdf')));
+    for (var vuelta = 0; vuelta < 50 && c.compartidos.isEmpty; vuelta++) {
+      await tester.pump();
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+    }
+
+    expect(c.compartidos, hasLength(1));
+    expect(c.compartidos.single, endsWith('.pdf'));
+  });
+
+  testWidgets('desde el visor del PDF se descarga al teléfono y se avisa', (
+    tester,
+  ) async {
+    final c = await prepararPantalla(tester);
+    await tester.tap(find.byTooltip('Exportar PDF'));
+    await esperarHasta(tester, find.byType(PantallaVisorPdf));
+
+    await tester.tap(find.byKey(const Key('descargarVisorPdf')));
+    for (var vuelta = 0; vuelta < 50 && c.guardados.isEmpty; vuelta++) {
+      await tester.pump();
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+    }
+    await tester.pumpAndSettle();
+
+    final guardado = c.guardados.single;
+    expect(
+      guardado['fileName'],
+      matches(RegExp(r'^historial_oncuidar_.*\.pdf$')),
+    );
+    expect(
+      String.fromCharCodes((guardado['data']! as List<int>).sublist(0, 4)),
+      '%PDF',
+    );
+    expect(find.text('Archivo guardado en tu teléfono'), findsOneWidget);
+  });
+
+  testWidgets('exportar el Excel dibuja la hoja dentro de la app', (
+    tester,
+  ) async {
+    final c = await prepararPantalla(tester);
 
     await tester.tap(find.byTooltip('Exportar Excel'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('botonAbrirExportacion')));
-    await _esperar(tester, find.byType(PantallaVistaExcel));
+    await esperarHasta(tester, find.byType(PantallaVistaExcel));
 
     expect(find.byType(PantallaVistaExcel), findsOneWidget);
     for (final texto in [
@@ -94,34 +111,75 @@ void main() {
     ]) {
       expect(find.text(texto), findsWidgets, reason: 'falta «$texto»');
     }
-    expect(compartidos, isEmpty);
-
-    await tester.tap(find.byKey(const Key('compartirVistaExcel')));
-    for (var vuelta = 0; vuelta < 50 && compartidos.isEmpty; vuelta++) {
-      await tester.pump();
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)),
-      );
-    }
-    expect(compartidos.single, endsWith('.xlsx'));
+    expect(c.compartidos, isEmpty);
+    expect(c.guardados, isEmpty);
 
     await tester.tap(find.byKey(const Key('cerrarVistaExcel')));
     await tester.pumpAndSettle();
     expect(find.byType(PantallaVistaExcel), findsNothing);
   });
 
-  testWidgets('compartir desde el menú sigue funcionando como antes', (
+  testWidgets('desde la hoja de Excel se comparte y se descarga', (
     tester,
   ) async {
-    final compartidos = await prepararPantalla(tester);
+    final c = await prepararPantalla(tester);
+    await tester.tap(find.byTooltip('Exportar Excel'));
+    await esperarHasta(tester, find.byType(PantallaVistaExcel));
+
+    await tester.tap(find.byKey(const Key('descargarVistaExcel')));
+    for (var vuelta = 0; vuelta < 50 && c.guardados.isEmpty; vuelta++) {
+      await tester.pump();
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+    }
+    await tester.pumpAndSettle();
+    expect(c.guardados.single['fileName'], endsWith('.xlsx'));
+    expect(find.text('Archivo guardado en tu teléfono'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('compartirVistaExcel')));
+    for (var vuelta = 0; vuelta < 50 && c.compartidos.isEmpty; vuelta++) {
+      await tester.pump();
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+    }
+    expect(c.compartidos.single, endsWith('.xlsx'));
+  });
+
+  testWidgets('si se cancela «Guardar como» se avisa que no se guardó', (
+    tester,
+  ) async {
+    await prepararPantalla(tester);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('flutter_file_dialog'),
+          (call) async => null,
+        );
+    await tester.tap(find.byTooltip('Exportar PDF'));
+    await esperarHasta(tester, find.byType(PantallaVisorPdf));
+
+    await tester.tap(find.byKey(const Key('descargarVisorPdf')));
+    await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('No se guardó el archivo'), findsOneWidget);
+  });
+
+  testWidgets('compartir desde el visor sigue entregando un PDF válido', (
+    tester,
+  ) async {
+    final c = await prepararPantalla(tester);
 
     final bytes = await exportarDesdeLaPantalla(
       tester,
       'Exportar PDF',
-      compartidos,
+      c.compartidos,
     );
 
     expect(String.fromCharCodes(bytes.sublist(0, 4)), '%PDF');
-    expect(find.byType(PantallaVisorPdf), findsNothing);
   });
 }

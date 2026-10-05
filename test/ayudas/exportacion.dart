@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_pdf.dart';
 import 'package:oncuidar/caracteristicas/historial/presentacion/pantalla_historial.dart';
 import 'package:oncuidar/caracteristicas/pacientes/datos/repositorio_pacientes.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
@@ -117,6 +118,10 @@ Widget pantallaHistorial(
       idPacienteSeleccionadoProvider.overrideWith(
         () => PacienteActivoFijo(pacienteActivo),
       ),
+      // pdfx no se puede dibujar en pruebas: un documento falso lo reemplaza.
+      constructorDocumentoPdfProvider.overrideWithValue(
+        (ruta) => Center(child: Text('documento en $ruta')),
+      ),
       ...overridesExtra,
     ],
     child: MaterialApp.router(routerConfig: router),
@@ -132,7 +137,9 @@ void tallerDePrueba(WidgetTester tester) {
 
 /// Simula la carpeta temporal y el canal de compartir, y devuelve la lista de
 /// archivos compartidos (en el mismo orden en que se invocan).
-List<String> instalarCanalesDeExportacion() {
+List<String> instalarCanalesDeExportacion({
+  List<Map<Object?, Object?>>? guardados,
+}) {
   final compartidos = <String>[];
   final temporal = Directory.systemTemp.createTempSync('oncuidar_exportacion');
   // No se borra: GoogleFonts deja la fuente cargada y el archivo queda en uso.
@@ -152,6 +159,16 @@ List<String> instalarCanalesDeExportacion() {
           return 'compartido';
         },
       );
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(const MethodChannel('flutter_file_dialog'), (
+        call,
+      ) async {
+        if (call.method != 'saveFile') return null;
+        final args = call.arguments as Map<Object?, Object?>;
+        guardados?.add(args);
+        // El nombre que el usuario ve en «Guardar como».
+        return '/storage/emulated/0/Download/${args['fileName']}';
+      });
   return compartidos;
 }
 
@@ -210,17 +227,44 @@ const _hashesDeNunito = [
   '3fff73610e77b1bca1edd861e4830865d147de46cffc685fb253cb050b1148a5',
 ];
 
-/// Genera el archivo desde la pantalla, comparte y devuelve los bytes escritos.
+/// Espera real (disco y generación) hasta que [aparece] exista en pantalla.
+Future<void> esperarHasta(WidgetTester tester, Finder aparece) async {
+  for (var vuelta = 0; vuelta < 100 && aparece.evaluate().isEmpty; vuelta++) {
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+  }
+  await tester.pumpAndSettle();
+}
+
+/// Exporta desde la pantalla: se abre el visor del archivo y, desde su barra, se
+/// comparte. Devuelve los bytes del archivo compartido.
 Future<Uint8List> exportarDesdeLaPantalla(
   WidgetTester tester,
   String boton,
   List<String> compartidos,
 ) async {
   await tester.tap(find.byTooltip(boton));
+  final compartirPdf = find.byKey(const Key('compartirVisorPdf'));
+  final compartirExcel = find.byKey(const Key('compartirVistaExcel'));
+  // Generar el archivo es espera real: el visor aparece cuando está listo.
+  for (
+    var vuelta = 0;
+    vuelta < 100 &&
+        compartirPdf.evaluate().isEmpty &&
+        compartirExcel.evaluate().isEmpty;
+    vuelta++
+  ) {
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+  }
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const Key('botonCompartirExportacion')));
-  // Generar y escribir el archivo es espera real: `pump` avanza el reloj falso y
-  // `runAsync` deja correr el disco, así que se alternan hasta compartir.
+  await tester.tap(
+    compartirPdf.evaluate().isNotEmpty ? compartirPdf : compartirExcel,
+  );
   for (var vuelta = 0; vuelta < 50 && compartidos.isEmpty; vuelta++) {
     await tester.pump();
     await tester.runAsync(

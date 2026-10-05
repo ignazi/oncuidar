@@ -5,6 +5,8 @@ import 'package:oncuidar/caracteristicas/historial/datos/formato_exportacion.dar
 import 'package:oncuidar/caracteristicas/historial/dominio/orden_registros.dart';
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
+import 'package:oncuidar/compartido/widgets/accion_descargar.dart';
+import 'package:oncuidar/compartido/widgets/controles_zoom.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
 /// Lo que lleva el Excel exportado; con esto se dibuja la misma hoja sin salir de la app.
@@ -31,11 +33,15 @@ Future<void> abrirVistaExcel(
   BuildContext context, {
   required DatosHojaExcel datos,
   VoidCallback? alCompartir,
+  Future<bool> Function()? alDescargar,
 }) {
   return Navigator.of(context, rootNavigator: true).push(
     MaterialPageRoute<void>(
-      builder: (_) =>
-          PantallaVistaExcel(datos: datos, alCompartir: alCompartir),
+      builder: (_) => PantallaVistaExcel(
+        datos: datos,
+        alCompartir: alCompartir,
+        alDescargar: alDescargar,
+      ),
     ),
   );
 }
@@ -53,14 +59,77 @@ const _linea = Color(0xFFE8DCC0);
 /// Píxeles por carácter de ancho de columna del Excel.
 const _pxPorCaracter = 7.2;
 
+/// Zoom de la hoja: desde ver casi toda la tabla hasta leer cada celda grande.
+const zoomMinimoHoja = 0.15;
+const zoomMaximoHoja = 8.0;
+
+/// Escala con la que se abre la hoja: legible, y con el resto a un deslizamiento.
+const zoomInicialHoja = 0.6;
+
 /// La hoja del historial como en Excel: ficha en dos columnas, resumen y tabla.
 ///
-/// Se puede acercar con los dedos y moverse en ambas direcciones.
-class PantallaVistaExcel extends StatelessWidget {
-  const PantallaVistaExcel({super.key, required this.datos, this.alCompartir});
+/// Se acerca y aleja con los dedos, con los botones o con doble toque, y se mueve
+/// en ambas direcciones.
+class PantallaVistaExcel extends StatefulWidget {
+  const PantallaVistaExcel({
+    super.key,
+    required this.datos,
+    this.alCompartir,
+    this.alDescargar,
+  });
 
   final DatosHojaExcel datos;
   final VoidCallback? alCompartir;
+  final Future<bool> Function()? alDescargar;
+
+  @override
+  State<PantallaVistaExcel> createState() => _PantallaVistaExcelState();
+}
+
+class _PantallaVistaExcelState extends State<PantallaVistaExcel> {
+  /// Ancho de la hoja más el margen que la rodea.
+  static final _anchoContenido = _Hoja.anchoTotal + 32;
+
+  final _transformacion = TransformationController(
+    escalaUniforme(zoomInicialHoja),
+  );
+  Size _zona = Size.zero;
+  Offset _puntoDobleToque = Offset.zero;
+
+  @override
+  void dispose() {
+    _transformacion.dispose();
+    super.dispose();
+  }
+
+  void _acercar(double factor, [Offset? centro]) {
+    _transformacion.value = zoomAlrededor(
+      _transformacion.value,
+      factor,
+      centro ?? Offset(_zona.width / 2, _zona.height / 2),
+      minima: zoomMinimoHoja,
+      maxima: zoomMaximoHoja,
+    );
+  }
+
+  /// Deja toda la hoja a lo ancho de la pantalla.
+  void _ajustarAlAncho() {
+    final escala = (_zona.width / _anchoContenido).clamp(
+      zoomMinimoHoja,
+      zoomMaximoHoja,
+    );
+    _transformacion.value = escalaUniforme(escala);
+  }
+
+  /// Doble toque: acerca hacia el punto tocado o, si ya está cerca, vuelve a ajustar.
+  void _alDobleToque() {
+    final escala = escalaDe(_transformacion.value);
+    if (escala >= 1.2) {
+      _ajustarAlAncho();
+    } else {
+      _acercar(1.0 / escala, _puntoDobleToque);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,25 +147,59 @@ class PantallaVistaExcel extends StatelessWidget {
           style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         actions: [
-          if (alCompartir != null)
+          if (widget.alDescargar != null)
+            IconButton(
+              key: const Key('descargarVistaExcel'),
+              tooltip: 'Descargar',
+              icon: const Icon(Icons.download_rounded),
+              onPressed: () => descargarConAviso(context, widget.alDescargar!),
+            ),
+          if (widget.alCompartir != null)
             IconButton(
               key: const Key('compartirVistaExcel'),
               tooltip: 'Compartir',
               icon: const Icon(Icons.share_rounded),
-              onPressed: alCompartir,
+              onPressed: widget.alCompartir,
             ),
         ],
       ),
-      body: InteractiveViewer(
-        key: const Key('zoomVistaExcel'),
-        constrained: false,
-        minScale: 0.4,
-        maxScale: 3,
-        boundaryMargin: const EdgeInsets.all(24),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: _Hoja(datos: datos),
-        ),
+      body: LayoutBuilder(
+        builder: (context, restricciones) {
+          _zona = restricciones.biggest;
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  onDoubleTapDown: (d) => _puntoDobleToque = d.localPosition,
+                  onDoubleTap: _alDobleToque,
+                  child: InteractiveViewer(
+                    key: const Key('zoomVistaExcel'),
+                    transformationController: _transformacion,
+                    constrained: false,
+                    minScale: zoomMinimoHoja,
+                    maxScale: zoomMaximoHoja,
+                    // Margen amplio: se puede mover la hoja aunque quede pequeña.
+                    boundaryMargin: const EdgeInsets.all(120),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: _Hoja(datos: widget.datos),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 12,
+                bottom: MediaQuery.of(context).padding.bottom + 16,
+                child: ControlesZoom(
+                  sobreOscuro: false,
+                  alAcercar: () => _acercar(1.5),
+                  alAlejar: () => _acercar(1 / 1.5),
+                  alAjustar: _ajustarAlAncho,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -106,6 +209,9 @@ class _Hoja extends StatelessWidget {
   const _Hoja({required this.datos});
 
   final DatosHojaExcel datos;
+
+  /// Ancho total de la hoja en píxeles.
+  static double get anchoTotal => _ancho(0, 9);
 
   static double _ancho(int desde, int hasta) {
     var total = 0.0;

@@ -97,12 +97,11 @@ void main() {
     );
     expect(scaffold.backgroundColor!.computeLuminance(), lessThan(0.01));
     expect(find.text('Guía de seguimiento'), findsOneWidget);
-    expect(contenedor.read(pantallaCompletaProvider), isTrue);
     final visor = tester.widget<InteractiveViewer>(
       find.byType(InteractiveViewer),
     );
     expect(visor.minScale, 1);
-    expect(visor.maxScale, 5);
+    expect(visor.maxScale, 8);
   });
 
   testWidgets('un toque oculta y muestra la barra superior', (tester) async {
@@ -142,15 +141,73 @@ void main() {
     expect(escala(tester), closeTo(1, 0.01));
   });
 
-  testWidgets('volver cierra el visor y devuelve la barra inferior', (
-    tester,
-  ) async {
+  testWidgets('volver cierra el visor', (tester) async {
     await abrir(tester);
 
     await tester.tap(find.byKey(const Key('cerrarVisorImagen')));
     await tester.pumpAndSettle();
 
     expect(find.byType(PantallaVisorImagen), findsNothing);
-    expect(contenedor.read(pantallaCompletaProvider), isFalse);
   });
+
+  testWidgets(
+    'abre encima de toda la app, sin ocultar la barra inferior después',
+    (tester) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final contenedorLocal = ProviderContainer(
+        overrides: [
+          servicioCacheContenidoProvider.overrideWithValue(_CacheFalso()),
+        ],
+      );
+      addTearDown(contenedorLocal.dispose);
+      // Como la app: navegador interno de la pestaña y barra inferior fuera de él.
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: contenedorLocal,
+          child: MaterialApp(
+            home: Scaffold(
+              bottomNavigationBar: const SizedBox(
+                height: 60,
+                child: Text('barra inferior'),
+              ),
+              body: Navigator(
+                onGenerateRoute: (_) => MaterialPageRoute<void>(
+                  builder: (interno) => Center(
+                    child: TextButton(
+                      onPressed: () => abrirVisorImagen(
+                        interno,
+                        url: 'https://localhost/guia.png',
+                        titulo: 'Guía',
+                      ),
+                      child: const Text('abrir'),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('abrir'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      // El área de la imagen ya tiene su tamaño definitivo desde que aparece...
+      final alAbrir = tester.getSize(find.byKey(const Key('areaVisorImagen')));
+      await tester.pumpAndSettle();
+      final final_ = tester.getSize(find.byKey(const Key('areaVisorImagen')));
+
+      expect(final_, alAbrir);
+      // ...porque el visor cubre la barra inferior desde el primer cuadro.
+      expect(find.text('barra inferior'), findsNothing);
+      expect(contenedorLocal.read(pantallaCompletaProvider), isFalse);
+
+      await tester.tap(find.byKey(const Key('cerrarVisorImagen')));
+      await tester.pumpAndSettle();
+      expect(find.text('barra inferior'), findsOneWidget);
+    },
+  );
 }

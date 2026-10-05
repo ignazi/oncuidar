@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
+import 'package:oncuidar/compartido/widgets/accion_descargar.dart';
+import 'package:oncuidar/compartido/widgets/controles_zoom.dart';
 import 'package:pdfx/pdfx.dart';
 
 /// Dibuja el documento de la ruta dada; en pruebas se reemplaza por uno falso.
@@ -23,6 +25,7 @@ Future<void> abrirVisorPdf(
   required String ruta,
   required String titulo,
   VoidCallback? alCompartir,
+  Future<bool> Function()? alDescargar,
 }) {
   return Navigator.of(context, rootNavigator: true).push(
     MaterialPageRoute<void>(
@@ -30,6 +33,7 @@ Future<void> abrirVisorPdf(
         ruta: ruta,
         titulo: titulo,
         alCompartir: alCompartir,
+        alDescargar: alDescargar,
       ),
     ),
   );
@@ -43,6 +47,7 @@ class PantallaVisorPdf extends ConsumerWidget {
     required this.titulo,
     this.constructorDocumento,
     this.alCompartir,
+    this.alDescargar,
   });
 
   /// Ruta local del archivo ya descargado.
@@ -52,6 +57,9 @@ class PantallaVisorPdf extends ConsumerWidget {
 
   /// Si se da, la barra muestra el botón de compartir (p. ej. en las exportaciones).
   final VoidCallback? alCompartir;
+
+  /// Si se da, la barra muestra el botón de descargar al teléfono.
+  final Future<bool> Function()? alDescargar;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,6 +88,13 @@ class PantallaVisorPdf extends ConsumerWidget {
           ),
         ),
         actions: [
+          if (alDescargar != null)
+            IconButton(
+              key: const Key('descargarVisorPdf'),
+              tooltip: 'Descargar',
+              icon: const Icon(Icons.download_rounded),
+              onPressed: () => descargarConAviso(context, alDescargar!),
+            ),
           if (alCompartir != null)
             IconButton(
               key: const Key('compartirVisorPdf'),
@@ -126,6 +141,10 @@ class IndicadorPaginaPdf extends StatelessWidget {
   }
 }
 
+/// Límites del zoom del documento: de la página a lo ancho hasta 12 veces.
+const _zoomMinimo = 1.0;
+const _zoomMaximo = 12.0;
+
 /// Documento real con pdfx: zoom con los dedos, desplazamiento vertical y número de página.
 class _DocumentoPdf extends StatefulWidget {
   const _DocumentoPdf({required this.ruta});
@@ -141,58 +160,93 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
     document: PdfDocument.openFile(widget.ruta),
   );
 
+  /// Tamaño de la zona del documento, para acercar hacia su centro.
+  Size _zona = Size.zero;
+
   @override
   void dispose() {
     _controlador.dispose();
     super.dispose();
   }
 
+  void _acercar(double factor) {
+    final centro = Offset(_zona.width / 2, _zona.height / 2);
+    _controlador.value = zoomAlrededor(
+      _controlador.value,
+      factor,
+      centro,
+      minima: _zoomMinimo,
+      maxima: _zoomMaximo,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: PdfViewPinch(
-            controller: _controlador,
-            // Más zoom del que se lee con comodidad solo gasta memoria y tiempo
-            // de dibujo: 4x basta para ver el detalle en un teléfono.
-            maxScale: 4,
-            backgroundDecoration: const BoxDecoration(color: Color(0xFF0B0B0D)),
-            builders: PdfViewPinchBuilders<DefaultBuilderOptions>(
-              // El cambio de la vista previa a la página nítida es breve, no un fundido lento.
-              options: const DefaultBuilderOptions(
-                loaderSwitchDuration: Duration(milliseconds: 120),
-              ),
-              documentLoaderBuilder: (_) => Center(
-                child: CircularProgressIndicator(color: Paleta.doradoMedio),
-              ),
-              pageLoaderBuilder: (_) => Center(
-                child: CircularProgressIndicator(color: Paleta.doradoMedio),
-              ),
-              errorBuilder: (_, _) => Center(
-                child: Text(
-                  'No se pudo mostrar el PDF.',
-                  style: GoogleFonts.nunito(fontSize: 14, color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, restricciones) {
+        _zona = restricciones.biggest;
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: PdfViewPinch(
+                controller: _controlador,
+                // Mismo rango que da pdfx por defecto: se puede acercar mucho y
+                // alejar hasta ver la página entera a lo ancho.
+                minScale: _zoomMinimo,
+                maxScale: _zoomMaximo,
+                backgroundDecoration: const BoxDecoration(
+                  color: Color(0xFF0B0B0D),
+                ),
+                builders: PdfViewPinchBuilders<DefaultBuilderOptions>(
+                  // El cambio de la vista previa a la página nítida es breve.
+                  options: const DefaultBuilderOptions(
+                    loaderSwitchDuration: Duration(milliseconds: 120),
+                  ),
+                  documentLoaderBuilder: (_) => Center(
+                    child: CircularProgressIndicator(color: Paleta.doradoMedio),
+                  ),
+                  pageLoaderBuilder: (_) => Center(
+                    child: CircularProgressIndicator(color: Paleta.doradoMedio),
+                  ),
+                  errorBuilder: (_, _) => Center(
+                    child: Text(
+                      'No se pudo mostrar el PDF.',
+                      style: GoogleFonts.nunito(
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: MediaQuery.of(context).padding.bottom + 16,
-          child: Center(
-            child: PdfPageNumber(
-              controller: _controlador,
-              builder: (_, estado, pagina, total) =>
-                  estado == PdfLoadingState.success && total != null
-                  ? IndicadorPaginaPdf(pagina: pagina, total: total)
-                  : const SizedBox.shrink(),
+            Positioned(
+              right: 12,
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              child: ControlesZoom(
+                alAcercar: () => _acercar(1.5),
+                alAlejar: () => _acercar(1 / 1.5),
+                // «Ajustar» deja la página entera a lo ancho, como al abrir.
+                alAjustar: () => _controlador.value = Matrix4.identity(),
+              ),
             ),
-          ),
-        ),
-      ],
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              child: Center(
+                child: PdfPageNumber(
+                  controller: _controlador,
+                  builder: (_, estado, pagina, total) =>
+                      estado == PdfLoadingState.success && total != null
+                      ? IndicadorPaginaPdf(pagina: pagina, total: total)
+                      : const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

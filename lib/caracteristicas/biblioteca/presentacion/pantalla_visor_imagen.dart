@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:oncuidar/app/proveedores_navegacion.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
 
 /// Etiqueta del Hero que comparten la tarjeta y el visor.
 String etiquetaHeroImagen(String idMaterial) => 'imagen-material-$idMaterial';
 
-/// Abre el visor con un fundido; la tarjeta vuela hacia él si comparte el Hero.
+/// Abre el visor con un fundido, encima de toda la app (barra inferior incluida).
+///
+/// Va en el navegador raíz para que ocupe la pantalla desde el primer cuadro: antes
+/// se ocultaba la barra inferior después de abrir y la imagen se redimensionaba y
+/// «saltaba», lo que hacía que abriera raro.
 Future<void> abrirVisorImagen(
   BuildContext context, {
   required String url,
   required String titulo,
   String? idMaterial,
 }) {
-  return Navigator.of(context).push(
+  return Navigator.of(context, rootNavigator: true).push(
     PageRouteBuilder<void>(
       transitionDuration: const Duration(milliseconds: 300),
       reverseTransitionDuration: const Duration(milliseconds: 250),
@@ -30,7 +32,7 @@ Future<void> abrirVisorImagen(
 const escalaDobleToque = 2.5;
 
 /// Infografía a pantalla completa con zoom, doble toque y barra que se oculta.
-class PantallaVisorImagen extends ConsumerStatefulWidget {
+class PantallaVisorImagen extends StatefulWidget {
   const PantallaVisorImagen({
     super.key,
     required this.url,
@@ -45,15 +47,13 @@ class PantallaVisorImagen extends ConsumerStatefulWidget {
   final String? idMaterial;
 
   @override
-  ConsumerState<PantallaVisorImagen> createState() =>
-      _PantallaVisorImagenState();
+  State<PantallaVisorImagen> createState() => _PantallaVisorImagenState();
 }
 
-class _PantallaVisorImagenState extends ConsumerState<PantallaVisorImagen>
+class _PantallaVisorImagenState extends State<PantallaVisorImagen>
     with SingleTickerProviderStateMixin {
   final _transformacion = TransformationController();
   late final AnimationController _animacion;
-  late final PantallaCompletaNotifier _notificadorPantallaCompleta;
   Animation<Matrix4>? _animacionMatriz;
   Offset _puntoDobleToque = Offset.zero;
   bool _mostrarBarra = true;
@@ -69,21 +69,10 @@ class _PantallaVisorImagenState extends ConsumerState<PantallaVisorImagen>
           final matriz = _animacionMatriz;
           if (matriz != null) _transformacion.value = matriz.value;
         });
-    _notificadorPantallaCompleta = ref.read(pantallaCompletaProvider.notifier);
-    // La barra inferior se oculta tras el primer cuadro: no se cambia estado durante el build.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _notificadorPantallaCompleta.fijar(true);
-    });
   }
 
   @override
   void dispose() {
-    final notificador = _notificadorPantallaCompleta;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      try {
-        notificador.fijar(false);
-      } catch (_) {}
-    });
     _animacion.dispose();
     _transformacion.dispose();
     super.dispose();
@@ -129,7 +118,7 @@ class _PantallaVisorImagenState extends ConsumerState<PantallaVisorImagen>
               child: InteractiveViewer(
                 transformationController: _transformacion,
                 minScale: 1,
-                maxScale: 5,
+                maxScale: 8,
                 child: Center(child: _imagen()),
               ),
             ),
@@ -141,14 +130,11 @@ class _PantallaVisorImagenState extends ConsumerState<PantallaVisorImagen>
   }
 
   Widget _imagen() {
-    final imagen = ImagenCacheada(
+    return ImagenCacheada(
       url: widget.url,
       ajuste: BoxFit.contain,
       reemplazo: const _ImagenIndisponible(),
     );
-    final id = widget.idMaterial;
-    if (id == null) return imagen;
-    return Hero(tag: etiquetaHeroImagen(id), child: imagen);
   }
 
   Widget _barraSuperior() {

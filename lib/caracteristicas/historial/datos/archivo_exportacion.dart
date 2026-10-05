@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -23,6 +24,32 @@ Future<File> escribirArchivoTemporal(Uint8List bytes, String extension) async {
   );
   await archivo.writeAsBytes(bytes, flush: true);
   return archivo;
+}
+
+/// Guarda el archivo en el teléfono con el selector «Guardar como» del sistema.
+///
+/// Devuelve true si se guardó y false si se canceló o no se pudo. No necesita
+/// permisos de almacenamiento: el selector del sistema da acceso a la carpeta.
+Future<bool> descargarArchivoExportado(
+  Uint8List bytes,
+  String extension,
+) async {
+  try {
+    final ruta = await FlutterFileDialog.saveFile(
+      params: SaveFileDialogParams(
+        data: bytes,
+        fileName: nombreArchivoExportacion(DateTime.now(), extension),
+        mimeTypesFilter: [
+          extension == 'pdf'
+              ? 'application/pdf'
+              : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ],
+      ),
+    );
+    return ruta != null;
+  } catch (_) {
+    return false;
+  }
 }
 
 /// Abre el menú del sistema para compartir el archivo exportado.

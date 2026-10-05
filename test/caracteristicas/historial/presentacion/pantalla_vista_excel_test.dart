@@ -184,4 +184,106 @@ void main() {
     await _abrir(tester, _datos());
     expect(find.byKey(const Key('compartirVistaExcel')), findsNothing);
   });
+
+  group('zoom a gusto', () {
+    double escala(WidgetTester tester) => tester
+        .widget<InteractiveViewer>(find.byKey(const Key('zoomVistaExcel')))
+        .transformationController!
+        .value
+        .getMaxScaleOnAxis();
+
+    testWidgets('abre con una escala legible', (tester) async {
+      await _abrir(tester, _datos());
+      expect(escala(tester), closeTo(zoomInicialHoja, 1e-9));
+    });
+
+    testWidgets('los botones acercan y alejan', (tester) async {
+      await _abrir(tester, _datos());
+      final inicial = escala(tester);
+
+      await tester.tap(find.byKey(const Key('zoomMas')));
+      await tester.pump();
+      expect(escala(tester), greaterThan(inicial));
+
+      await tester.tap(find.byKey(const Key('zoomMenos')));
+      await tester.tap(find.byKey(const Key('zoomMenos')));
+      await tester.pump();
+      expect(escala(tester), lessThan(inicial));
+    });
+
+    testWidgets('se puede acercar hasta el máximo y alejar hasta el mínimo', (
+      tester,
+    ) async {
+      await _abrir(tester, _datos());
+
+      for (var i = 0; i < 15; i++) {
+        await tester.tap(find.byKey(const Key('zoomMas')));
+      }
+      await tester.pump();
+      expect(escala(tester), closeTo(zoomMaximoHoja, 1e-9));
+
+      for (var i = 0; i < 30; i++) {
+        await tester.tap(find.byKey(const Key('zoomMenos')));
+      }
+      await tester.pump();
+      expect(escala(tester), closeTo(zoomMinimoHoja, 1e-9));
+    });
+
+    testWidgets('«Ajustar» deja toda la hoja a lo ancho de la pantalla', (
+      tester,
+    ) async {
+      await _abrir(tester, _datos(), tamano: const Size(360, 800));
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.byKey(const Key('zoomMas')));
+      }
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('zoomAjustar')));
+      await tester.pump();
+
+      // getRect incluye la escala del zoom (getSize daría el tamaño sin escalar).
+      final hoja = tester.getRect(find.byKey(const Key('hojaExcel')));
+      // La hoja, ya escalada, cabe en el ancho de la pantalla.
+      expect(hoja.width, lessThanOrEqualTo(360));
+      expect(hoja.width, greaterThan(360 * 0.8));
+    });
+
+    testWidgets('doble toque acerca y otro doble toque vuelve a ajustar', (
+      tester,
+    ) async {
+      await _abrir(tester, _datos());
+      final zona = find.byKey(const Key('zoomVistaExcel'));
+      final antes = escala(tester);
+
+      await tester.tap(zona);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(zona);
+      await tester.pumpAndSettle();
+      expect(escala(tester), greaterThan(antes));
+
+      await tester.tap(zona);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(zona);
+      await tester.pumpAndSettle();
+      expect(escala(tester), lessThan(1.2));
+    });
+
+    testWidgets('el rango de zoom del visor es amplio', (tester) async {
+      await _abrir(tester, _datos());
+      final visor = tester.widget<InteractiveViewer>(
+        find.byKey(const Key('zoomVistaExcel')),
+      );
+      expect(visor.minScale, zoomMinimoHoja);
+      expect(visor.maxScale, zoomMaximoHoja);
+      expect(visor.minScale, lessThan(0.3));
+      expect(visor.maxScale, greaterThanOrEqualTo(6));
+    });
+
+    testWidgets('el botón de descargar solo aparece si se da la acción', (
+      tester,
+    ) async {
+      await _abrir(tester, _datos());
+      expect(find.byKey(const Key('descargarVistaExcel')), findsNothing);
+    });
+  });
 }
