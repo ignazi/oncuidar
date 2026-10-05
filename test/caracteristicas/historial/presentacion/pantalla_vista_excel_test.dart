@@ -395,4 +395,9 @@ void main() {
     // La letra se dibuja más grande (no es la misma imagen estirada).
     expect(tamanoLetra(), closeTo(antes * 1.5, 0.01));
   });
+
+  testWidgets('tiene el botón para girar a pantalla completa', (tester) async {
+    await _abrir(tester, _datos());
+    expect(find.byKey(const Key('girarVisor')), findsOneWidget);
+  });
 }

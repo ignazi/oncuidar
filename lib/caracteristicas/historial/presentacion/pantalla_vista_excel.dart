@@ -8,7 +8,7 @@ import 'package:oncuidar/caracteristicas/historial/dominio/orden_registros.dart'
 import 'package:oncuidar/caracteristicas/pacientes/dominio/paciente.dart';
 import 'package:oncuidar/caracteristicas/registro_clinico/dominio/registro_clinico.dart';
 import 'package:oncuidar/compartido/widgets/accion_descargar.dart';
-import 'package:oncuidar/compartido/widgets/barra_visor.dart';
+import 'package:oncuidar/compartido/widgets/marco_visor.dart';
 import 'package:oncuidar/compartido/widgets/visor_con_zoom.dart';
 import 'package:oncuidar/nucleo/utilidades/formato_fecha.dart';
 
@@ -333,30 +333,27 @@ class PantallaVistaExcel extends StatelessWidget {
     double ajuste(Size zona) =>
         (zona.width / anchoHoja).clamp(zoomMinimoHoja, zoomMaximoHoja);
 
-    return Scaffold(
-      backgroundColor: _fondoRotulos,
-      appBar: barraVisor(
-        titulo: 'Historial en Excel',
-        claveVolver: const Key('cerrarVistaExcel'),
-        alVolver: () => Navigator.of(context).maybePop(),
-        acciones: [
-          if (alDescargar != null)
-            IconButton(
-              key: const Key('descargarVistaExcel'),
-              tooltip: 'Descargar',
-              icon: const Icon(Icons.download_rounded),
-              onPressed: () => descargarConAviso(context, alDescargar!),
-            ),
-          if (alCompartir != null)
-            IconButton(
-              key: const Key('compartirVistaExcel'),
-              tooltip: 'Compartir',
-              icon: const Icon(Icons.share_rounded),
-              onPressed: alCompartir,
-            ),
-        ],
-      ),
-      body: VisorConZoom(
+    return MarcoVisor(
+      fondo: _fondoRotulos,
+      titulo: 'Historial en Excel',
+      claveVolver: const Key('cerrarVistaExcel'),
+      acciones: [
+        if (alDescargar != null)
+          IconButton(
+            key: const Key('descargarVistaExcel'),
+            tooltip: 'Descargar',
+            icon: const Icon(Icons.download_rounded),
+            onPressed: () => descargarConAviso(context, alDescargar!),
+          ),
+        if (alCompartir != null)
+          IconButton(
+            key: const Key('compartirVistaExcel'),
+            tooltip: 'Compartir',
+            icon: const Icon(Icons.share_rounded),
+            onPressed: alCompartir,
+          ),
+      ],
+      cuerpo: VisorConZoom(
         claveVisor: const Key('zoomVistaExcel'),
         sobreOscuro: false,
         // Lo más lejos: toda la hoja a lo ancho, como el botón «Ajustar».

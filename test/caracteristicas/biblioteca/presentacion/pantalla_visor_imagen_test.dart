@@ -208,4 +208,9 @@ void main() {
       expect(find.text('barra inferior'), findsOneWidget);
     },
   );
+
+  testWidgets('tiene el botón para girar a pantalla completa', (tester) async {
+    await abrir(tester);
+    expect(find.byKey(const Key('girarVisor')), findsOneWidget);
+  });
 }

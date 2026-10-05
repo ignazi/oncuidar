@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oncuidar/app/tema/paleta.dart';
 import 'package:oncuidar/compartido/widgets/accion_descargar.dart';
-import 'package:oncuidar/compartido/widgets/barra_visor.dart';
 import 'package:oncuidar/compartido/widgets/controles_zoom.dart';
+import 'package:oncuidar/compartido/widgets/marco_visor.dart';
 import 'package:oncuidar/compartido/widgets/visor_con_zoom.dart';
 import 'package:pdfx/pdfx.dart';
 
@@ -70,30 +70,29 @@ class PantallaVisorPdf extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final constructor =
         constructorDocumento ?? ref.watch(constructorDocumentoPdfProvider);
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B0B0D),
-      appBar: barraVisor(
-        titulo: titulo,
-        claveVolver: const Key('cerrarVisorPdf'),
-        alVolver: () => Navigator.of(context).maybePop(),
-        acciones: [
-          if (alDescargar != null)
-            IconButton(
-              key: const Key('descargarVisorPdf'),
-              tooltip: 'Descargar',
-              icon: const Icon(Icons.download_rounded),
-              onPressed: () => descargarConAviso(context, alDescargar!),
-            ),
-          if (alCompartir != null)
-            IconButton(
-              key: const Key('compartirVisorPdf'),
-              tooltip: 'Compartir',
-              icon: const Icon(Icons.share_rounded),
-              onPressed: alCompartir,
-            ),
-        ],
-      ),
-      body: constructor != null ? constructor(ruta) : _DocumentoPdf(ruta: ruta),
+    return MarcoVisor(
+      fondo: const Color(0xFF0B0B0D),
+      titulo: titulo,
+      claveVolver: const Key('cerrarVisorPdf'),
+      acciones: [
+        if (alDescargar != null)
+          IconButton(
+            key: const Key('descargarVisorPdf'),
+            tooltip: 'Descargar',
+            icon: const Icon(Icons.download_rounded),
+            onPressed: () => descargarConAviso(context, alDescargar!),
+          ),
+        if (alCompartir != null)
+          IconButton(
+            key: const Key('compartirVisorPdf'),
+            tooltip: 'Compartir',
+            icon: const Icon(Icons.share_rounded),
+            onPressed: alCompartir,
+          ),
+      ],
+      cuerpo: constructor != null
+          ? constructor(ruta)
+          : _DocumentoPdf(ruta: ruta),
     );
   }
 }

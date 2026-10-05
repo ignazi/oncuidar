@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/widgets/imagen_cacheada.dart';
-import 'package:oncuidar/compartido/widgets/barra_visor.dart';
+import 'package:oncuidar/compartido/widgets/marco_visor.dart';
 import 'package:oncuidar/compartido/widgets/visor_con_zoom.dart';
 
 /// Etiqueta del Hero que comparten la tarjeta y el visor.
@@ -47,14 +47,11 @@ class PantallaVisorImagen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B0B0D),
-      appBar: barraVisor(
-        titulo: titulo,
-        claveVolver: const Key('cerrarVisorImagen'),
-        alVolver: () => Navigator.of(context).maybePop(),
-      ),
-      body: VisorConZoom(
+    return MarcoVisor(
+      fondo: const Color(0xFF0B0B0D),
+      titulo: titulo,
+      claveVolver: const Key('cerrarVisorImagen'),
+      cuerpo: VisorConZoom(
         claveVisor: const Key('zoomVisorImagen'),
         constructor: (zona, factor) => SizedBox(
           key: const Key('areaVisorImagen'),
