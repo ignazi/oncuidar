@@ -207,7 +207,13 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
   void _alMover(Matrix4 matriz, Size zona) {
     if (_proporciones.isEmpty || _ancho == 0) return;
     final escala = escalaDe(matriz);
-    final yCentro = (-matriz.getTranslation().y + zona.height / 2) / escala;
+    // Si el documento es más bajo que la pantalla, va centrado en ella.
+    final relleno = ((zona.height - _altoDocumento) / 2).clamp(
+      0.0,
+      zona.height,
+    );
+    final yCentro =
+        (-matriz.getTranslation().y + zona.height / 2) / escala - relleno;
     var acumulado = 0.0;
     var pagina = _proporciones.length;
     for (var i = 0; i < _proporciones.length; i++) {
@@ -218,6 +224,14 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
       }
     }
     if (pagina != _paginaActual) setState(() => _paginaActual = pagina);
+  }
+
+  double get _altoDocumento {
+    var alto = 0.0;
+    for (final p in _proporciones) {
+      alto += _ancho * p + _separacionPaginas;
+    }
+    return alto;
   }
 
   @override
@@ -245,13 +259,11 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
         return VisorConZoom(
           claveVisor: const Key('zoomVisorPdf'),
           zoomMaximo: zoomMaximoPdf,
-          escalaInicial: (_) => 1,
-          escalaAjuste: (_) => 1,
           alMover: _alMover,
           pie: _total > 0
               ? IndicadorPaginaPdf(pagina: _paginaActual, total: _total)
               : null,
-          hijo: SizedBox(
+          constructor: (_) => SizedBox(
             width: _ancho,
             child: Column(
               children: [

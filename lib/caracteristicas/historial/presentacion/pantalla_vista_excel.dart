@@ -65,7 +65,7 @@ const _fondoRotulos = Color(0xFFF1F1F1);
 const _textoRotulos = Color(0xFF555555);
 
 /// Píxeles por carácter de ancho de columna del Excel.
-const _pxPorCaracter = 7.2;
+const _pxPorCaracter = 8.0;
 
 /// Ancho de la columna con los números de fila.
 const _anchoNumeros = 38.0;
@@ -87,6 +87,10 @@ const zoomInicialHoja = 0.8;
 final _anchoHoja =
     _anchoNumeros +
     anchosColumnasExcel.fold<double>(0, (a, b) => a + b * _pxPorCaracter);
+
+/// Escala con la que toda la hoja cabe a lo ancho de la pantalla.
+double _escalaAjuste(Size zona) =>
+    (zona.width / _anchoHoja).clamp(zoomMinimoHoja, zoomMaximoHoja);
 
 /// Una celda de la hoja, que puede abarcar varias columnas (como las combinadas de Excel).
 class _Celda {
@@ -358,14 +362,14 @@ class PantallaVistaExcel extends StatelessWidget {
       body: VisorConZoom(
         claveVisor: const Key('zoomVistaExcel'),
         sobreOscuro: false,
-        zoomMinimo: zoomMinimoHoja,
+        // Lo más lejos: toda la hoja a lo ancho, como el botón «Ajustar».
+        zoomMinimo: _escalaAjuste,
         zoomMaximo: zoomMaximoHoja,
-        escalaInicial: (_) => zoomInicialHoja,
-        // Toda la hoja a lo ancho de la pantalla.
-        escalaAjuste: (zona) =>
-            (zona.width / _anchoHoja).clamp(zoomMinimoHoja, zoomMaximoHoja),
-        margen: const EdgeInsets.all(40),
-        hijo: _Hoja(filas: _construirFilas(datos)),
+        escalaInicial: (zona) =>
+            zoomInicialHoja.clamp(_escalaAjuste(zona), zoomMaximoHoja),
+        escalaAjuste: _escalaAjuste,
+        alineacion: Alignment.topLeft,
+        constructor: (_) => _Hoja(filas: _construirFilas(datos)),
       ),
       bottomNavigationBar: const _PestanaHoja(),
     );
@@ -436,7 +440,7 @@ class _Hoja extends StatelessWidget {
     );
   }
 
-  Widget _rotulo(String texto, double ancho, double alto) => Container(
+  Widget _rotulo(String texto, double ancho, [double? alto]) => Container(
     width: ancho,
     height: alto,
     alignment: Alignment.center,
@@ -464,7 +468,7 @@ class _Hoja extends StatelessWidget {
 
   Widget _fila(int numero, _Fila fila) {
     final porInicio = {for (final c in fila.celdas) c.desde: c};
-    final partes = <Widget>[_rotulo('$numero', _anchoNumeros, fila.alto)];
+    final partes = <Widget>[_rotulo('$numero', _anchoNumeros)];
     var columna = 0;
     while (columna < anchosColumnasExcel.length) {
       final celda = porInicio[columna];
@@ -472,7 +476,7 @@ class _Hoja extends StatelessWidget {
         partes.add(
           Container(
             width: _anchoColumnas(columna, columna),
-            height: fila.alto,
+            constraints: BoxConstraints(minHeight: fila.alto),
             decoration: BoxDecoration(
               border: Border(right: _borde, bottom: _borde),
             ),
@@ -484,15 +488,19 @@ class _Hoja extends StatelessWidget {
         columna = celda.hasta + 1;
       }
     }
-    return Row(key: fila.clave, children: partes);
+    // El alto de la fila lo da la celda con más texto: ninguna palabra se corta.
+    return IntrinsicHeight(
+      key: fila.clave,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: partes,
+      ),
+    );
   }
 
   Widget _celda(_Celda c, double alto) {
     final texto = Text(
       c.texto,
-      maxLines: c.ajustar ? null : 1,
-      softWrap: c.ajustar,
-      overflow: TextOverflow.clip,
       textAlign: c.centrado ? TextAlign.center : TextAlign.left,
       style: GoogleFonts.nunito(
         fontSize: c.tamano,
@@ -503,8 +511,8 @@ class _Hoja extends StatelessWidget {
     );
     return Container(
       width: _anchoColumnas(c.desde, c.hasta),
-      height: alto,
-      padding: const EdgeInsets.symmetric(horizontal: 7),
+      constraints: BoxConstraints(minHeight: alto),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
       alignment: c.centrado ? Alignment.center : Alignment.centerLeft,
       decoration: BoxDecoration(
         color: c.fondo,

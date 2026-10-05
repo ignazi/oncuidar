@@ -20,8 +20,12 @@ PreferredSizeWidget barraVisor({
     iconTheme: IconThemeData(color: color),
     actionsIconTheme: IconThemeData(color: color),
     systemOverlayStyle: SystemUiOverlayStyle.dark,
-    flexibleSpace: DecoratedBox(
-      decoration: BoxDecoration(gradient: Paleta.degradadoCabecera),
+    // SizedBox.expand: la pila de AppBar no le da tamaño al fondo y, sin él, una
+    // caja sin hijo mide cero y el degradado no se ve.
+    flexibleSpace: SizedBox.expand(
+      child: DecoratedBox(
+        decoration: BoxDecoration(gradient: Paleta.degradadoCabecera),
+      ),
     ),
     leading: IconButton(
       key: claveVolver,

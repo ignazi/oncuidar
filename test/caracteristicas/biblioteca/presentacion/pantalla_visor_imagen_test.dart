@@ -4,7 +4,6 @@
 import 'dart:io';
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +11,7 @@ import 'package:oncuidar/app/proveedores_navegacion.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/proveedores_biblioteca.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/datos/servicio_cache_contenido.dart';
 import 'package:oncuidar/caracteristicas/biblioteca/presentacion/pantalla_visor_imagen.dart';
+import 'package:oncuidar/compartido/widgets/visor_con_zoom.dart';
 import 'package:oncuidar/nucleo/cifrado/servicio_cifrado.dart';
 import 'package:oncuidar/nucleo/datos/base_datos_segura.dart';
 import 'package:oncuidar/nucleo/proveedores.dart';
@@ -82,10 +82,6 @@ void main() {
       .value
       .getMaxScaleOnAxis();
 
-  double opacidadBarra(WidgetTester tester) => tester
-      .widget<AnimatedOpacity>(find.byKey(const Key('barraVisorImagen')))
-      .opacity;
-
   testWidgets('se abre a pantalla completa sobre fondo oscuro', (tester) async {
     await abrir(tester);
 
@@ -104,22 +100,27 @@ void main() {
     expect(visor.maxScale, 8);
   });
 
-  testWidgets('un toque oculta y muestra la barra superior', (tester) async {
-    await abrir(tester);
-    expect(opacidadBarra(tester), 1);
+  testWidgets(
+    'es la misma pantalla que las guías: barra dorada y botones de zoom',
+    (tester) async {
+      await abrir(tester);
 
-    await tester.tap(find.byKey(const Key('areaVisorImagen')));
-    // El toque simple espera a descartar un doble toque.
-    await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 50));
-    await tester.pumpAndSettle();
-    expect(opacidadBarra(tester), 0);
-
-    await tester.tap(find.byKey(const Key('areaVisorImagen')));
-    // El toque simple espera a descartar un doble toque.
-    await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 50));
-    await tester.pumpAndSettle();
-    expect(opacidadBarra(tester), 1);
-  });
+      expect(find.byType(VisorConZoom), findsOneWidget);
+      expect(find.byKey(const Key('zoomMas')), findsOneWidget);
+      final fondo = tester.getSize(
+        find.descendant(
+          of: find.byType(AppBar),
+          matching: find.byWidgetPredicate(
+            (w) =>
+                w is DecoratedBox &&
+                w.decoration is BoxDecoration &&
+                (w.decoration as BoxDecoration).gradient != null,
+          ),
+        ),
+      );
+      expect(fondo.height, greaterThan(40));
+    },
+  );
 
   testWidgets('el doble toque acerca y vuelve al tamaño original', (
     tester,
@@ -136,7 +137,7 @@ void main() {
 
     expect(escala(tester), 1);
     await dobleToque();
-    expect(escala(tester), closeTo(escalaDobleToque, 0.01));
+    expect(escala(tester), closeTo(2, 0.01));
     await dobleToque();
     expect(escala(tester), closeTo(1, 0.01));
   });

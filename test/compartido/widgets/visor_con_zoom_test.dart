@@ -20,11 +20,12 @@ void main() {
         home: Scaffold(
           body: VisorConZoom(
             claveVisor: const Key('visor'),
-            zoomMinimo: 0.5,
+            zoomMinimo: (_) => 0.5,
             zoomMaximo: 6,
             escalaInicial: (_) => inicial,
             escalaAjuste: (_) => 1,
-            hijo: Container(width: 400, height: 1600, color: Colors.teal),
+            constructor: (_) =>
+                Container(width: 400, height: 1600, color: Colors.teal),
           ),
         ),
       ),
@@ -107,4 +108,56 @@ void main() {
     await tester.tap(find.byKey(const Key('zoomAjustar')));
     expect(escalaDe(t.value), closeTo(1, 0.01));
   });
+
+  testWidgets(
+    'con contenido más bajo que la pantalla no salta al tocar y se puede alejar',
+    (tester) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      // Como una página apaisada: ancha y baja.
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: VisorConZoom(
+              claveVisor: const Key('visor'),
+              constructor: (zona) =>
+                  Container(width: zona.width, height: 250, color: Colors.teal),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final t = tester
+          .widget<InteractiveViewer>(find.byKey(const Key('visor')))
+          .transformationController!;
+
+      // Arrastrar con un dedo no cambia el zoom (antes saltaba a ~3x).
+      await tester.drag(find.byKey(const Key('visor')), const Offset(0, 30));
+      await tester.pumpAndSettle();
+      expect(escalaDe(t.value), closeTo(1, 0.01));
+
+      // Acercar con los dedos y volver a alejar hasta el inicio.
+      Future<void> pellizco(double desde, double hasta) async {
+        const centro = Offset(200, 400);
+        final a = await tester.startGesture(centro - Offset(desde, 0));
+        final b = await tester.startGesture(centro + Offset(desde, 0));
+        for (var i = 1; i <= 10; i++) {
+          final d = desde + (hasta - desde) * i / 10;
+          await a.moveTo(centro - Offset(d, 0));
+          await b.moveTo(centro + Offset(d, 0));
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        await a.up();
+        await b.up();
+        await tester.pumpAndSettle();
+      }
+
+      await pellizco(40, 120);
+      expect(escalaDe(t.value), greaterThan(1.5));
+      await pellizco(120, 20);
+      expect(escalaDe(t.value), closeTo(1, 0.05));
+    },
+  );
 }

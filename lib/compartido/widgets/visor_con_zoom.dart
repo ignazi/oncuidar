@@ -6,34 +6,38 @@ const _escalaDobleToque = 2.0;
 
 /// Contenido con zoom a gusto: pellizco, doble toque y botones de acercar/alejar.
 ///
-/// Usa el `InteractiveViewer` estándar (el mismo del visor de infografías), así el
-/// pellizco y el arrastre se comportan igual en PDF, Excel e imágenes.
+/// Es el visor de todos los documentos (PDF, Excel e infografías), así el pellizco
+/// y el arrastre se sienten igual en todos.
 class VisorConZoom extends StatefulWidget {
   const VisorConZoom({
     super.key,
-    required this.hijo,
-    required this.escalaInicial,
-    required this.escalaAjuste,
-    this.zoomMinimo = 1,
+    required this.constructor,
+    this.escalaInicial = _uno,
+    this.escalaAjuste = _uno,
+    this.zoomMinimo = _uno,
     this.zoomMaximo = 8,
-    this.margen = EdgeInsets.zero,
+    this.alineacion = Alignment.center,
     this.sobreOscuro = true,
     this.claveVisor,
     this.alMover,
     this.pie,
   });
 
-  final Widget hijo;
+  /// Dibuja el contenido según el tamaño de la zona visible.
+  final Widget Function(Size zona) constructor;
 
-  /// Escala con la que se abre (según el tamaño de la zona).
+  /// Escala con la que se abre.
   final double Function(Size zona) escalaInicial;
 
-  /// Escala del botón «Ajustar» (según el tamaño de la zona).
+  /// Escala del botón «Ajustar».
   final double Function(Size zona) escalaAjuste;
 
-  final double zoomMinimo;
+  /// Escala mínima a la que se puede alejar.
+  final double Function(Size zona) zoomMinimo;
   final double zoomMaximo;
-  final EdgeInsets margen;
+
+  /// Dónde queda el contenido cuando es más chico que la zona (centrado o arriba).
+  final Alignment alineacion;
   final bool sobreOscuro;
   final Key? claveVisor;
 
@@ -42,6 +46,8 @@ class VisorConZoom extends StatefulWidget {
 
   /// Lo que va fijo sobre el contenido, abajo al centro (p. ej. el número de página).
   final Widget? pie;
+
+  static double _uno(Size _) => 1;
 
   @override
   State<VisorConZoom> createState() => _EstadoVisorConZoom();
@@ -81,6 +87,8 @@ class _EstadoVisorConZoom extends State<VisorConZoom>
     if (t != null) widget.alMover?.call(t.value, _zona);
   }
 
+  double get _minimo => widget.zoomMinimo(_zona);
+
   Matrix4 _matrizInicial() => escalaUniforme(widget.escalaInicial(_zona));
 
   void _irA(Matrix4 destino, {bool animar = false}) {
@@ -102,7 +110,7 @@ class _EstadoVisorConZoom extends State<VisorConZoom>
     _transformacion!.value,
     factor,
     centro,
-    minima: widget.zoomMinimo,
+    minima: _minimo,
     maxima: widget.zoomMaximo,
   );
 
@@ -143,6 +151,7 @@ class _EstadoVisorConZoom extends State<VisorConZoom>
             (_) => mounted ? _irA(_matrizInicial()) : null,
           );
         }
+        final minimo = _minimo;
         return Stack(
           children: [
             Positioned.fill(
@@ -153,10 +162,24 @@ class _EstadoVisorConZoom extends State<VisorConZoom>
                   key: widget.claveVisor,
                   transformationController: _transformacion,
                   constrained: false,
-                  minScale: widget.zoomMinimo,
+                  minScale: minimo,
                   maxScale: widget.zoomMaximo,
-                  boundaryMargin: widget.margen,
-                  child: widget.hijo,
+                  // El lienzo mide al menos lo que se ve al alejar al máximo. Si el
+                  // contenido es más bajo que la pantalla (un PDF apaisado, una hoja
+                  // con pocas filas), el zoom de Flutter forzaba una escala mínima
+                  // para llenarla: el primer toque «saltaba» y no dejaba alejar.
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minWidth: _zona.width / minimo,
+                      minHeight: _zona.height / minimo,
+                    ),
+                    child: Align(
+                      alignment: widget.alineacion,
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: widget.constructor(_zona),
+                    ),
+                  ),
                 ),
               ),
             ),

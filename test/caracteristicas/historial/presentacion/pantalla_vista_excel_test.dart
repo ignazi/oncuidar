@@ -125,6 +125,21 @@ void main() {
     );
   });
 
+  testWidgets('ninguna palabra queda cortada: la fila crece con el texto', (
+    tester,
+  ) async {
+    await _abrir(tester, _datos(cantidad: 1, observaciones: 'palabra ' * 60));
+
+    final texto = find.textContaining('palabra');
+    final fila = find.byKey(const Key('filaRegistroExcel_0'));
+    // El texto entero queda dentro de su fila (no se recorta por abajo).
+    expect(
+      tester.getRect(texto).bottom,
+      lessThanOrEqualTo(tester.getRect(fila).bottom + 0.01),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('el texto largo se reparte en varias líneas dentro de su celda', (
     tester,
   ) async {
@@ -134,8 +149,8 @@ void main() {
     final alto = tester.getSize(observacion).height;
     // Una línea mide ~16; varias líneas la superan con holgura.
     expect(alto, greaterThan(40));
-    // Y cabe en el ancho de su columna (44 caracteres × 7,2 px).
-    expect(tester.getSize(observacion).width, lessThanOrEqualTo(44 * 7.2));
+    // Y cabe en el ancho de su columna (44 caracteres × 8 px).
+    expect(tester.getSize(observacion).width, lessThanOrEqualTo(44 * 8.0));
   });
 
   testWidgets('la hoja se puede acercar y mover sin desbordar la pantalla', (
@@ -271,7 +286,12 @@ void main() {
         await tester.tap(find.byKey(const Key('zoomMenos')));
       }
       await tester.pump();
-      expect(escala(tester), closeTo(zoomMinimoHoja, 1e-9));
+      // Lo más lejos es ver toda la hoja a lo ancho de la pantalla.
+      final visor = tester.widget<InteractiveViewer>(
+        find.byKey(const Key('zoomVistaExcel')),
+      );
+      expect(escala(tester), closeTo(visor.minScale, 1e-9));
+      expect(visor.minScale, lessThan(0.4));
     });
 
     testWidgets('«Ajustar» deja toda la hoja a lo ancho de la pantalla', (
@@ -318,7 +338,6 @@ void main() {
       final visor = tester.widget<InteractiveViewer>(
         find.byKey(const Key('zoomVistaExcel')),
       );
-      expect(visor.minScale, zoomMinimoHoja);
       expect(visor.maxScale, zoomMaximoHoja);
       expect(visor.minScale, lessThan(0.3));
       expect(visor.maxScale, greaterThanOrEqualTo(6));
