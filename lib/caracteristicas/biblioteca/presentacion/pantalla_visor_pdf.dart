@@ -138,11 +138,16 @@ const _separacionPaginas = 10.0;
 /// Ancho máximo, en píxeles, al que se dibuja una página (cuida la memoria).
 const _pixelesMaximos = 4096.0;
 
+/// Las páginas se dibujan con margen para acercar sin perder nitidez: al doble de
+/// la resolución de la pantalla. Hasta ese zoom se ven nítidas al instante, sin
+/// esperar a que se redibujen (como una infografía).
+const _margenNitidez = 2.0;
+
 /// Documento real: cada página se dibuja como imagen y el conjunto se acerca con
 /// los dedos igual que una infografía (pellizco, doble toque y botones).
 ///
-/// Las páginas se dibujan a la resolución de la pantalla y, al acercar, las que
-/// se ven se vuelven a dibujar a la resolución del zoom: nunca se ven pixeladas.
+/// Solo se dibujan (y se guardan en memoria) las páginas que se ven y sus vecinas;
+/// al acercar más del margen, esas se vuelven a dibujar a la resolución del zoom.
 class _DocumentoPdf extends StatefulWidget {
   const _DocumentoPdf({required this.ruta});
 
@@ -156,19 +161,20 @@ class _DocumentoPdf extends StatefulWidget {
 typedef _Dibujo = ({Uint8List bytes, double pixeles});
 
 class _DocumentoPdfState extends State<_DocumentoPdf> {
-  final _paginas = <_Dibujo>[];
   final _proporciones = <double>[];
+  final _dibujos = <int, _Dibujo>{};
 
-  /// Páginas visibles redibujadas más nítidas para el zoom actual.
-  final _nitidas = <int, _Dibujo>{};
+  /// Páginas que se están dibujando y a qué ancho, para no repetir el trabajo.
+  final _enCurso = <int, double>{};
+  Set<int> _cercanas = {0, 1};
   PdfDocument? _documento;
-  int _total = 0;
   bool _error = false;
   bool _cargaIniciada = false;
   bool _cerrado = false;
   int _paginaActual = 1;
   double _ancho = 0;
   double _densidad = 2;
+  double _factor = 1;
 
   /// Android solo deja abierta una página a la vez: los dibujos van en fila.
   Future<void> _fila = Future.value();
@@ -189,26 +195,7 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
     return resultado;
   }
 
-  Future<_Dibujo?> _dibujar(int numero, double pixeles) => _enFila(() async {
-    final documento = _documento;
-    if (documento == null || _cerrado) return null;
-    final pagina = await documento.getPage(numero);
-    try {
-      final ancho = pixeles.clamp(400.0, _pixelesMaximos);
-      final imagen = await pagina.render(
-        width: ancho,
-        height: ancho * pagina.height / pagina.width,
-        format: PdfPageImageFormat.jpeg,
-        backgroundColor: '#FFFFFF',
-        quality: 92,
-      );
-      return imagen == null ? null : (bytes: imagen.bytes, pixeles: ancho);
-    } finally {
-      await pagina.close();
-    }
-  });
-
-  /// Dibuja todas las páginas a la resolución de la pantalla, una tras otra.
+  /// Abre el documento y mide sus páginas (rápido); se dibujan según se vean.
   Future<void> _cargar() async {
     try {
       final documento = await PdfDocument.openFile(widget.ruta);
@@ -217,25 +204,78 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
         await documento.close();
         return;
       }
-      setState(() => _total = documento.pagesCount);
+      final proporciones = <double>[];
       for (var i = 1; i <= documento.pagesCount; i++) {
-        final proporcion = await _enFila(() async {
-          final pagina = await documento.getPage(i);
-          final p = pagina.height / pagina.width;
-          await pagina.close();
-          return p;
-        });
-        final dibujo = await _dibujar(i, _ancho * _densidad);
-        if (_cerrado || !mounted) return;
-        if (dibujo != null) {
-          setState(() {
-            _paginas.add(dibujo);
-            _proporciones.add(proporcion);
-          });
-        }
+        proporciones.add(
+          await _enFila(() async {
+            final pagina = await documento.getPage(i);
+            final p = pagina.height / pagina.width;
+            await pagina.close();
+            return p;
+          }),
+        );
       }
+      if (_cerrado || !mounted) return;
+      setState(() => _proporciones.addAll(proporciones));
+      _asegurarNitidez();
     } on Object {
       if (mounted) setState(() => _error = true);
+    }
+  }
+
+  /// Ancho en píxeles que necesitan las páginas para el zoom actual, con margen.
+  double get _pixelesNecesarios =>
+      (_ancho * _factor * _densidad * _margenNitidez).clamp(
+        400.0,
+        _pixelesMaximos,
+      );
+
+  /// Dibuja las páginas cercanas que faltan o que quedaron chicas para el zoom.
+  void _asegurarNitidez() {
+    final necesarios = _pixelesNecesarios;
+    for (final i in _cercanas) {
+      if (i >= _proporciones.length) continue;
+      final actual = _dibujos[i]?.pixeles ?? 0;
+      final pedido = _enCurso[i] ?? 0;
+      // Basta con que tenga resolución para lo que se ve (sin el margen).
+      if (actual >= necesarios / _margenNitidez * 1.1 && actual > 0) continue;
+      if (pedido >= necesarios * 0.9) continue;
+      _enCurso[i] = necesarios;
+      unawaited(_dibujar(i, necesarios));
+    }
+  }
+
+  Future<void> _dibujar(int indice, double pixeles) async {
+    try {
+      final dibujo = await _enFila<_Dibujo?>(() async {
+        final documento = _documento;
+        // Si ya no se ve, no vale la pena dibujarla.
+        if (documento == null || _cerrado || !_cercanas.contains(indice)) {
+          return null;
+        }
+        final pagina = await documento.getPage(indice + 1);
+        try {
+          final imagen = await pagina.render(
+            width: pixeles,
+            height: pixeles * _proporciones[indice],
+            format: PdfPageImageFormat.jpeg,
+            backgroundColor: '#FFFFFF',
+            quality: 92,
+          );
+          return imagen == null
+              ? null
+              : (bytes: imagen.bytes, pixeles: pixeles);
+        } finally {
+          await pagina.close();
+        }
+      });
+      if (dibujo != null && mounted && !_cerrado) {
+        setState(() => _dibujos[indice] = dibujo);
+      }
+    } on Object {
+      // Una página que no se pudo dibujar queda en blanco; el resto sigue.
+    } finally {
+      if (_enCurso[indice] == pixeles) _enCurso.remove(indice);
     }
   }
 
@@ -248,7 +288,7 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
     return alto;
   }
 
-  /// Número de página y redibujo nítido de las páginas que se ven.
+  /// Número de página, páginas cercanas y redibujo nítido de las que se ven.
   void _alMover(Matrix4 matriz, Size zona, double factor) {
     if (_proporciones.isEmpty || _ancho == 0) return;
     final estirado = escalaDe(matriz);
@@ -271,30 +311,26 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
         pagina = i + 1;
       }
     }
-    if (pagina != _paginaActual) setState(() => _paginaActual = pagina);
-
-    // Solo cuando el zoom ya se asentó (sin estirado) se redibuja nítido.
-    if ((estirado - 1).abs() < 0.001) _afinar(visibles, factor);
-  }
-
-  void _afinar(List<int> visibles, double factor) {
-    final necesarios = _ancho * factor * _densidad;
-    // Lo que ya no se ve vuelve a la resolución normal (libera memoria).
-    _nitidas.removeWhere((i, _) => !visibles.contains(i));
-    for (final i in visibles) {
-      final actual = _nitidas[i] ?? _paginas[i];
-      if (actual.pixeles >= _pixelesMaximos ||
-          actual.pixeles >= necesarios * 0.9) {
-        continue;
-      }
-      unawaited(
-        _dibujar(i + 1, necesarios).then((dibujo) {
-          if (dibujo != null && mounted && !_cerrado) {
-            setState(() => _nitidas[i] = dibujo);
-          }
-        }),
-      );
+    if (visibles.isEmpty) return;
+    // Las visibles y una antes y una después, para que al deslizar ya estén.
+    final cercanas = {
+      for (var i = visibles.first - 1; i <= visibles.last + 1; i++)
+        if (i >= 0 && i < _proporciones.length) i,
+    };
+    final cambio =
+        pagina != _paginaActual ||
+        cercanas.length != _cercanas.length ||
+        !cercanas.containsAll(_cercanas);
+    _factor = factor;
+    if (cambio) {
+      setState(() {
+        _paginaActual = pagina;
+        _cercanas = cercanas;
+        // Las lejanas se sueltan de la memoria.
+        _dibujos.removeWhere((i, _) => !cercanas.contains(i));
+      });
     }
+    _asegurarNitidez();
   }
 
   @override
@@ -315,7 +351,7 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
             ),
           );
         }
-        if (_paginas.isEmpty) {
+        if (_proporciones.isEmpty) {
           return Center(
             child: CircularProgressIndicator(color: Paleta.doradoMedio),
           );
@@ -324,25 +360,32 @@ class _DocumentoPdfState extends State<_DocumentoPdf> {
           claveVisor: const Key('zoomVisorPdf'),
           zoomMaximo: zoomMaximoPdf,
           alMover: _alMover,
-          pie: _total > 0
-              ? IndicadorPaginaPdf(pagina: _paginaActual, total: _total)
-              : null,
+          pie: IndicadorPaginaPdf(
+            pagina: _paginaActual,
+            total: _proporciones.length,
+          ),
           constructor: (_, factor) => SizedBox(
             width: _ancho * factor,
             child: Column(
               children: [
-                for (var i = 0; i < _paginas.length; i++)
+                for (var i = 0; i < _proporciones.length; i++)
                   Padding(
                     padding: EdgeInsets.only(
-                      bottom: i == _paginas.length - 1 ? 0 : _separacionPaginas,
+                      bottom: i == _proporciones.length - 1
+                          ? 0
+                          : _separacionPaginas,
                     ),
-                    child: Image.memory(
-                      (_nitidas[i] ?? _paginas[i]).bytes,
+                    child: SizedBox(
                       width: _ancho * factor,
                       height: _ancho * factor * _proporciones[i],
-                      fit: BoxFit.fill,
-                      gaplessPlayback: true,
-                      filterQuality: FilterQuality.medium,
+                      child: _dibujos[i] == null
+                          ? const ColoredBox(color: Colors.white)
+                          : Image.memory(
+                              _dibujos[i]!.bytes,
+                              fit: BoxFit.fill,
+                              gaplessPlayback: true,
+                              filterQuality: FilterQuality.medium,
+                            ),
                     ),
                   ),
               ],

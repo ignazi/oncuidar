@@ -157,7 +157,15 @@ void main() {
     );
     expect(find.byType(AppBar), findsOneWidget);
     expect(find.text('Cómo medir la fiebre'), findsOneWidget);
-    expect(find.byIcon(Icons.fullscreen), findsOneWidget);
+    // El botón de girar va arriba, en la barra (ya no hay «expandir» abajo).
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.byIcon(Icons.screen_rotation_rounded),
+      ),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.fullscreen), findsNothing);
     expect(video.llamadas, contains('play'));
 
     await cerrar(tester);
@@ -179,7 +187,7 @@ void main() {
         'DeviceOrientation.landscapeRight',
       ]);
       expect(find.byType(AppBar), findsNothing);
-      expect(find.byIcon(Icons.fullscreen_exit), findsOneWidget);
+      expect(find.byIcon(Icons.screen_lock_portrait_rounded), findsOneWidget);
       expect(contenedor.read(pantallaCompletaProvider), isTrue);
 
       await tester.tap(find.byKey(const Key('alternarPantallaCompleta')));

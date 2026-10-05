@@ -7,7 +7,7 @@ import 'package:oncuidar/compartido/widgets/controles_zoom.dart';
 const _escalaDobleToque = 2.0;
 
 /// Espera tras el último movimiento antes de redibujar nítido al nuevo tamaño.
-const _esperaNitidez = Duration(milliseconds: 300);
+const _esperaNitidez = Duration(milliseconds: 120);
 
 /// Dibuja el contenido para la zona visible y un [factor] de tamaño (1 = normal).
 typedef ConstructorZoom = Widget Function(Size zona, double factor);

@@ -27,6 +27,9 @@ PreferredSizeWidget barraVisor({
         decoration: BoxDecoration(gradient: Paleta.degradadoCabecera),
       ),
     ),
+    // Título a la izquierda, junto al botón de volver.
+    centerTitle: false,
+    titleSpacing: 0,
     leading: IconButton(
       key: claveVolver,
       tooltip: 'Volver',

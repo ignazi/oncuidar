@@ -67,47 +67,29 @@ class _MarcoVisorState extends State<MarcoVisor> {
       },
       child: Scaffold(
         backgroundColor: widget.fondo,
-        appBar: _horizontal
-            ? null
-            : barraVisor(
-                titulo: widget.titulo,
-                claveVolver: widget.claveVolver,
-                alVolver: () => Navigator.of(context).maybePop(),
-                acciones: [
-                  ...widget.acciones,
-                  IconButton(
-                    key: const Key('girarVisor'),
-                    tooltip: 'Girar a pantalla completa',
-                    icon: const Icon(Icons.screen_rotation_rounded),
-                    onPressed: _alternarGiro,
-                  ),
-                ],
+        // Girado también se ve la barra: volver, el título y las acciones.
+        appBar: barraVisor(
+          titulo: widget.titulo,
+          claveVolver: widget.claveVolver,
+          alVolver: () => Navigator.of(context).maybePop(),
+          acciones: [
+            // Orden: girar, descargar, compartir.
+            IconButton(
+              key: const Key('girarVisor'),
+              tooltip: _horizontal
+                  ? 'Volver a vertical'
+                  : 'Girar a pantalla completa',
+              icon: Icon(
+                _horizontal
+                    ? Icons.screen_lock_portrait_rounded
+                    : Icons.screen_rotation_rounded,
               ),
-        body: Stack(
-          children: [
-            Positioned.fill(child: widget.cuerpo),
-            if (_horizontal)
-              Positioned(
-                top: 12,
-                left: 12,
-                child: SafeArea(
-                  child: Material(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    shape: const CircleBorder(),
-                    child: IconButton(
-                      key: const Key('salirGiroVisor'),
-                      tooltip: 'Volver a vertical',
-                      icon: const Icon(
-                        Icons.screen_lock_portrait_rounded,
-                        color: Colors.white,
-                      ),
-                      onPressed: _alternarGiro,
-                    ),
-                  ),
-                ),
-              ),
+              onPressed: _alternarGiro,
+            ),
+            ...widget.acciones,
           ],
         ),
+        body: widget.cuerpo,
       ),
     );
   }

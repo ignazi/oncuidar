@@ -309,7 +309,18 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
   }
 
   PreferredSizeWidget _barraSuperior() {
-    return barraVisor(titulo: widget.titulo, alVolver: _cerrar);
+    return barraVisor(
+      titulo: widget.titulo,
+      alVolver: _cerrar,
+      acciones: [
+        IconButton(
+          key: const Key('alternarPantallaCompleta'),
+          tooltip: 'Girar a pantalla completa',
+          icon: const Icon(Icons.screen_rotation_rounded),
+          onPressed: _alternarPantallaCompleta,
+        ),
+      ],
+    );
   }
 
   Widget _vistaError() {
@@ -462,21 +473,6 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
                       ),
                     ),
                     _chipVelocidad(controlador.value.playbackSpeed),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      key: const Key('alternarPantallaCompleta'),
-                      tooltip: _pantallaCompleta
-                          ? 'Salir de pantalla completa'
-                          : 'Pantalla completa',
-                      onPressed: _alternarPantallaCompleta,
-                      icon: Icon(
-                        _pantallaCompleta
-                            ? Icons.fullscreen_exit
-                            : Icons.fullscreen,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
                   ],
                 ),
               ],
@@ -517,6 +513,15 @@ class _PantallaVideoState extends ConsumerState<PantallaVideo> {
                 color: Colors.white,
               ),
             ),
+          ),
+          IconButton(
+            key: const Key('alternarPantallaCompleta'),
+            tooltip: 'Volver a vertical',
+            icon: const Icon(
+              Icons.screen_lock_portrait_rounded,
+              color: Colors.white,
+            ),
+            onPressed: _alternarPantallaCompleta,
           ),
         ],
       ),

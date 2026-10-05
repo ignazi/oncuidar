@@ -66,26 +66,27 @@ void main() {
       'DeviceOrientation.landscapeLeft',
       'DeviceOrientation.landscapeRight',
     ]);
-    // Sin barra superior: el documento ocupa toda la pantalla.
-    expect(find.byType(AppBar), findsNothing);
-    expect(find.byKey(const Key('salirGiroVisor')), findsOneWidget);
+    expect(llamadas.last.arguments, 'SystemUiMode.immersiveSticky');
+    // Girado sigue la barra: volver, título y el botón (ahora para volver a vertical).
+    expect(find.byType(AppBar), findsOneWidget);
+    expect(find.byKey(const Key('volver')), findsOneWidget);
+    expect(find.text('Guía'), findsOneWidget);
+    expect(find.byIcon(Icons.screen_lock_portrait_rounded), findsOneWidget);
   });
 
-  testWidgets('el botón flotante vuelve a vertical con la barra', (
-    tester,
-  ) async {
+  testWidgets('el mismo botón vuelve a vertical', (tester) async {
     await abrir(tester);
     await tester.tap(find.byKey(const Key('girarVisor')));
     await tester.pump();
 
-    await tester.tap(find.byKey(const Key('salirGiroVisor')));
+    await tester.tap(find.byKey(const Key('girarVisor')));
     await tester.pump();
 
     expect(ultimaOrientacion(), [
       'DeviceOrientation.portraitUp',
       'DeviceOrientation.portraitDown',
     ]);
-    expect(find.byType(AppBar), findsOneWidget);
+    expect(find.byIcon(Icons.screen_rotation_rounded), findsOneWidget);
   });
 
   testWidgets('atrás primero vuelve a vertical y después cierra', (
@@ -116,4 +117,41 @@ void main() {
     expect(find.byType(MarcoVisor), findsNothing);
     expect(ultimaOrientacion()!.first, 'DeviceOrientation.portraitUp');
   });
+
+  testWidgets(
+    'título a la izquierda y botones en orden: girar, descargar, compartir',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MarcoVisor(
+            titulo: 'Historial clínico',
+            cuerpo: const SizedBox(),
+            acciones: [
+              IconButton(
+                key: const Key('descargar'),
+                icon: const Icon(Icons.download_rounded),
+                onPressed: () {},
+              ),
+              IconButton(
+                key: const Key('compartir'),
+                icon: const Icon(Icons.share_rounded),
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ),
+      );
+
+      final girar = tester.getCenter(find.byKey(const Key('girarVisor'))).dx;
+      final descargar = tester.getCenter(find.byKey(const Key('descargar'))).dx;
+      final compartir = tester.getCenter(find.byKey(const Key('compartir'))).dx;
+      expect(girar, lessThan(descargar));
+      expect(descargar, lessThan(compartir));
+
+      final titulo = tester.getRect(find.text('Historial clínico'));
+      final ancho = tester.getSize(find.byType(AppBar)).width;
+      // Pegado a la izquierda (junto a volver), no centrado.
+      expect(titulo.left, lessThan(ancho * 0.25));
+    },
+  );
 }
