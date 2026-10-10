@@ -1,0 +1,93 @@
+\chapter{Evaluación de Plataformas}
+
+La elección del stack tecnológico se realizó comparando las alternativas
+disponibles en tres dimensiones: framework de desarrollo móvil, backend como
+servicio y estrategia de almacenamiento y notificaciones.
+
+\section{Framework de desarrollo móvil}
+
+Se evaluaron Flutter, Kotlin nativo (Android) y React Native. Kotlin nativo
+garantiza el máximo desempeño y acceso directo a las APIs de Android, pero
+restringe la solución a una única plataforma y aumenta el esfuerzo de desarrollo
+para una segunda plataforma. React Native permite compartir código entre
+plataformas, pero introduce dependencias de puentes nativos y mayor variabilidad
+en el desempeño. Flutter se selecciona porque permite construir interfaces
+consistentes en Android e iOS desde una única base de código en Dart, ofrece un
+sistema de widgets con Material 3 que acelera el desarrollo de interfaces
+accesibles y cuenta con un ecosistema maduro de paquetes (Riverpod, go\_router,
+cryptography). Para un proyecto académico que debe demostrar resultados en
+plazos acotados, Flutter presenta el mejor equilibrio entre velocidad de
+desarrollo, calidad visual y soporte.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Comparación de frameworks de desarrollo móvil.}
+\label{tab:comparacion-frameworks}
+\begin{tabularx}{\textwidth}{P{0.78}P{1.07}P{1.07}P{1.08}}
+\toprule
+\filaencabezado \encab{Criterio} & \encab{Flutter} & \encab{Kotlin nativo} & \encab{React Native} \\
+\midrule
+Plataformas &
+Android e iOS con una base de código &
+Solo Android &
+Android e iOS con puentes nativos \\
+Desempeño &
+Alto (compila a nativo) &
+Máximo &
+Variable (depende del puente) \\
+Ecosistema de paquetes &
+Maduro (Riverpod, go\_router, cryptography) &
+Maduro para Android &
+Amplio, con mayor variabilidad \\
+Velocidad de desarrollo &
+Alta (Material 3, widgets) &
+Media &
+Media \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Backend como servicio}
+
+Se compararon Firebase, Supabase y un backend propio. Un backend propio ofrece
+control total, pero exige mantener servidores, autenticación, seguridad y
+despliegue, lo que excede el alcance y las horas disponibles. Supabase, basado
+en PostgreSQL, es una alternativa válida de open source, pero requiere
+configuración adicional de políticas de seguridad y su ecosistema de integración
+móvil es menor. Firebase se selecciona por su integración nativa con Flutter, la
+sincronización en tiempo real de Cloud Firestore, la persistencia local
+integrada que habilita el modo offline-first y la disponibilidad del plan
+gratuito (Spark) suficiente para un piloto académico.
+
+\section{Almacenamiento local}
+
+Se evaluó el uso exclusivo de Room sobre SQLite (opción considerada en el
+anteproyecto) frente a Firestore. Room ofrece almacenamiento 100~\% local y
+máximo control, pero dificulta la sincronización y la persistencia en múltiples
+dispositivos. Firestore, si bien es un servicio en la nube, compensa la
+dependencia de red con tres mecanismos: persistencia local habilitada, caché de
+metadatos en SharedPreferences y caché de archivos con auto-descarga. Esta
+combinación entrega un comportamiento equivalente al offline esperado por el
+anteproyecto, sumando el beneficio de la sincronización entre el dispositivo del
+cuidador y los servicios de respaldo.
+
+\section{Notificaciones}
+
+Se evaluaron notificaciones push con FCM frente a notificaciones locales. FCM
+permite alertar al usuario incluso con la aplicación cerrada y desde el
+servidor, pero exige infraestructura adicional, manejo de permisos de plataforma
+y puede fallar sin conexión. Para los recordatorios de valoración diaria del
+paciente se opta por notificaciones locales (flutter\_local\_notifications),
+re-planificadas al iniciar sesión: no dependen de red, respetan horas exactas
+mediante SCHEDULE\_EXACT\_ALARM y cubren completamente el requerimiento
+de recordar al cuidador la valoración diaria.
+
+\section{Conclusión de la evaluación}
+
+Como conclusión, el stack elegido —Flutter/Dart con Riverpod y go\_router,
+Firebase (Auth, Firestore, Functions, Storage) y notificaciones locales—
+satisface los requerimientos funcionales y no funcionales del proyecto, es de
+costo cero, está ampliamente documentado y permite un funcionamiento offline
+-first con seguridad por diseño.

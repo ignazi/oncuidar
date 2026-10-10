@@ -1,0 +1,57 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+\chapter[Anexo: Consideraciones Éticas]{ANEXO: Consideraciones Éticas}
+
+\section{Evaluación ética del proyecto}
+
+El proyecto se presenta al Comité de Ética Científica de la Universidad del
+Bío-Bío mediante el protocolo abreviado para investigaciones de pregrado. Se
+declara como una investigación aplicada de desarrollo tecnológico en nivel
+TRL~3, que utiliza únicamente documentos existentes, como guías clínicas, el
+programa PINDA y los contenidos entregados por el equipo de Enfermería. No
+involucra participantes humanos, animales ni muestras biológicas.
+
+La revisión del prototipo por parte de la contraparte de Enfermería forma parte
+del trabajo colaborativo del proyecto y se limita a la pertinencia de los
+contenidos y de los criterios de alerta. No implica aplicar instrumentos ni
+recolectar datos personales. Toda evaluación futura con cuidadores queda a cargo
+del equipo de Enfermería y requerirá su propia revisión ética.
+
+\section{Alcance del sistema}
+
+OnCuidar es una herramienta de apoyo educativo y de registro. No diagnostica, no
+modifica tratamientos, no calcula dosis y no reemplaza al equipo de salud. Cada
+alerta recuerda que la orientación es educativa y, ante un riesgo, recomienda
+contactar al equipo tratante o acudir a urgencia.
+
+\section{Protección de datos de salud}
+
+Los datos de salud son datos sensibles según la Ley~19.628 sobre protección de
+la vida privada. La aplicación los resguarda con cuatro mecanismos.
+
+\begin{itemize}
+    \item \emph{Cifrado en el dispositivo}: los datos personales del paciente,
+    los registros clínicos, las conversaciones, los recordatorios y las listas
+    se cifran con AES-256-GCM antes de salir del teléfono.
+    \item \emph{Gestión de claves}: la clave de cada usuario se guarda en el
+    almacenamiento seguro del teléfono y su copia en el servidor se sella con
+    una clave maestra y secretos de entorno que no forman parte del
+    repositorio. El servidor solo ve texto cifrado y no puede leer los datos de
+    salud.
+    \item \emph{Control de acceso}: cada solicitud exige una sesión firmada
+    (JWT) y el servidor limita cada dato a su propietario, de modo que un
+    recurso ajeno responde como inexistente, y rechaza cualquier campo sensible
+    sin cifrar. Los enlaces de correo para verificar o recuperar la cuenta son
+    de un solo uso y vencen en una hora.
+    \item \emph{Minimización}: la aplicación solicita solo los datos necesarios
+    para el seguimiento y no utiliza servicios de mensajería externos.
+\end{itemize}
+
+Los informes PDF y Excel se generan en el teléfono del cuidador y solo salen de
+él si el propio cuidador decide compartirlos.
+
+\section{Uso de herramientas de inteligencia artificial}
+
+La aplicación no utiliza inteligencia artificial generativa para orientar al
+cuidador. Las respuestas provienen de preguntas frecuentes validadas y la
+clasificación de alertas de reglas explícitas. Cualquier incorporación futura de
+este tipo de tecnología deberá someterse a una nueva revisión ética.

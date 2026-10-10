@@ -1,0 +1,103 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+\chapter[Anexo: Resultados de Iteraciones]{ANEXO: Resultados de Iteraciones en el Desarrollo}
+
+El desarrollo se organiza en tres sprints. Cada uno termina con una versión
+instalable que se revisa con la contraparte de Enfermería. Este anexo resume la
+funcionalidad abordada en cada sprint y sus resultados.
+
+\section{Sprint 1: flujo principal (26 de agosto al 15 de septiembre)}
+
+\subsection*{Funcionalidad abordada}
+
+Carga inicial y bienvenida (HU-01), creación de cuenta (HU-02), inicio de sesión
+y recuperación de acceso (HU-03), cifrado de datos sensibles (HU-04), perfil del
+cuidador (HU-05), gestión y selección de pacientes (HU-06 y HU-07), registro
+clínico con clasificación de alertas (HU-09), historial (HU-10) y edición y
+eliminación de registros (HU-11).
+
+\subsection*{Resultados y observaciones}
+
+Se completan las diez historias del sprint. El motor de reglas clasifica cada
+registro según los umbrales de temperatura, frecuencia cardíaca, saturación de
+oxígeno, frecuencia respiratoria y escala ESAS, y sus 40 casos de prueba cubren
+los valores límite de cada umbral. El formulario incorpora además un tope
+diario de registros programados, configurable por paciente, que distingue las
+valoraciones rutinarias de las extra.
+
+\section{Sprint 2: módulos funcionales (16 de septiembre al 20 de octubre)}
+
+\subsection*{Funcionalidad abordada}
+
+El sprint se organiza en cinco semanas, cada una en su propia rama del
+repositorio.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Avance del sprint 2 por semana.}
+\label{tab:sprint2-semanas}
+\begin{tabularx}{\textwidth}{P{0.45}P{1.85}P{0.70}}
+\toprule
+\filaencabezado \encab{Semana} & \encab{Funcionalidad} & \encab{Historias} \\
+\midrule
+1 & Panel principal y exportación del historial a PDF y Excel. & HU-08, HU-12, HU-13 \\
+2 & Biblioteca educativa con materiales descargables. & HU-19, HU-20 \\
+3 & Videos, guías, infografías y contenido sin
+conexión. & HU-21, HU-22 \\
+4 & Asistente de orientación, preguntas frecuentes, conversaciones y favoritos
+de la biblioteca. & HU-14, HU-15, HU-16 \\
+5 & Recordatorios, notificaciones locales y conexión final de rutas. & HU-17, HU-18 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection*{Resultados y observaciones}
+
+El panel principal se aprueba en la revisión de la primera semana. El asistente
+se implementa con emparejamiento por palabras clave sobre preguntas frecuentes
+validadas, sin inteligencia artificial generativa, para asegurar que cada
+respuesta provenga de contenido revisado por Enfermería. El servicio de
+notificaciones queda implementado y probado con dobles de prueba, pero falta
+validar en un dispositivo real la solicitud de permisos, la apertura desde la
+notificación y la reprogramación al iniciar sesión.
+
+\section{Sprint 3: integración (21 de octubre al 13 de noviembre)}
+
+\subsection*{Funcionalidad abordada}
+
+Separación de datos por paciente (HU-24), aislamiento de datos entre usuarios
+(HU-25), navegación definitiva (HU-26) y funcionamiento sin conexión con
+sincronización (HU-27).
+
+\subsection*{Resultados y observaciones}
+
+Las cuatro historias parten con una base funcional. Las consultas ya filtran
+por paciente activo y el caché local de datos está activo. Falta
+agregar la verificación en el servidor que formaliza el aislamiento, la cola de
+sincronización de registros creados sin conexión y el aviso visual de estado de
+conexión. La navegación actual usa una barra de cinco destinos, que el sprint
+revisa frente al diseño propuesto de cuatro pestañas con un botón flotante.
+
+\section{Migración al servidor propio} % REVISAR: fechas de la iteración
+
+\subsection*{Funcionalidad abordada}
+
+Reemplazo de la plataforma de servicios externa por un servidor propio: una API
+REST (Node.js y Express) sobre PostgreSQL, ejecutada con Docker Compose y
+destinada a contenedores Podman de la universidad. La aplicación pasa a usar un
+cliente HTTP con sesión mediante JWT, la clave de datos se entrega desde el
+servidor sellada con una clave maestra, los correos de recuperación y de
+verificación se envían por SMTP y la biblioteca se sirve desde el propio
+servidor. Fecha de la iteración: \TBD{fechas de la migración}.
+
+\subsection*{Resultados y observaciones}
+
+El servidor suma 54 pruebas automatizadas contra una base PostgreSQL real, y el
+recorrido de punta a punta (registro, inicio de sesión, paciente y correos) se
+probó en un teléfono Android. El cifrado en el teléfono se mantiene: el servidor
+solo guarda texto cifrado y rechaza los campos clínicos en claro. El
+funcionamiento sin conexión se rehízo con una cola persistente de escrituras
+con reintentos, y la actualización en pantalla se obtiene consultando al servidor
+cada 10 segundos y tras cada escritura. Queda pendiente el despliegue en el
+servidor de la universidad, que depende de la activación de la cuenta.

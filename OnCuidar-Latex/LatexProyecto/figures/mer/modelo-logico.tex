@@ -1,0 +1,79 @@
+\documentclass[border=8pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{tikz}
+\pagecolor{white}
+\usetikzlibrary{shapes.multipart, positioning, calc}
+\definecolor{bordeer}{RGB}{60,60,60}
+\definecolor{cabeer}{RGB}{225,225,225}
+\tikzset{
+  entidad/.style={rectangle split, rectangle split parts=2, draw=bordeer, thick,
+    rectangle split part fill={cabeer,white}, anchor=north, align=left,
+    font=\scriptsize, inner sep=3.5pt, text width=3.9cm},
+  rel/.style={thick, draw=bordeer, rounded corners=2pt},
+  card/.style={font=\scriptsize\bfseries, inner sep=1.5pt},
+  verbo/.style={font=\scriptsize\itshape, fill=white, inner sep=1.5pt},
+}
+\newcommand{\pk}[1]{\underline{\textbf{#1}} {\tiny(PK)}}
+\newcommand{\fk}[1]{\textit{#1} {\tiny(FK)}}
+\newcommand{\pkfk}[1]{\underline{\textbf{\textit{#1}}} {\tiny(PK, FK)}}
+\newcommand{\cif}{\textsuperscript{\tiny$\ast$}}
+\newcommand{\titulo}[1]{\centering\small\bfseries\vphantom{ÁÍÓÚg}#1}
+\begin{document}
+\begin{tikzpicture}
+  % Fila superior
+  \node[entidad] (conv) at (0,0) {\titulo{CONVERSACIÓN}
+    \nodepart{two} \pk{idConversacion}\\ \fk{idCuidador}\\ titulo\cif\\ primeraPregunta\cif\\ ultimaActividad\\ fechaCreacion};
+  \node[entidad] (cuid) at (6.3,0) {\titulo{CUIDADOR}
+    \nodepart{two} \pk{idCuidador}\\ correo\\ nombre\cif\\ telefono\cif\\ relacion\cif\\ direccion\cif\\ fechaCreacion};
+  \node[entidad] (fav) at (12.6,0) {\titulo{FAVORITO}
+    \nodepart{two} \pkfk{idCuidador}\\ \pkfk{idContenido}};
+  \node[entidad] (cont) at (18.9,0) {\titulo{CONTENIDO EDUCATIVO}
+    \nodepart{two} \pk{idContenido}\\ titulo\\ categoria\\ tema\\ cuerpo\\ tipoArchivo\\ urlArchivo\\ urlImagen\\ urlMiniatura\\ tamanoBytes\\ fechaCreacion};
+
+  % Fila media
+  \node[entidad] (msj) at (0,-5.2) {\titulo{MENSAJE}
+    \nodepart{two} \pkfk{idConversacion}\\ \pk{orden}\\ texto\cif\\ delUsuario};
+  \node[entidad] (pac) at (6.3,-5.2) {\titulo{PACIENTE}
+    \nodepart{two} \pk{idPaciente}\\ \fk{idCuidador}\\ nombre\cif\\ rut\cif\\ edad\cif\\ diagnostico\cif\\ faseTratamiento\cif\\ centroSaludNombre\cif\\ centroSaludDireccion\cif\\ centroSaludTelefono\cif\\ contactoEmergenciaNombre\cif\\ contactoEmergenciaTelefono\cif\\ maximoRegistrosDia\\ archivado\\ notificacionesActivas\\ fechaCreacion};
+  \node[entidad] (reg) at (12.6,-5.2) {\titulo{REGISTRO CLÍNICO}
+    \nodepart{two} \pk{idRegistro}\\ \fk{idPaciente}\\ fecha\\ tipoRegistro\\ temperatura\cif\\ frecuenciaCardiaca\cif\\ saturacionOxigeno\cif\\ frecuenciaRespiratoria\cif\\ observaciones\cif\\ nivelAlerta\\ mensajeAlerta\cif};
+  \node[entidad] (rs) at (18.9,-5.2) {\titulo{SÍNTOMA REGISTRADO}
+    \nodepart{two} \pkfk{idRegistro}\\ \pkfk{idSintoma}\\ intensidad\cif\\ nota\cif};
+  \node[entidad] (sin) at (18.9,-9.2) {\titulo{SÍNTOMA}
+    \nodepart{two} \pk{idSintoma}\\ nombre\\ etiquetaMinima\\ etiquetaMaxima};
+
+  % Fila inferior
+  \node[entidad] (rec) at (0,-13.0) {\titulo{RECORDATORIO}
+    \nodepart{two} \pk{idRecordatorio}\\ \fk{idCuidador}\\ \fk{idPaciente}\\ tipo\\ titulo\cif\\ descripcion\cif\\ fechaHora\\ diasRepeticion\\ recurrencia\\ asignadoA\\ activo\\ completadoEn\\ fechaCreacion};
+
+  % Relaciones (cardinalidad en cada extremo y verbo al centro)
+  \draw[rel] (cuid.west |- 0,-1.2) -- node[verbo] {inicia} (conv.east |- 0,-1.2)
+    node[card, pos=0.1, above] {1} node[card, pos=0.9, above] {N};
+  \draw[rel] (conv.south) -- node[verbo] {contiene} (msj.north)
+    node[card, pos=0.12, right] {1} node[card, pos=0.88, right] {N};
+  \draw[rel] (cuid.east |- 0,-0.75) -- node[verbo] {marca} (fav.west |- 0,-0.75)
+    node[card, pos=0.1, above] {1} node[card, pos=0.9, above] {N};
+  \draw[rel] (cont.west |- 0,-0.75) -- node[verbo] {es marcado} (fav.east |- 0,-0.75)
+    node[card, pos=0.1, above] {1} node[card, pos=0.9, above] {N};
+  \draw[rel] (cuid.south) -- node[verbo] {atiende} (pac.north)
+    node[card, pos=0.12, right] {1} node[card, pos=0.88, right] {N};
+  \draw[rel] (pac.east |- 0,-6.4) -- node[verbo] {posee} (reg.west |- 0,-6.4)
+    node[card, pos=0.1, above] {1} node[card, pos=0.9, above] {N};
+  \draw[rel] (reg.east |- 0,-6.4) -- node[verbo] {incluye} (rs.west |- 0,-6.4)
+    node[card, pos=0.1, above] {1} node[card, pos=0.9, above] {N};
+  \draw[rel] (sin.north) -- node[verbo] {clasifica} (rs.south)
+    node[card, pos=0.12, right] {1} node[card, pos=0.88, right] {N};
+  \draw[rel] ($(pac.south)+(-0.7,0)$) -- node[card, pos=0.15, left] {1} ($(pac.south)+(-0.7,-1.1)$)
+    -| node[verbo, pos=0.25] {corresponde a} node[card, pos=0.93, right] {N} (rec.north);
+  \draw[rel] (cuid.west |- 0,-2.0) -- (3.2,-2.0) |- node[verbo, pos=0.3, fill=white] {programa} (rec.east |- 0,-14.2)
+    node[card, pos=0.02, above] {1} node[card, pos=0.98, above] {N};
+
+  % Leyenda
+  \node[anchor=north west, font=\scriptsize, align=left, draw=bordeer!50, inner sep=4pt]
+    at (16.9,-13.0) {\textbf{Simbología}\\ \underline{\textbf{atributo}} (PK): clave primaria\\ \textit{atributo} (FK): clave foránea\\ atributo\cif: se almacena cifrado};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,231 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+\chapter[Definición del Proyecto]{Definición Proyecto}
+
+\section[Objetivos del Proyecto]{Objetivos del proyecto}
+
+\subsection{Objetivo general}
+
+Desarrollar una solución móvil de apoyo integral a cuidadores de pacientes
+oncológicos pediátricos para un centro hospitalario de alta complejidad, que
+centralice herramientas de registro, seguimiento, consulta y orientación para
+facilitar la continuidad del cuidado en el hogar.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}
+    \item Analizar las necesidades de información del cuidador principal y los
+    flujos del cuidado domiciliario, a partir de los contenidos y criterios
+    clínicos entregados por el equipo de Enfermería, para fundamentar la
+    especificación funcional y no funcional del software.
+    \item Diseñar la arquitectura de la solución móvil centrada en el cuidador,
+    con su modelo de datos, servicios lógicos e interfaz de usuario, de modo que
+    permita gestionar perfiles, registrar el seguimiento domiciliario y consultar
+    el historial, priorizando la facilidad de uso y la seguridad de la
+    información.
+    \item Implementar los módulos que permiten al cuidador acceder a contenidos
+    educativos validados, registrar los signos y síntomas del paciente, recibir
+    orientación mediante alertas de semaforización clínica y gestionar
+    recordatorios, con sincronización y respaldo en el servidor disponibles incluso
+    sin conexión.
+    \item Validar técnicamente el prototipo mediante pruebas automatizadas,
+    verificando su conformidad con la especificación de requerimientos.
+\end{enumerate}
+
+\section[Ambiente de Ingeniería de Software]{Ambiente de Ingeniería de Software}
+
+\subsection{Metodología de desarrollo}
+
+El proyecto adopta Scrum de forma adaptada a un equipo de dos desarrolladoras y
+a un plazo académico. Los requerimientos se expresan como historias de usuario
+con criterios de aceptación, se estiman en puntos y se ordenan en un
+\emph{product backlog} según su prioridad clínica y sus dependencias técnicas.
+Scrum se elige porque permite entregar una versión funcional al cierre de cada
+sprint, mostrarla a la contraparte y ajustar el alcance con lo aprendido.
+
+El desarrollo se organiza en tres sprints. La Tabla~\ref{tab:sprints} resume su
+foco y su calendario.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Organización del desarrollo en sprints.}
+\label{tab:sprints}
+\begin{tabularx}{\textwidth}{P{0.55}P{0.85}P{1.60}}
+\toprule
+\filaencabezado \encab{Sprint} & \encab{Periodo} & \encab{Foco} \\
+\midrule
+Sprint 1 & 26 ago -- 15 sep 2026 &
+Flujo principal: acceso, cifrado de datos, gestión de pacientes, registro
+clínico con clasificación de alertas e historial. \\
+Sprint 2 & 16 sep -- 20 oct 2026 &
+Rutina del cuidador: panel principal, exportación, biblioteca educativa,
+asistente de orientación, preguntas frecuentes, recordatorios y listas de
+verificación. \\
+Sprint 3 & 21 oct -- 13 nov 2026 &
+Integración: datos por paciente, aislamiento de la información, navegación
+definitiva y funcionamiento sin conexión. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Cada sprint comienza con la selección de historias del backlog y termina con una
+versión instalable (APK) que se revisa con la contraparte de Enfermería. La
+contraparte valida la pertinencia de los contenidos, los textos y los criterios
+de alerta, mientras que el docente guía supervisa el avance del proyecto.
+
+\subsection{Técnicas y notaciones}
+
+\begin{itemize}
+    \item \emph{Historias de usuario} con criterios de aceptación, para expresar
+    los requerimientos desde la perspectiva del cuidador.
+    \item \emph{BPMN 2.0}, para modelar el proceso de seguimiento actual y el
+    proceso futuro con la aplicación.
+    \item \emph{UML 2.0}, en particular diagramas de casos de uso, para
+    representar la interacción entre los actores y el sistema.
+    \item \emph{Modelo entidad-relación}, para el modelo conceptual de datos, y
+    esquema relacional de PostgreSQL para el diseño físico.
+    \item \emph{Prototipos de alta fidelidad} en Figma, para validar la interfaz
+    con la contraparte antes de construirla.
+\end{itemize}
+
+\subsection{Estándares de documentación}
+
+La especificación de requerimientos se basa en IEEE~Std~830-1998
+\citep{ieee_830_1998} y la documentación de pruebas en IEEE~Std~829-1998
+\citep{ieee_829_1998}. Los atributos de calidad del producto toman como
+referencia el modelo ISO/IEC~9126. En el código se sigue la guía de estilo de
+Dart, verificada con flutter analyze, y los mensajes de
+\emph{commit} siguen la convención \emph{Conventional Commits} en español.
+
+\subsection{Tecnologías y herramientas de apoyo}
+
+La aplicación se construye con Flutter \citep{flutter_2026}, que permite
+compilar para Android e iOS desde una sola base de código en Dart y ofrece
+componentes Material~3 listos para interfaces accesibles. Frente a Kotlin
+nativo, evita duplicar el desarrollo para cada plataforma, y frente a React
+Native, entrega un rendimiento más estable al no depender de puentes nativos.
+Como backend se desarrolla una API REST propia con Node.js
+\citep{nodejs_2026} y Express \citep{express_2026}, que persiste los datos en
+una base relacional PostgreSQL \citep{postgresql_2026}. Ambos servicios se
+empaquetan con Docker Compose \citep{docker_2026} y se destinan a ejecutarse como
+contenedores Podman \citep{podman_2026} en el servidor que la Universidad del
+Bío-Bío dispone para proyectos de título. Esta arquitectura responde al
+requerimiento del profesor guía de contar con un backend y una base de datos
+propios, y entrega control total sobre los datos y su cifrado a cambio de
+asumir la operación del servidor. La Tabla~\ref{tab:herramientas} detalla el
+propósito de cada herramienta.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Tecnologías y herramientas utilizadas en el desarrollo.}
+\label{tab:herramientas}
+\begin{tabularx}{\textwidth}{P{0.75}P{1.25}}
+\toprule
+\filaencabezado \encab{Tecnología o herramienta} & \encab{Propósito en el proyecto} \\
+\midrule
+Flutter y Dart & Construcción de la aplicación móvil para Android e iOS. \\
+Riverpod & Gestión del estado y separación entre la lógica de datos y la
+presentación \citep{riverpod_2026}. \\
+go\_router & Navegación entre pantallas y redirección según el estado de la
+sesión \citep{go_router_2026}. \\
+Node.js 22 y Express 5 & API REST que atiende a la aplicación, valida las
+solicitudes y custodia la clave de cifrado de cada usuario. \\
+PostgreSQL 15 & Base de datos relacional que almacena los datos del cuidador, los
+pacientes y sus registros como texto cifrado. \\
+jsonwebtoken y bcryptjs & Sesión con tokens JWT y almacenamiento de las
+contraseñas como \emph{hash} bcrypt. \\
+nodemailer y SMTP & Envío de los correos de verificación y de recuperación de
+acceso. \\
+ffmpeg & Generación de las miniaturas de los videos de la biblioteca. \\
+Docker y Docker Compose & Empaquetado y ejecución local de la API y la base de
+datos. \\
+Podman & Ejecución de los contenedores en el servidor de la universidad (destino
+del despliegue). \\
+DBeaver & Inspección de la base de datos durante el desarrollo. \\
+cryptography y flutter\_secure\_storage & Cifrado AES-256-GCM de los datos
+sensibles y resguardo de la clave en el dispositivo \citep{cryptography_dart_2026}. \\
+flutter\_local\_notifications & Programación de los recordatorios como
+notificaciones locales. \\
+pdf y excel & Generación de los informes exportables del historial. \\
+Git y GitHub & Control de versiones y respaldo del código, con una rama por
+semana de trabajo. \\
+Figma & Diseño de los prototipos de interfaz. \\
+flutter\_test & Ejecución de la suite de pruebas automatizadas de la aplicación. \\
+Jest y supertest & Pruebas de la API contra una base PostgreSQL real. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section[Definiciones, Siglas y Abreviaciones]{Definiciones, siglas y abreviaciones}
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.50}P{1.50}}
+    \caption{Definiciones, siglas y abreviaciones.}
+    \label{tab:siglas}\\
+    \toprule
+    \filaencabezado \encab{Término} & \encab{Definición} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{2}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Término} & \encab{Definición} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{2}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    AES-256-GCM & Algoritmo de cifrado simétrico con clave de 256 bits en modo
+    Galois/Counter, que además de cifrar verifica la integridad del dato. \\
+    APK & Archivo de instalación de aplicaciones para Android. \\
+    Backlog & Lista priorizada de historias de usuario pendientes de desarrollo. \\
+    BPMN & Business Process Model and Notation, notación para modelar procesos
+    de negocio. \\
+    Cuidador principal & Persona que asume el cuidado diario del paciente en el
+    hogar y usuario de la aplicación. \\
+    CU & Caso de uso. \\
+    ESAS & Edmonton Symptom Assessment System, escala que valora la intensidad de
+    los síntomas de 0 a 10. \\
+    HMAC & Hash-based Message Authentication Code, código de autenticación de
+    mensajes basado en una función \emph{hash}; el servidor lo usa para guardar
+    el correo de respaldo sin almacenarlo en claro. \\
+    HTTP / HTTPS & Protocolo de transferencia de hipertexto, sin cifrar o con
+    cifrado de transporte, que usa la aplicación para comunicarse con la API. \\
+    HU & Historia de usuario. \\
+    JSON & JavaScript Object Notation, formato de texto para intercambiar datos
+    entre la aplicación y la API. \\
+    JWT & JSON Web Token, token firmado que identifica la sesión del usuario en
+    cada solicitud a la API. \\
+    Motor de reglas & Componente que aplica condiciones predefinidas para
+    clasificar un registro o elegir una respuesta, sin inteligencia artificial
+    generativa. \\
+    Offline-first & Enfoque de diseño en que la aplicación funciona sin conexión
+    y sincroniza sus datos cuando recupera la red. \\
+    Podman & Motor de contenedores sin demonio, compatible con Docker, que se
+    usa en el servidor de la universidad. \\
+    PINDA & Programa Infantil Nacional de Drogas Antineoplásicas del Ministerio
+    de Salud de Chile. \\
+    REST / API & Estilo de interfaz de servicios web sobre HTTP / interfaz de
+    programación de aplicaciones. \\
+    RF / RNF & Requerimiento funcional / requerimiento no funcional. \\
+    Semaforización & Clasificación del nivel de riesgo en tres colores: verde
+    (normal), amarillo (alerta) y rojo (crítico). \\
+    SMTP & Simple Mail Transfer Protocol, protocolo con que el servidor envía los
+    correos de verificación y recuperación. \\
+    Sprint & Periodo fijo de trabajo al final del cual se entrega una versión
+    funcional del producto. \\
+    TRL & Technology Readiness Level. El nivel~3 corresponde a una prueba de
+    concepto validada en un entorno de desarrollo. \\
+    UCP & Use Case Points, técnica de estimación de tamaño basada en casos de
+    uso. \\
+    VAN / TIR & Valor actual neto / tasa interna de retorno. \\
+\end{xltabular}
+\endgroup
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}

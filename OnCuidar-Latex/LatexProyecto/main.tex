@@ -1,0 +1,296 @@
+\documentclass[11pt,letterpaper]{report}
+
+% ---------------------------------------------------------------------------
+% ÍNDICE OBJETIVO (estructura fijada por la plantilla Word; NO olvidar)
+% Formato del índice: "Título" (mayúscula inicial, resto en minúscula).
+% El índice se controla con el argumento corto: \chapter[Título en índice]{Título real}
+% ---------------------------------------------------------------------------
+%   1  Introducción
+%   2  Definición de la Empresa o Institución
+%       2.1 Descripción de la Empresa
+%       2.2 Descripción del Área de Estudio
+%       2.3 Descripción de la Problemática
+%   3  Definición del Proyecto
+%       3.1 Objetivos del Proyecto
+%       3.2 Ambiente de Ingeniería de Software
+%       3.3 Definiciones, Siglas y Abreviaciones
+%   4  Especificación de Requerimientos de Software
+%       4.1 Alcances
+%       4.2 Objetivo del Software
+%       4.3 Descripción Global del Producto
+%           4.3.1 Interfaz de Usuario
+%           4.3.2 Interfaz de Hardware
+%           4.3.3 Interfaz de Software
+%           (4.3.4 Interfaces de Comunicación: en cuerpo, no en índice Word)
+%       4.4 Requerimientos Específicos
+%           4.4.1 Requerimientos Funcionales del Sistema
+%           4.4.2 Interfaces Externas de Entrada
+%           4.4.3 Interfaces Externas de Salida
+%           4.4.4 Atributos del Producto
+%   5  Factibilidad
+%       5.1 Técnica  |  5.2 Operativa  |  5.3 Económica  |  5.4 Conclusión
+%   6  Análisis
+%       6.1 Diagrama de Flujo de Datos
+%       6.2 Casos de Uso
+%           6.2.1 Actores
+%           6.2.2 Diagrama y Descripción
+%           6.2.3 Especificación de los Casos de Uso
+%       6.3 Modelamiento de Datos
+%   7  Diseño
+%       7.1 Diseño Físico de la Base de Datos
+%       7.2 Diseño de Arquitectura Funcional
+%       7.3 Diseño de Interfaz y Navegación
+%       7.4 Especificación de Módulos
+%   8  Pruebas
+%       8.1 Elementos  |  8.2 Especificación  |  8.3 Responsables
+%       8.4 Calendario
+%       8.5 Detalle de las Pruebas
+%       8.6 Conclusiones
+%   9  Plan de Capacitación y Entrenamiento
+%   10 Plan de Implantación y Puesta en Marcha
+%   11 Resumen de Esfuerzo Requerido
+%   12 Conclusiones
+%   13 Bibliografía
+%   14 Anexo: Planificación Inicial
+%       14.1 Estimación Inicial de Tamaño
+%       14.2 Contabilización Final de Tamaño
+%   15 Anexo: Resultados de Iteraciones
+%   16 Anexo: Manual de Usuario
+%   17 Anexo: Especificación de las Pruebas
+%       17.1 Pruebas de Unidad  |  17.1.1 <Nombre de la Unidad>
+%       17.2 Pruebas de Sistema  |  17.3 Pruebas de Aceptación
+%   18 Anexo: Diccionario de Datos
+%   EXTRA (no en índice Word, aprobados antes): 19 Anexo: Matriz de
+%   Trazabilidad Objetivos-Requerimientos; 20 Anexo: Consideraciones Éticas
+%   21 Anexo: Especificación de Casos de Uso Restantes (formato CrisPD)
+%   NO INCLUIR el apartado "Ejemplos" de la plantilla.
+% ---------------------------------------------------------------------------
+
+% ---------------------------------------------------------------------------
+% CONFIGURACIÓN DEL DOCUMENTO
+% ---------------------------------------------------------------------------
+\input{config/packages.tex}
+\input{config/formatting.tex}
+\input{config/commands.tex}
+
+% ---------------------------------------------------------------------------
+% VARIABLES DE PORTADA (modificar aquí según corresponda)
+% ---------------------------------------------------------------------------
+\newcommand{\facultad}{UNIVERSIDAD DEL BÍO-BÍO}
+\newcommand{\departamento}{FACULTAD DE CIENCIAS EMPRESARIALES}
+\newcommand{\carrera}{ESCUELA DE INGENIERÍA CIVIL EN INFORMÁTICA}
+\newcommand{\tituloProyecto}{"Desarrollo de una Aplicación Móvil de Apoyo Integral para Cuidadores de Pacientes Oncológicos Pediátricos: OnCuidar"}
+\newcommand{\primeraEstudiante}{Katalina Antonia Ramírez Jiménez}
+\newcommand{\segundaEstudiante}{María Ignacia Zapata Fica}
+\newcommand{\docente}{Gastón Patricio Márquez Ortega}
+\newcommand{\ciudad}{Chillán}
+\newcommand{\titulo}{Ingeniería Civil en Informática}
+\newcommand{\fechaProyecto}{Viernes 13 de noviembre de 2026}
+
+\begin{document}
+
+% ---------------------------------------------------------------------------
+% PORTADA
+% ---------------------------------------------------------------------------
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+    \thispagestyle{empty}
+    \centering
+
+    \vspace*{-0.8cm}
+
+    \safeincludegraphics[width=4.5cm]{figures/logoUBB.png}
+
+    {\small \textbf{\facultad}\par}
+    {\small \textbf{\departamento}\par}
+    {\small \textbf{\carrera}\par}
+
+    \vspace{3cm}
+
+    {\Large \textbf{\tituloProyecto}\par}
+
+    \vspace{3cm}
+
+    \begin{center}
+        \textbf{Nombre de las alumnas}\\
+        \primeraEstudiante\\
+        \segundaEstudiante
+
+        \vspace{0.45cm}
+
+        \textbf{Docente guía}\\
+        \docente
+
+        \vspace{0.45cm}
+
+        \textbf{Titulo al que se opta}\\
+        \titulo
+    \end{center}
+
+    \vfill
+
+    \ciudad, \fechaProyecto
+
+\end{titlepage}
+
+\clearpage
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+
+% ---------------------------------------------------------------------------
+% RESUMEN
+% ---------------------------------------------------------------------------
+\chapter*{Resumen}
+
+Este proyecto se presenta para dar conformidad a los requisitos exigidos por la
+Universidad del Bío-Bío en el proceso de titulación de la carrera de Ingeniería
+Civil en Informática. El proyecto, titulado \emph{Desarrollo de una aplicación
+móvil de apoyo integral para cuidadores de pacientes oncológicos pediátricos:
+OnCuidar}, se enmarca en la oncología pediátrica del Complejo Asistencial
+Dr.~Sótero del Río y se desarrolla junto al equipo de Enfermería de la
+Universidad del Bío-Bío, que actúa como contraparte clínica.
+
+Después del alta hospitalaria, el cuidador principal asume el seguimiento del
+niño en el hogar con información educativa dispersa, registros anotados en
+cuadernos o confiados a la memoria y sin una guía clara para reconocer los signos
+de alerta. OnCuidar reúne en una sola aplicación el registro de signos vitales y
+síntomas, un historial exportable a PDF y Excel, una biblioteca educativa
+disponible sin conexión, un asistente de orientación basado en preguntas
+frecuentes y recordatorios con notificaciones locales. Cada registro se clasifica
+en tres niveles (normal, alerta y crítico) mediante un motor de reglas construido
+a partir de criterios clínicos.
+
+La solución se compone de una aplicación móvil construida con Flutter y Dart, una
+API REST propia desarrollada con Node.js y una base de datos relacional
+PostgreSQL, empaquetadas en contenedores. Los datos sensibles se cifran en el
+dispositivo con AES-256-GCM antes de enviarse al servidor, que solo almacena
+texto cifrado. El desarrollo se organiza en tres sprints a partir de un backlog
+de historias de usuario y su comportamiento se verifica con 294 pruebas
+automatizadas de la aplicación y 54 del servidor.
+
+El resultado es un prototipo funcional de nivel TRL~3 que ordena el seguimiento
+domiciliario, acerca información confiable al cuidador en el momento de la duda y
+entrega al equipo de salud antecedentes estructurados para cada control.
+
+% ---------------------------------------------------------------------------
+% ABSTRACT
+% ---------------------------------------------------------------------------
+\chapter*{Abstract}
+
+This project is submitted to fulfil the requirements set by the Universidad del
+Bío-Bío for the degree of Civil Engineering in Informatics. The project, entitled
+\emph{Development of a comprehensive support mobile application for caregivers of
+pediatric oncology patients: OnCuidar}, is framed within the pediatric oncology
+service of the Dr.~Sótero del Río Hospital Complex and is carried out together
+with the Nursing team of the Universidad del Bío-Bío, which acts as the clinical
+counterpart.
+
+After hospital discharge, the primary caregiver takes charge of the child's
+follow-up at home with scattered educational information, records kept in
+notebooks or in memory, and no clear guidance to recognise warning signs.
+OnCuidar brings together in a single application the recording of vital signs and
+symptoms, a history that can be exported to PDF and Excel, an educational library
+available offline, a guidance assistant based on frequently asked questions, and
+reminders with local notifications. Each record is classified into three levels
+(normal, warning and critical) by a rule engine built on clinical criteria.
+
+The solution comprises a mobile application built with Flutter and Dart, a
+custom REST API developed with Node.js, and a PostgreSQL relational database,
+all packaged in containers. Sensitive data is encrypted on the device with
+AES-256-GCM before being sent to the server, which stores only ciphertext. The
+development is organised in three sprints from a backlog of user stories, and
+its behaviour is verified by 294 automated tests of the application and 54 of
+the server.
+
+The outcome is a working TRL~3 prototype that organises home follow-up, brings
+reliable information to the caregiver when doubts arise, and gives the health
+team structured information for each check-up.
+
+\clearpage
+
+% ---------------------------------------------------------------------------
+% ÍNDICES
+% ---------------------------------------------------------------------------
+\setcounter{tocdepth}{2}
+\tableofcontents
+\newpage
+
+% El índice general deja tocdepth en 0 (anexos): se restaura para las listas.
+\setcounter{tocdepth}{2}
+\listoftables
+\newpage
+
+\setcounter{tocdepth}{2}
+\listoffigures
+
+\clearpage
+\pagenumbering{arabic}
+
+% ---------------------------------------------------------------------------
+% CAPÍTULOS
+% ---------------------------------------------------------------------------
+\include{chapters/01-introduccion}
+
+\include{chapters/02-empresa}
+
+\include{chapters/03-proyecto}
+% Capítulos fuera del alcance según índice objetivo Word (archivos en disco):
+\iffalse
+\include{chapters/04-estado-del-arte}
+\include{chapters/05-evaluacion-plataformas}
+\fi
+
+\include{chapters/06-requerimientos}
+
+\include{chapters/07-factibilidad}
+
+\include{chapters/08-analisis}
+
+\include{chapters/09-diseno}
+
+\include{chapters/10-pruebas}
+
+\include{chapters/11-capacitacion}
+
+\include{chapters/12-implantacion}
+
+\include{chapters/13-esfuerzo}
+
+\include{chapters/14-conclusiones}
+
+% ---------------------------------------------------------------------------
+% BIBLIOGRAFÍA
+% ---------------------------------------------------------------------------
+\cleardoublepage
+\addcontentsline{toc}{chapter}{\protect\numberline{13}Bibliografía}
+\nocite{*}
+\bibliography{references}
+
+% ---------------------------------------------------------------------------
+% ANEXOS (numeración 14..20 según índice objetivo Word)
+% ---------------------------------------------------------------------------
+\cleardoublepage
+\setcounter{chapter}{13}
+\titleformat{\chapter}
+  {\normalfont\LARGE\bfseries}
+  {\thechapter.}
+  {0.6em}
+  {}
+
+\include{chapters/anexos/anexo-a-planificacion}
+
+\include{chapters/anexos/anexo-b-iteraciones}
+
+\include{chapters/anexos/anexo-c-manual-usuario}
+
+\include{chapters/anexos/anexo-d-pruebas}
+
+\include{chapters/anexos/anexo-e-diccionario-datos}
+
+\include{chapters/anexos/anexo-f-trazabilidad}
+
+\include{chapters/anexos/anexo-g-consideraciones-eticas}
+
+\include{chapters/anexos/anexo-h-casos-uso}
+
+\end{document}

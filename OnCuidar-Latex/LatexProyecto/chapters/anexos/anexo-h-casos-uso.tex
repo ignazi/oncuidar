@@ -1,0 +1,214 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+\chapter[Anexo: Especificación de Casos de Uso Restantes]{ANEXO: Especificación de Casos de Uso Restantes}
+
+Este anexo especifica los siete casos de uso que no se detallan en el capítulo de
+análisis. Siguen el mismo formato y numeración del diagrama de casos de uso.
+
+\section*{Caso de uso: Crear cuenta}
+
+\begin{table}[H]
+\centering
+\caption{Especificación del caso de uso CU-01.}
+\label{tab:cu-01}
+\begin{especificacioncu}{CU-01}{Crear cuenta}
+    \cufila{Descripción}{El cuidador crea su cuenta registrando sus datos, los del paciente, los del centro de salud y los del contacto de emergencia.}
+    \cufila{Actor}{Cuidador principal y Servidor de OnCuidar (API).}
+    \cufila{Requerimientos}{RF-02, RF-05.}
+    \cufila{Precondiciones}{La aplicación está instalada y no hay una sesión activa.}
+    \cuflujo{Flujo de eventos básico}
+    \cupaso{1. En la bienvenida, presiona Crear cuenta.}
+           {2. Muestra el formulario por secciones: cuidador, paciente, centro de salud y contacto de emergencia.}
+    \cupaso{3. Completa las secciones y define su contraseña.}
+           {4. Valida los campos obligatorios, el formato del correo y del teléfono y la coincidencia de las contraseñas.}
+    \cupaso{5. Confirma el registro.}
+           {6. Crea la cuenta en el servidor, obtiene la clave de cifrado y guarda cifrados los datos del cuidador y del paciente.}
+    \cupaso{}
+           {7. Inicia la sesión, envía un enlace de verificación al correo del cuidador sin bloquear el acceso y muestra el panel principal.}
+    \cufinflujo
+    \cuflujo{Flujos alternativos}
+    \cupaso{}
+           {4a. Si un campo no es válido, lo indica bajo el campo y no avanza.}
+    \cupaso{}
+           {6a. Si el correo ya está registrado, lo informa y pide otro.}
+    \cupaso{}
+           {6b. Si falla el guardado, muestra el error y permanece en el formulario.}
+    \cufinflujo
+    \cufila{Postcondiciones}{La cuenta queda creada y el paciente registrado como paciente activo.}
+\end{especificacioncu}
+\end{table}
+
+\section*{Caso de uso: Iniciar sesión}
+
+\begin{table}[H]
+\centering
+\caption{Especificación del caso de uso CU-02.}
+\label{tab:cu-02}
+\begin{especificacioncu}{CU-02}{Iniciar sesión}
+    \cufila{Descripción}{El cuidador accede a la aplicación con su correo y contraseña, o recupera el acceso si olvidó la contraseña.}
+    \cufila{Actor}{Cuidador principal y Servidor de OnCuidar (API).}
+    \cufila{Requerimientos}{RF-01, RF-03, RF-04, RF-05.}
+    \cufila{Precondiciones}{El cuidador tiene una cuenta creada.}
+    \cuflujo{Flujo de eventos básico}
+    \cupaso{1. Abre la aplicación.}
+           {2. Muestra la pantalla de carga y, si no hay sesión activa, la bienvenida.}
+    \cupaso{3. Elige Iniciar sesión e ingresa su correo y contraseña.}
+           {4. Valida las credenciales con el servidor de OnCuidar.}
+    \cupaso{}
+           {5. Restaura la clave de cifrado, reprograma los recordatorios y muestra el panel principal.}
+    \cufinflujo
+    \cuflujo{Flujos alternativos}
+    \cupaso{}
+           {2a. Si hay una sesión activa, muestra directamente el panel principal.}
+    \cupaso{}
+           {4a. Si las credenciales no son válidas, muestra un mensaje claro y permite reintentar.}
+    \cupaso{3a. Presiona ¿Olvidaste tu contraseña?}
+           {3b. Envía un enlace de un solo uso, válido por una hora, al correo principal o al de respaldo confirmado. El cuidador abre el enlace, define su contraseña nueva y vuelve a iniciar sesión.}
+    \cupaso{6a. Cierra sesión desde el perfil.}
+           {6b. Bloquea la clave, cancela las notificaciones y vuelve a la bienvenida.}
+    \cufinflujo
+    \cufila{Postcondiciones}{La sesión queda activa y los datos del cuidador disponibles.}
+\end{especificacioncu}
+\end{table}
+
+\section*{Caso de uso: Gestionar perfil del cuidador}
+
+\begin{table}[H]
+\centering
+\caption{Especificación del caso de uso CU-03.}
+\label{tab:cu-03}
+\begin{especificacioncu}{CU-03}{Gestionar perfil del cuidador}
+    \cufila{Descripción}{El cuidador consulta y actualiza sus datos personales y de contacto.}
+    \cufila{Actor}{Cuidador principal.}
+    \cufila{Requerimientos}{RF-06.}
+    \cufila{Precondiciones}{El cuidador inició sesión.}
+    \cuflujo{Flujo de eventos básico}
+    \cupaso{1. Selecciona Perfil en la barra inferior.}
+           {2. Muestra el nombre, los correos, el teléfono y el parentesco del cuidador.}
+    \cupaso{3. Edita sus datos y presiona Guardar.}
+           {4. Valida los datos, los guarda cifrados y confirma el cambio.}
+    \cufinflujo
+    \cuflujo{Flujos alternativos}
+    \cupaso{3a. Cambia su correo principal o de respaldo.}
+           {3b. Solicita la contraseña actual, envía un enlace de verificación al nuevo correo y muestra el cambio como pendiente. El correo anterior sigue vigente hasta que el cuidador abre el enlace, de un solo uso y válido por una hora.}
+    \cufinflujo
+    \cufila{Postcondiciones}{Los datos del cuidador quedan actualizados.}
+\end{especificacioncu}
+\end{table}
+
+\section*{Caso de uso: Gestionar pacientes}
+
+\begin{table}[H]
+\centering
+\caption{Especificación del caso de uso CU-04.}
+\label{tab:cu-04}
+\begin{especificacioncu}{CU-04}{Gestionar pacientes}
+    \cufila{Descripción}{El cuidador registra, edita, archiva y selecciona a los pacientes que acompaña.}
+    \cufila{Actor}{Cuidador principal.}
+    \cufila{Requerimientos}{RF-07, RF-08, RF-09, RF-10.}
+    \cufila{Precondiciones}{El cuidador inició sesión.}
+    \cuflujo{Flujo de eventos básico}
+    \cupaso{1. Abre Perfil.}
+           {2. Muestra el paciente activo y la lista de pacientes.}
+    \cupaso{3. Agrega un paciente con sus datos.}
+           {4. Valida los datos, los cifra y guarda el paciente.}
+    \cupaso{5. Selecciona un paciente como activo.}
+           {6. Lo fija como activo, recuerda la selección y actualiza el panel, los registros, los recordatorios y las listas.}
+    \cufinflujo
+    \cuflujo{Flujos alternativos}
+    \cupaso{}
+           {2a. Si no hay pacientes, invita a registrar uno.}
+    \cupaso{3a. Edita un paciente.}
+           {3b. Guarda los cambios y actualiza la vista.}
+    \cupaso{3c. Archiva un paciente.}
+           {3d. Pide confirmación y lo retira de la lista activa, con opción de restaurarlo.}
+    \cupaso{5a. Elige llamar al centro o ver su ubicación.}
+           {5b. Abre el marcador telefónico o la dirección en el mapa.}
+    \cufinflujo
+    \cufila{Postcondiciones}{Los pacientes y el paciente activo quedan actualizados.}
+\end{especificacioncu}
+\end{table}
+
+\section*{Caso de uso: Consultar panel principal}
+
+\begin{table}[H]
+\centering
+\caption{Especificación del caso de uso CU-05.}
+\label{tab:cu-05}
+\begin{especificacioncu}{CU-05}{Consultar panel principal}
+    \cufila{Descripción}{El cuidador revisa de un vistazo el estado del paciente activo y accede a los módulos.}
+    \cufila{Actor}{Cuidador principal.}
+    \cufila{Requerimientos}{RF-18.}
+    \cufila{Precondiciones}{El cuidador inició sesión.}
+    \cuflujo{Flujo de eventos básico}
+    \cupaso{1. Selecciona Inicio en la barra inferior.}
+           {2. Muestra el saludo, el paciente activo, la fecha del último registro, los signos recientes, los registros del día y el nivel de alerta vigente.}
+    \cupaso{3. Elige un acceso directo.}
+           {4. Abre el módulo correspondiente.}
+    \cufinflujo
+    \cuflujo{Flujos alternativos}
+    \cupaso{}
+           {2a. Si no hay pacientes, muestra un estado vacío que invita a registrar uno.}
+    \cupaso{}
+           {2b. Si no hay registros, indica que aún no hay datos del día.}
+    \cufinflujo
+    \cufila{Postcondiciones}{No modifica datos.}
+\end{especificacioncu}
+\end{table}
+
+\section*{Caso de uso: Consultar historial}
+
+\begin{table}[H]
+\centering
+\caption{Especificación del caso de uso CU-07.}
+\label{tab:cu-07}
+\begin{especificacioncu}{CU-07}{Consultar historial}
+    \cufila{Descripción}{El cuidador revisa la evolución del paciente activo a partir de sus registros.}
+    \cufila{Actor}{Cuidador principal.}
+    \cufila{Requerimientos}{RF-14, RF-15, RF-28.}
+    \cufila{Precondiciones}{El cuidador inició sesión y tiene un paciente activo.}
+    \cuflujo{Flujo de eventos básico}
+    \cupaso{1. Abre el Historial desde el panel principal.}
+           {2. Lista los registros del paciente del más reciente al más antiguo, con su nivel de alerta.}
+    \cupaso{3. Filtra por fecha o por nivel de alerta.}
+           {4. Muestra solo los registros que coinciden.}
+    \cupaso{5. Expande un registro.}
+           {6. Muestra sus signos, síntomas y observaciones descifrados.}
+    \cufinflujo
+    \cuflujo{Flujos alternativos}
+    \cupaso{}
+           {2a. Si no hay registros, muestra un estado vacío con acceso a un nuevo registro.}
+    \cupaso{}
+           {2b. Sin conexión, muestra los registros guardados en el dispositivo.}
+    \cupaso{5a. Edita o elimina un registro del día.}
+           {5b. Pide confirmación antes de eliminar y actualiza el historial y el panel.}
+    \cufinflujo
+    \cufila{Postcondiciones}{Los cambios en los registros quedan reflejados en el historial y en el panel.}
+\end{especificacioncu}
+\end{table}
+
+\section*{Caso de uso: Consultar preguntas frecuentes}
+
+\begin{table}[H]
+\centering
+\caption{Especificación del caso de uso CU-10.}
+\label{tab:cu-10}
+\begin{especificacioncu}{CU-10}{Consultar preguntas frecuentes}
+    \cufila{Descripción}{El cuidador busca respuestas validadas a dudas comunes del cuidado.}
+    \cufila{Actor}{Cuidador principal.}
+    \cufila{Requerimientos}{RF-21.}
+    \cufila{Precondiciones}{El cuidador inició sesión.}
+    \cuflujo{Flujo de eventos básico}
+    \cupaso{1. Abre Preguntas frecuentes desde el panel o desde el chat.}
+           {2. Muestra las preguntas agrupadas por categoría.}
+    \cupaso{3. Escribe una palabra clave o elige una categoría.}
+           {4. Filtra las preguntas sin distinguir tildes ni mayúsculas.}
+    \cupaso{5. Toca una pregunta.}
+           {6. Despliega su respuesta.}
+    \cufinflujo
+    \cuflujo{Flujos alternativos}
+    \cupaso{}
+           {4a. Si no hay coincidencias, muestra un estado vacío.}
+    \cufinflujo
+    \cufila{Postcondiciones}{No modifica datos.}
+\end{especificacioncu}
+\end{table}

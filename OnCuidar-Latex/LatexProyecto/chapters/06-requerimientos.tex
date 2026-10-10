@@ -1,0 +1,456 @@
+\chapter[Especificación de Requerimientos de Software]{Especificación de Requerimientos de Software}
+
+\emph{Adaptación basada en IEEE Std 830-1998, Software Requirements
+Specifications \citep{ieee_830_1998}.}
+
+\section[Alcances]{Alcances}
+
+OnCuidar es una aplicación móvil para el cuidador principal de un paciente
+oncológico pediátrico. Se diferencia de las aplicaciones genéricas de salud en
+que su contenido educativo y sus criterios de alerta provienen del equipo de
+Enfermería que acompaña el proyecto, en que funciona sin conexión y en que cifra
+los datos sensibles en el propio dispositivo.
+
+\subsection*{Funcionalidades dentro del alcance}
+
+\begin{itemize}
+    \item Crear una cuenta con los datos del cuidador, del paciente, del centro
+    de salud y del contacto de emergencia, e iniciar sesión de forma segura.
+    \item Gestionar uno o más pacientes y elegir cuál es el paciente activo.
+    \item Registrar signos vitales, síntomas de la escala ESAS y observaciones,
+    y clasificar cada registro en los niveles normal, alerta o crítico.
+    \item Consultar el historial de registros y exportarlo a PDF y Excel.
+    \item Consultar una biblioteca de videos, guías, infografías y documentos,
+    disponible sin conexión.
+    \item Resolver dudas frecuentes mediante un asistente de orientación y una
+    sección de preguntas frecuentes.
+    \item Programar recordatorios con notificaciones locales.
+\end{itemize}
+
+\subsection*{Funcionalidades fuera del alcance}
+
+\begin{itemize}
+    \item Diagnosticar, indicar tratamientos o calcular dosis de medicamentos.
+    \item Reemplazar la evaluación del equipo de salud o la atención presencial.
+    \item Enviar los registros directamente al hospital o integrarse con su ficha
+    clínica electrónica.
+    \item Generar respuestas con inteligencia artificial generativa.
+    \item Ofrecer una aplicación web o un panel de administración para el equipo
+    clínico.
+\end{itemize}
+
+\section[Objetivo del Software]{Objetivo del software}
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+\subsection{Objetivo general}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+
+El software gestiona la información del seguimiento domiciliario del paciente
+oncológico pediátrico, compuesta por sus signos vitales, síntomas, historial,
+recordatorios y contenidos educativos, para apoyar al cuidador en el proceso de
+cuidado en el hogar. Con ello logra un registro ordenado y trazable de la
+evolución del paciente y una orientación oportuna ante signos de alerta.
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+\subsection{Objetivos específicos}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+
+\begin{enumerate}
+    \item Almacenar los antecedentes del cuidador y de sus pacientes, cifrando
+    los datos sensibles antes de que salgan del dispositivo.
+    \item Registrar la valoración clínica diaria del paciente y clasificar su
+    nivel de alerta mediante un motor de reglas clínicas.
+    \item Entregar contenido educativo validado y respuestas a dudas frecuentes,
+    disponibles incluso sin conexión.
+    \item Generar informes del historial en PDF y Excel para presentarlos en los
+    controles clínicos.
+    \item Recordar al cuidador las tareas de cuidado mediante notificaciones
+    locales.
+\end{enumerate}
+
+\section[Descripción Global del Producto]{Descripción global del producto}
+
+\subsection[Interfaz de Usuario]{Interfaz de usuario}
+
+La interfaz está pensada para personas sin formación técnica ni clínica que
+pueden usarla en momentos de estrés. Por eso emplea textos breves, botones
+amplios y un lenguaje cotidiano. Sigue las pautas de Material~3 con una paleta
+cálida basada en el dorado del lazo del cáncer infantil y la tipografía Nunito.
+
+Todas las pantallas comparten una cabecera con degradado dorado y una barra de
+navegación inferior con cinco accesos: Inicio, Chat, Registro, Aprende y
+Perfil. El nivel de alerta se comunica siempre con el mismo código de colores,
+verde para normal, amarillo para alerta y rojo para crítico, acompañado de un
+ícono y un texto para no depender solo del color.
+
+\subsection[Interfaz de Hardware]{Interfaz de hardware}
+
+La aplicación se ejecuta en teléfonos Android e iOS compatibles con Flutter y no
+requiere sensores ni periféricos especiales. Utiliza el almacenamiento interno
+para la persistencia local de datos, la caché del contenido educativo y los
+archivos exportados. Solicita permisos de notificaciones, de alarmas exactas y
+de ejecución al reiniciar el dispositivo, para que los recordatorios se
+disparen a la hora programada.
+
+\subsection[Interfaz de Software]{Interfaz software}
+
+La Tabla~\ref{tab:interfaz-software} detalla los productos de software con los
+que se relaciona el sistema.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.25}P{0.85}P{0.80}P{1.10}}
+    \caption{Productos de software con los que se relaciona el sistema.}
+    \label{tab:interfaz-software}\\
+    \toprule
+    \filaencabezado \encab{Nombre} & \encab{Abreviación} & \encab{Versión} & \encab{Fuente} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{4}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Nombre} & \encab{Abreviación} & \encab{Versión} & \encab{Fuente} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{4}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    Flutter SDK (Dart) & Flutter & Dart 3.12 & flutter.dev \\
+    http & --- & 1.6.0 & pub.dev \\
+    flutter\_riverpod & Riverpod & 3.4.2 & pub.dev \\
+    go\_router & --- & 17.5.0 & pub.dev \\
+    cryptography & --- & 2.9.0 & pub.dev \\
+    flutter\_secure\_storage & --- & 9.2.4 & pub.dev \\
+    flutter\_local\_notifications & --- & 22.3.1 & pub.dev \\
+    flutter\_cache\_manager & --- & 3.4.4 & pub.dev \\
+    connectivity\_plus & --- & 7.3.1 & pub.dev \\
+    pdf & --- & 3.12.0 & pub.dev \\
+    excel & --- & 4.0.6 & pub.dev \\
+    video\_player & --- & 2.14.0 & pub.dev \\
+    url\_launcher & --- & 6.3.2 & pub.dev \\
+    share\_plus & --- & 12.0.2 & pub.dev \\
+    Node.js & Node & 22 & nodejs.org \\
+    Express & --- & 5.3.0 & npmjs.com \\
+    PostgreSQL & Postgres & 15 & postgresql.org \\
+    pg (cliente de PostgreSQL) & --- & 8.23.1 & npmjs.com \\
+    bcryptjs & --- & 2.4.3 & npmjs.com \\
+    jsonwebtoken & --- & 9.0.3 & npmjs.com \\
+    nodemailer & --- & 6.10.1 & npmjs.com \\
+    helmet & --- & 8.3.0 & npmjs.com \\
+    cors & --- & 2.8.6 & npmjs.com \\
+    Jest & --- & 29.7.0 & npmjs.com \\
+    supertest & --- & 7.3.1 & npmjs.com \\
+    Docker Compose y Podman & --- & --- & docker.com, podman.io \\ % REVISAR: versión instalada en el servidor
+\end{xltabular}
+\endgroup
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+\subsection{Interfaces de comunicación}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
+
+La aplicación se comunica con la API REST propia mediante HTTP, con mensajes en
+formato JSON y autenticación por token JWT en cada solicitud. En el entorno del
+servidor de la universidad se prevé servir la API sobre HTTPS. El contenido
+educativo (videos, infografías y guías) lo sirve el mismo backend desde la ruta
+/archivos y la aplicación lo descarga para su uso sin conexión. El
+servidor envía los correos de verificación y recuperación mediante SMTP. La
+aplicación abre llamadas telefónicas con el esquema tel: y direcciones
+en Google Maps mediante enlaces web. No se definen protocolos propios.
+
+\section[Requerimientos Específicos]{Requerimientos específicos}
+
+\subsection[Requerimientos Funcionales del Sistema]{Requerimientos funcionales del sistema}
+
+Los requerimientos funcionales se derivan de las historias de usuario del
+backlog y se agrupan por módulo. La columna HU indica la historia de usuario que
+da origen a cada requerimiento, lo que permite seguir su trazabilidad hasta las
+pruebas.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.42}P{0.95}P{2.33}P{0.55}P{0.75}}
+    \caption{Requerimientos funcionales del sistema.}
+    \label{tab:requerimientos-funcionales}\\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{Nombre} & \encab{Descripción} & \encab{HU} & \encab{Prioridad} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{Nombre} & \encab{Descripción} & \encab{HU} & \encab{Prioridad} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    \filagrupo{5}{Acceso y seguridad}
+    RF-01 & Iniciar la aplicación &
+    Mostrar una pantalla de carga y dirigir al panel principal si existe una
+    sesión activa, o a la bienvenida si no la hay. & HU-01 & Crítica \\
+    RF-02 & Crear cuenta &
+    Registrar la cuenta con correo y contraseña junto con los datos del
+    cuidador, del paciente, del centro de salud y del contacto de emergencia,
+    validando los campos obligatorios y sus formatos. & HU-02 & Crítica \\
+    RF-03 & Iniciar y cerrar sesión &
+    Autenticar al cuidador, informar con claridad las credenciales inválidas,
+    mantener la sesión abierta entre usos y cerrarla limpiando los datos
+    locales. & HU-03 & Alta \\
+    RF-04 & Recuperar acceso &
+    Enviar al correo principal o al de respaldo un enlace de restablecimiento de
+    contraseña de un solo uso, con una hora de vigencia. & HU-03 & Alta \\
+    RF-05 & Cifrar datos sensibles &
+    Cifrar en el dispositivo los datos personales y clínicos antes de enviarlos al
+    servidor, obtener la clave de cada usuario desde el servidor que la custodia y
+    bloquear el acceso a la clave al cerrar sesión. & HU-04 & Crítica \\
+    RF-29 & Verificar correos por enlace &
+    Enviar un enlace de verificación de un solo uso, con una hora de vigencia, al
+    correo principal al registrarse o cambiarlo y al correo de respaldo; mostrar
+    si el correo está verificado o pendiente, sin bloquear el uso de la
+    aplicación, y permitir reenviar el enlace una vez por minuto como máximo. & HU-05 & Media \\
+    \filagrupo{5}{Perfil y pacientes}
+    RF-06 & Gestionar perfil del cuidador &
+    Mostrar y editar los datos del cuidador, exigir la contraseña actual para
+    cambiar un correo e indicar cuándo el nuevo correo está pendiente de
+    verificación. & HU-05 & Alta \\
+    RF-07 & Gestionar pacientes &
+    Crear, editar, archivar y restaurar los pacientes del cuidador, con
+    confirmación antes de archivar. & HU-06 & Crítica \\
+    RF-08 & Seleccionar paciente activo &
+    Elegir el paciente activo desde una lista, mostrar su nombre en el panel
+    principal y conservar la selección al navegar o cerrar la aplicación. & HU-07 & Crítica \\
+    RF-09 & Contactar al centro de salud &
+    Iniciar una llamada al centro de salud del paciente y abrir su dirección en
+    la aplicación de mapas. & HU-06 & Media \\
+    RF-10 & Separar datos por paciente &
+    Asociar registros y recordatorios al paciente activo
+    y actualizar todas las vistas al cambiar de paciente. & HU-24 & Alta \\
+    \filagrupo{5}{Registro clínico e historial}
+    RF-11 & Registrar valoración clínica &
+    Registrar hasta cuatro signos vitales opcionales (temperatura, frecuencia
+    cardíaca, saturación de oxígeno y frecuencia respiratoria), la intensidad de
+    los síntomas ESAS de 0 a 10 (sin síntoma, leve, moderado, severo e insoportable) y
+    observaciones, rechazando valores fuera de
+    rango físico. & HU-09 & Crítica \\
+    RF-12 & Controlar tope diario &
+    Distinguir registros programados y extra, y bloquear los programados cuando
+    el paciente alcanza su tope diario, fijado en tres por defecto. & HU-09 & Crítica \\
+    RF-13 & Clasificar nivel de alerta &
+    Clasificar cada registro como normal, alerta o crítico según umbrales de
+    signos vitales e intensidad de síntomas, y mostrar el motivo junto con la
+    recomendación correspondiente. & HU-09 & Crítica \\
+    RF-14 & Consultar historial &
+    Listar en orden cronológico los registros del paciente activo, filtrarlos
+    por fecha o nivel de alerta y mostrar el detalle de cada uno. & HU-10 & Alta \\
+    RF-15 & Editar y eliminar registros &
+    Modificar o eliminar los registros del día, con confirmación previa a la
+    eliminación. & HU-11 & Media \\
+    RF-16 & Exportar historial a PDF &
+    Generar un informe PDF con los datos del paciente y sus registros en un rango
+    de fechas, y permitir guardarlo o compartirlo. & HU-12 & Alta \\
+    RF-17 & Exportar historial a Excel &
+    Generar una planilla Excel con fecha, signos, síntomas, nivel y
+    observaciones de cada registro en un rango de fechas, y permitir guardarla o
+    compartirla. & HU-13 & Media \\
+    RF-18 & Mostrar panel principal &
+    Presentar el paciente activo, la fecha del último registro, un resumen de
+    signos vitales, los registros del día, el nivel de alerta vigente y accesos
+    directos a los módulos. & HU-08 & Alta \\
+    \filagrupo{5}{Orientación}
+    RF-19 & Consultar asistente &
+    Responder por chat la consulta escrita del cuidador con la pregunta frecuente
+    que mejor coincide por palabras clave, o con una respuesta de respaldo si no
+    hay coincidencia. & HU-14 & Media \\
+    RF-20 & Gestionar conversaciones &
+    Guardar las conversaciones con un título automático, listarlas por última
+    actividad y permitir continuarlas, renombrarlas y eliminarlas. & HU-15 & Baja \\
+    RF-21 & Consultar preguntas frecuentes &
+    Mostrar las preguntas frecuentes por categoría, con búsqueda por palabra
+    clave que ignora tildes. & HU-16 & Baja \\
+    \filagrupo{5}{Recordatorios}
+    RF-22 & Gestionar recordatorios &
+    Crear, editar, activar o desactivar y eliminar recordatorios de medicamento, medición,
+    cita u otro tipo, únicos o recurrentes. & HU-17 & Alta \\
+    RF-23 & Notificar recordatorios &
+    Emitir una notificación local a la hora de cada recordatorio activo,
+    cancelarlas al cerrar sesión y reprogramarlas al volver a iniciarla. & HU-18 & Media \\
+    \filagrupo{5}{Educación}
+    RF-24 & Consultar biblioteca &
+    Mostrar el catálogo de videos, guías, infografías y documentos, con filtro
+    por categoría, búsqueda por título, favoritos y estado de descarga. & HU-19 & Media \\
+    RF-25 & Descargar contenido &
+    Descargar el contenido educativo en segundo plano tras el primer ingreso,
+    reintentar ante fallas de red y mostrar el progreso. & HU-20 & Alta \\
+    RF-26 & Reproducir videos &
+    Reproducir los videos educativos en horizontal y a pantalla inmersiva, con
+    controles para reproducir, pausar, avanzar y retroceder 10 segundos, una barra
+    de progreso y la reanudación desde donde quedó. & HU-21 & Media \\
+    RF-27 & Ver guías e infografías &
+    Mostrar las guías como recomendaciones en secciones con título y las
+    infografías ampliadas sobre la pantalla, con zoom de hasta cinco veces. & HU-22 & Media \\
+    \filagrupo{5}{Funcionamiento sin conexión}
+    RF-28 & Operar sin conexión &
+    Crear y consultar registros sin conexión, guardar las escrituras en una cola
+    persistente que se reintenta al recuperar la red y avisar al cuidador cuando
+    no hay conexión. & HU-27 & Alta \\
+\end{xltabular}
+\endgroup
+
+\subsection[Interfaces Externas de Entrada]{Interfaces externas de entrada}
+
+La Tabla~\ref{tab:entradas} agrupa los datos que ingresan al sistema.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.45}P{0.75}P{1.80}}
+    \caption{Interfaces externas de entrada.}
+    \label{tab:entradas}\\
+    \toprule
+    \filaencabezado \encab{Identificador} & \encab{Nombre del ítem} & \encab{Detalle de datos contenidos en el ítem} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{3}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Identificador} & \encab{Nombre del ítem} & \encab{Detalle de datos contenidos en el ítem} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{3}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    DE\_01 & Datos de la cuenta & Correo electrónico, correo de respaldo,
+    contraseña y confirmación de contraseña. \\
+    DE\_02 & Datos del cuidador & Nombre completo, relación con el paciente,
+    teléfono y dirección. \\
+    DE\_03 & Datos del paciente & Nombre, RUT, edad, diagnóstico, fase de
+    tratamiento y tope diario de registros. \\
+    DE\_04 & Centro de salud y emergencia & Nombre, dirección y teléfono del
+    centro de salud, nombre y teléfono del contacto de emergencia. \\
+    DE\_05 & Credenciales de acceso & Correo electrónico y contraseña. \\
+    DE\_06 & Valoración clínica & Tipo de registro, temperatura, frecuencia
+    cardíaca, saturación de oxígeno, frecuencia respiratoria, síntomas con su
+    intensidad y observaciones. \\
+    DE\_07 & Consulta al asistente & Texto libre de la duda del cuidador. \\
+    DE\_08 & Criterios de búsqueda & Palabras clave, categoría y rango de
+    fechas. \\
+    DE\_09 & Recordatorio & Título, descripción, tipo, fecha, hora, días de
+    repetición y recurrencia. \\
+\end{xltabular}
+\endgroup
+
+\subsection[Interfaces Externas de Salida]{Interfaces externas de salida}
+
+La Tabla~\ref{tab:salidas} detalla las salidas del sistema y su medio.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.55}P{0.90}P{1.95}P{0.60}}
+    \caption{Interfaces externas de salida.}
+    \label{tab:salidas}\\
+    \toprule
+    \filaencabezado \encab{Identificador} & \encab{Nombre del ítem} & \encab{Detalle de datos contenidos en el ítem} & \encab{Medio} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{4}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Identificador} & \encab{Nombre del ítem} & \encab{Detalle de datos contenidos en el ítem} & \encab{Medio} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{4}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    IS\_01 & Panel principal & Paciente activo, último registro, signos
+    vitales recientes, registros del día y nivel de alerta vigente. & Pantalla \\
+    IS\_02 & Resultado de la valoración & Nivel de alerta, motivos detectados y
+    recomendación. & Pantalla \\
+    IS\_03 & Historial & Registros ordenados por fecha con sus signos, síntomas,
+    observaciones y nivel de alerta. & Pantalla \\
+    IS\_04 & Informe de seguimiento & Datos del paciente, del cuidador, del
+    centro de salud y del contacto de emergencia, resumen y detalle de
+    registros. & Archivo PDF \\
+    IS\_05 & Planilla de registros & Fecha, signos vitales, síntomas, nivel de
+    alerta y observaciones de cada registro. & Archivo XLSX \\
+    IS\_06 & Respuesta del asistente & Respuesta a la consulta y acceso a las
+    preguntas frecuentes. & Pantalla \\
+    IS\_07 & Recordatorio & Título y descripción del recordatorio a la hora
+    programada. & Notificación \\
+    IS\_08 & Aviso de conexión & Estado sin conexión de la aplicación. & Pantalla \\
+\end{xltabular}
+\endgroup
+
+\subsection[Atributos del Producto]{Atributos del producto}
+
+Los atributos de calidad se definen con base en el modelo ISO/IEC~9126 y se
+detallan en la Tabla~\ref{tab:atributos}.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.40}P{0.80}P{1.40}P{1.40}}
+    \caption{Atributos del producto.}
+    \label{tab:atributos}\\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{Atributo} & \encab{Descripción} & \encab{Criterio de aceptación} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{4}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{Atributo} & \encab{Descripción} & \encab{Criterio de aceptación} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{4}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    RNF-01 & Usabilidad y operabilidad &
+    La interfaz usa textos breves, lenguaje cotidiano y botones amplios, y cada
+    mensaje de error indica qué ocurrió y cómo corregirlo. &
+    El 100~\% de los mensajes de validación señala el campo afectado y la acción
+    esperada. \\
+    RNF-02 & Usabilidad y navegación &
+    Los módulos principales se alcanzan desde una barra inferior permanente y
+    desde los accesos del panel principal. &
+    Cada módulo principal es accesible desde el panel o la barra inferior sin
+    pasar por pantallas intermedias. \\
+    RNF-03 & Funcionalidad y seguridad &
+    El acceso requiere correo y contraseña, los datos sensibles se cifran con
+    AES-256-GCM en el dispositivo y cada cuidador accede solo a sus propios
+    pacientes. &
+    El servidor rechaza con error 400 la escritura de campos clínicos en claro y
+    filtra todas las consultas por el usuario autenticado. \\
+    RNF-04 & Fiabilidad y disponibilidad &
+    La aplicación permite consultar el historial, el contenido descargado y las
+    preguntas frecuentes sin conexión. &
+    Sin red, las funciones de consulta siguen operativas y los registros nuevos
+    se guardan en una cola local que se envía al volver la conexión, sin duplicar
+    datos porque las escrituras son idempotentes. \\
+    RNF-05 & Eficiencia y tiempo de respuesta &
+    Las pantallas principales cargan con rapidez para no entorpecer el uso en
+    situaciones de estrés. &
+    El panel, el registro y el historial cargan en menos de 3~segundos con una
+    conexión móvil estándar. \\
+    RNF-06 & Mantenibilidad &
+    El contenido educativo y las preguntas frecuentes se mantienen separados de
+    la lógica de la aplicación. &
+    El contenido se actualiza sin modificar las pantallas ni la lógica de la
+    aplicación. \\
+    RNF-07 & Portabilidad &
+    La aplicación se ejecuta en Android e iOS desde una misma base de código. &
+    La aplicación compila y funciona en los dispositivos de prueba de ambas
+    plataformas. \\
+    RNF-08 & Pertinencia clínica &
+    La aplicación no diagnostica, no indica tratamientos ni calcula dosis. &
+    Toda orientación se limita a contenido validado y, ante riesgo, recomienda
+    contactar al equipo de salud. \\
+\end{xltabular}
+\endgroup

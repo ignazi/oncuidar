@@ -1,0 +1,28 @@
+# Configuración del analizador estático: reglas recomendadas de Flutter
+# más una lista curada de reglas adicionales.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Inmutabilidad y constantes.
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_const_literals_to_create_immutables
+    - prefer_final_locals
+    - prefer_final_in_for_each
+    - use_named_constants
+    # Asincronía.
+    - unawaited_futures
+    - avoid_void_async
+    - unnecessary_await_in_return
+    # Recursos que deben liberarse.
+    - cancel_subscriptions
+    - close_sinks
+    # Legibilidad.
+    - unnecessary_lambdas
+    - unnecessary_parenthesis
+    - unnecessary_statements
+    - directives_ordering
+    - always_use_package_imports
+    - prefer_single_quotes
+    - avoid_unused_constructor_parameters

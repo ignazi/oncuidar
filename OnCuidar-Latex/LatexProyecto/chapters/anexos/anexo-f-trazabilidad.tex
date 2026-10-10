@@ -1,0 +1,70 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+\chapter[Anexo: Matriz de Trazabilidad]{ANEXO: Matriz de Trazabilidad}
+
+La matriz relaciona cada requerimiento funcional con la historia de usuario que
+lo origina, el caso de uso que lo representa, el objetivo específico del
+proyecto al que contribuye y los archivos de prueba que lo verifican, nombrados
+sin la ruta ni el sufijo \emph{\_test}; las pruebas del servidor se indican con el prefijo \emph{servidor}. El primer
+objetivo específico, referido al análisis de necesidades, fundamenta todos los
+requerimientos. El cuarto, referido a la validación técnica, se refleja en la
+columna de pruebas.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.55}P{0.55}P{0.80}P{0.50}P{2.60}}
+    \caption{Trazabilidad entre requerimientos, historias, casos de uso, objetivos y pruebas.}
+    \label{tab:trazabilidad}\\
+    \toprule
+    \filaencabezado \encab{RF} & \encab{HU} & \encab{CU} & \encab{OE} & \encab{Prueba} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{RF} & \encab{HU} & \encab{CU} & \encab{OE} & \encab{Prueba} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    RF-01 & HU-01 & CU-02 & OE-2 & --- \\
+    RF-02 & HU-02 & CU-01 & OE-2 & validaciones\_registro; servidor: auth \\
+    RF-03 & HU-03 & CU-02 & OE-2 & servidor: auth \\
+    RF-04 & HU-03 & CU-02 & OE-2 & servidor: auth, correos, plantillas \\
+    RF-05 & HU-04 & CU-01, CU-02 & OE-2 & servidor: auth (clave de datos), datos (campos en claro) \\
+    RF-06 & HU-05 & CU-03 & OE-2 & servidor: correos, datos (cuidador) \\
+    RF-07 & HU-06 & CU-04 & OE-2 & servidor: datos (pacientes) \\
+    RF-08 & HU-07 & CU-04 & OE-2 & proveedores\_pacientes \\
+    RF-09 & HU-06 & CU-04 & OE-2 & --- \\
+    RF-10 & HU-24 & CU-04 & OE-2 & servidor: datos (aislamiento entre usuarios) \\
+    RF-11 & HU-09 & CU-06 & OE-3 & registro\_clinico; servidor: datos (registros) \\
+    RF-12 & HU-09 & CU-06 & OE-3 & --- \\
+    RF-13 & HU-09 & CU-06 & OE-3 & motor\_reglas\_clinicas \\
+    RF-14 & HU-10 & CU-07 & OE-2 & servidor: datos (paginación) \\
+    RF-15 & HU-11 & CU-07 & OE-2 & servidor: datos (upsert y borrado) \\
+    RF-16 & HU-12 & CU-08 & OE-3 & exportadores \\
+    RF-17 & HU-13 & CU-08 & OE-3 & exportadores, pantalla\_vista\_excel \\
+    RF-18 & HU-08 & CU-05 & OE-3 & pantalla\_panel\_principal, navegacion\_principal \\
+    RF-19 & HU-14 & CU-09 & OE-3 & burbujas\_chat \\
+    RF-20 & HU-15 & CU-09 & OE-3 & conversacion; servidor: datos (conversaciones) \\
+    RF-21 & HU-16 & CU-10 & OE-3 & pantalla\_preguntas\_frecuentes \\
+    RF-22 & HU-17 & CU-12 & OE-3 & servidor: datos (recordatorios) \\
+    RF-23 & HU-18 & CU-12 & OE-3 & calendario\_avisos, silencio\_avisos \\
+    RF-24 & HU-19 & CU-11 & OE-3 & tarjeta\_material, categorias, secciones\_biblioteca, temas\_biblioteca; servidor: datos (favoritos) \\
+    RF-25 & HU-20 & CU-11 & OE-3 & servicio\_cache\_contenido \\
+    RF-26 & HU-21 & CU-11 & OE-3 & pantalla\_video, avance\_video \\
+    RF-27 & HU-22 & CU-11 & OE-3 & material\_educativo, pantalla\_visor\_pdf \\
+    RF-28 & HU-27 & CU-06, CU-07 & OE-3 & servicio\_conectividad, banner\_conexion; servidor: datos (upsert idempotente) \\
+    RF-29 & HU-05 & CU-01, CU-02 & OE-2 & servidor: correos (verificación y reenvío), auth (registro) \\
+\end{xltabular}
+\endgroup
+
+Los 29 requerimientos quedan cubiertos por al menos un caso de uso, y 26 de
+ellos por pruebas automatizadas, ya sea de la aplicación o del servidor (las
+pruebas del servidor se identifican con el prefijo \emph{servidor} y el archivo
+que las contiene). Quedan sin prueba dedicada RF-01, RF-09 y RF-12: la carga
+inicial, el contacto con el centro de salud, que solo abre aplicaciones externas
+del teléfono, y el tope diario de registros programados. Se verifican a mano,
+junto con el recorrido de punta a punta en un teléfono Android.

@@ -1,0 +1,96 @@
+% ---------------------------------------------------------------------------
+% config/commands.tex — Comandos reutilizables
+% ---------------------------------------------------------------------------
+
+% Inserta una imagen con fallback si el archivo no existe.
+% Uso: \safeincludegraphics[width=...]{figures/archivo.png}
+\newcommand{\safeincludegraphics}[2][]{%
+    \IfFileExists{#2}{%
+        \includegraphics[#1]{#2}%
+    }{%
+        \fbox{%
+            \parbox[c][6cm][c]{0.92\linewidth}{%
+                \centering\small Imagen pendiente:\\[2mm]
+                {\scriptsize\path{#2}}%
+            }%
+        }%
+    }%
+}
+
+% Caja para plantar una figura pendiente, numerada por \caption.
+% Uso:
+%   \begin{figure}[H]
+%       \centering
+%       \placeholderfigura{Descripción breve del diagrama por insertar}
+%       \caption{...}
+%       \label{fig:...}
+%   \end{figure}
+\newcommand{\placeholderfigura}[1]{%
+    \fbox{%
+        \parbox[c][6cm][c]{0.9\linewidth}{%
+            \centering\small
+            [INSERTAR DIAGRAMA: #1]\\[2mm]
+            {\scriptsize Archivo de imagen pendiente}%
+        }%
+    }%
+}
+
+% Requerimiento funcional (RF) como párrafo destacado.
+\newcommand{\requerimiento}[4]{%
+    \textbf{RF-#1} — #2. \textit{#3. Prioridad: #4.}%
+}
+
+% Nota / observación visible del autor mientras el documento se completa.
+\newcommand{\nota}[1]{%
+    \par\medskip\noindent
+    {\color{ubbblue}\textbf{[NOTA: #1]}}\par\medskip
+}
+
+% Marcadores de contenido pendiente.
+\newcommand{\TBD}[1]{[COMPLETAR: #1]}
+\newcommand{\TBDFigura}[1]{[INSERTAR FIGURA: #1]}
+\newcommand{\TBDTabla}[1]{[INSERTAR TABLA: #1]}
+
+% Caso de uso (para encabezados de subsección de especificación).
+\newcommand{\casodeuso}[1]{\subsection{Caso de Uso: #1}}
+% ---------------------------------------------------------------------------
+% Ficha de especificación de caso de uso (formato de la plantilla UBB)
+% Uso:
+%   \begin{especificacioncu}{CU-05}{Registrar valoración clínica}
+%       \cufila{Descripción}{...}
+%       \cuflujo{Flujo de eventos básico}
+%       \cupaso{1. El cuidador ...}{2. El sistema ...}
+%       \cufinflujo
+%   \end{especificacioncu}
+% ---------------------------------------------------------------------------
+\definecolor{cusubtitulo}{RGB}{230,230,230}
+\newlength{\cuetiqueta}
+\newlength{\cumedia}
+\newlength{\cuancho}
+\newenvironment{especificacioncu}[2]{%
+    \small\setstretch{1.05}%
+    \arrayrulecolor{tablaborde}%
+    \setlength{\cuetiqueta}{3.1cm}%
+    \setlength{\cumedia}{\dimexpr(\linewidth-\cuetiqueta-6\tabcolsep-4\arrayrulewidth)/2\relax}%
+    \setlength{\cuancho}{\dimexpr2\cumedia+2\tabcolsep+\arrayrulewidth\relax}%
+    \begin{tabular}{|>{\RaggedRight}p{\cuetiqueta}|>{\RaggedRight}p{\cumedia}|>{\RaggedRight\arraybackslash}p{\cumedia}|}
+    \hline
+    \rowcolor{tablahead}\multicolumn{3}{|l|}{\bfseries #1\quad\textbar\quad #2} \\
+    \hline
+}{%
+    \end{tabular}%
+    \arrayrulecolor{black}%
+}
+\newcommand{\cufila}[2]{%
+    \cellcolor{tablaetiqueta}\textbf{#1} &
+    \multicolumn{2}{>{\RaggedRight\arraybackslash}p{\cuancho}|}{#2} \\
+    \hline
+}
+\newcommand{\cuflujo}[1]{%
+    \cellcolor{tablaetiqueta}\textbf{#1} &
+    \cellcolor{cusubtitulo}\textit{Actor} &
+    \cellcolor{cusubtitulo}\textit{Sistema} \\
+    \arrayrulecolor{tablaborde}\cline{2-3}
+}
+\newcommand{\cupaso}[2]{\cellcolor{tablaetiqueta} & #1 & #2 \\}
+\newcommand{\cufinflujo}{\hline}

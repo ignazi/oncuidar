@@ -1,0 +1,5 @@
+# Copiar a docker-compose.override.yml para exponer Postgres al host en desarrollo
+services:
+  db:
+    ports:
+      - "127.0.0.1:5432:5432"

@@ -1,0 +1,87 @@
+\chapter[Plan de Implantación y Puesta en Marcha]{Plan de Implantación y Puesta en Marcha}
+
+\section*{Tipo de puesta en marcha}
+
+OnCuidar no reemplaza un sistema anterior, porque hoy el seguimiento se lleva en
+papel o de memoria. Por eso no se requiere una migración de datos ni una
+operación en paralelo. Se propone una puesta en marcha gradual, que comienza con
+la entrega del prototipo al equipo de Enfermería. Este equipo revisa el
+contenido definitivo y decide cuándo incorporar a las primeras familias. Una
+puesta en marcha gradual permite corregir el contenido y los criterios de alerta
+antes de ampliar su uso, algo necesario en una aplicación de salud.
+
+\section*{Calendario}
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Calendario de implantación.}
+\label{tab:implantacion}
+\begin{tabularx}{\textwidth}{P{0.95}P{1.40}P{0.65}}
+\toprule
+\filaencabezado \encab{Etapa} & \encab{Actividades} & \encab{Fecha} \\
+\midrule
+Entrega del prototipo & Entrega del APK, del código fuente y de la
+documentación al equipo de Enfermería. & 13 nov 2026 \\
+Capacitación & Dos sesiones de taller práctico. & 16 al 18 nov 2026 \\
+Revisión del contenido & Enfermería valida los textos, los materiales y los
+criterios de alerta definitivos. & Por definir con Enfermería \\
+Incorporación de familias & Enfermería presenta la aplicación a los primeros
+cuidadores y acompaña su uso. & Por definir con Enfermería \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{Entorno de despliegue}
+
+El servidor se compone de la API (Node.js y Express) y la base de datos
+PostgreSQL, definidos en Docker Compose, y está destinado a ejecutarse en
+contenedores Podman del servidor que la Universidad del Bío-Bío dispone para
+proyectos de título. El despliegue en ese servidor está pendiente de la
+activación de la cuenta solicitada; mientras tanto, el sistema funciona en un
+entorno local con la misma configuración de contenedores y se probó con la
+aplicación instalada en un teléfono Android. Los parámetros de operación, como
+las credenciales de la base de datos, el secreto de las sesiones, la clave
+maestra, el servidor de correo y la dirección pública, se entregan mediante
+variables de entorno y no forman parte del repositorio. Solo se publica el
+puerto de la API que asigne la universidad; la base de datos permanece en la
+red interna de los contenedores.
+
+\section*{Seguridad, respaldos, mantención y contingencia}
+
+Los datos sensibles se cifran en el teléfono con AES-GCM antes de enviarse, de
+modo que el servidor solo almacena texto cifrado y rechaza los campos clínicos
+en claro. La clave de cada usuario se guarda en el almacenamiento seguro del
+teléfono y una copia sellada con la clave maestra del servidor permite
+recuperarla desde una sesión nueva. La clave maestra es crítica, porque sin ella
+las claves de datos no se pueden abrir, por lo que debe respaldarse por separado
+de la base de datos. Se recomienda programar copias periódicas de la base con
+pg\_dump, almacenarlas fuera del servidor y probar su restauración antes de
+incorporar familias; este respaldo aún no está automatizado. La mantención
+contempla diez horas anuales por desarrolladora para corregir errores y
+actualizar dependencias.
+
+Ante las principales contingencias se definen las siguientes respuestas.
+
+\begin{itemize}
+    \item \emph{Pérdida o cambio de teléfono}: al iniciar sesión en el nuevo
+    dispositivo, la aplicación solicita al servidor la clave de cifrado sellada
+    y el cuidador vuelve a ver todos sus datos.
+    \item \emph{Falla de conexión o del servidor}: la aplicación sigue operando
+    con los datos locales, guarda las escrituras en una cola persistente y las
+    reintenta con espera creciente cuando el servidor vuelve. Las escrituras
+    son idempotentes, por lo que un reintento no duplica registros.
+    \item \emph{Error en un contenido o en un criterio de alerta}: el contenido
+    se corrige desde el backend sin publicar una nueva versión de la aplicación.
+    Un criterio de alerta se corrige en el motor de reglas y se distribuye en una
+    nueva versión del APK.
+    \item \emph{Acceso no autorizado}: cada solicitud exige una sesión firmada
+    (JWT) y el servidor filtra todo por el usuario de la sesión, de modo que un
+    recurso ajeno responde como inexistente. Aun con acceso a la base de datos,
+    los datos sensibles permanecen ilegibles porque están cifrados con claves
+    que no se almacenan junto a ellos.
+    \item \emph{Filtración de secretos o de un enlace de correo}: los enlaces de
+    verificación y de recuperación son de un solo uso y vencen en una hora, y
+    los secretos se rotan en las variables de entorno sin tocar el repositorio.
+\end{itemize}

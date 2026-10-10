@@ -1,0 +1,178 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+\chapter[Pruebas]{Pruebas}
+
+\emph{Adaptación basada en IEEE Std 829-1998, Software Test Documentation
+\citep{ieee_829_1998}.}
+
+\section[Elementos]{Elementos de prueba}
+
+Las pruebas verifican los siguientes elementos del sistema.
+
+\begin{itemize}
+    \item \emph{Pantallas}: acceso y recuperación de cuenta, panel principal,
+    registro clínico, historial, chat, preguntas frecuentes, biblioteca, detalle
+    de material, reproductor de video y recordatorios.
+    \item \emph{Motor de reglas clínicas}: clasificación de cada registro en los
+    niveles normal, alerta y crítico.
+    \item \emph{Servicio de cifrado}: cifrado y descifrado de los datos
+    sensibles.
+    \item \emph{API del servidor}: autenticación, aislamiento entre usuarios,
+    rechazo de campos clínicos en claro, escritura idempotente, paginación,
+    verificación de correos y plantillas de correo.
+    \item \emph{Exportadores}: generación de los archivos PDF y Excel.
+    \item \emph{Servicios de caché y notificaciones}: disponibilidad del
+    contenido sin conexión y programación de recordatorios.
+\end{itemize}
+
+\section[Especificación]{Especificación de las pruebas}
+
+La Tabla~\ref{tab:especificacion-pruebas} resume la estrategia para cada nivel
+de prueba.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Especificación de las pruebas por nivel.}
+\label{tab:especificacion-pruebas}
+\begin{tabularx}{\textwidth}{P{0.62}P{1.19}P{1.19}}
+\toprule
+\filaencabezado \encab{Aspecto} & \encab{Pruebas de unidad} & \encab{Pruebas de sistema} \\
+\midrule
+Características & Funcionalidad y seguridad de servicios y reglas. &
+Funcionalidad, interfaz y navegación de cada pantalla. \\
+Objetivo & Detectar errores de lógica en el motor de reglas, el cifrado y el
+acceso a datos. & Verificar que cada pantalla cumple los criterios de aceptación
+de su historia de usuario. \\
+Enfoque & Caja blanca. & Caja negra. \\
+Técnicas & Valores límite en los umbrales de signos vitales y en la escala ESAS,
+y particiones de equivalencia por nivel de alerta. & Casos derivados de los
+criterios de aceptación y verificación de pantallas en distintos tamaños. \\
+Actividades & Preparar datos simulados, ejecutar flutter test y npm test en el
+backend, y corregir las fallas. & Montar cada pantalla con proveedores simulados,
+interactuar con ella y comparar el resultado esperado; recorrer la API real con
+el script de humo y la prueba manual en un teléfono. \\
+Criterio de cumplimiento & El 100~\% de los casos aprobados. & El 100~\% de
+los casos aprobados, sin desbordes de pantalla. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Las pruebas de la aplicación se ejecutan de forma automatizada con flutter
+test, con dobles de prueba para el cliente de la API, de modo que no dependen
+de la red. Las pruebas del servidor se ejecutan con Jest y supertest contra una
+base PostgreSQL de pruebas real, levantada con Docker Compose, por lo que
+verifican las consultas y las restricciones de la base y no un simulacro de
+ellas. Además, el script tool/humo\_api.dart recorre la API real de punta a
+punta: registro, clave de datos e inicio de sesión.
+
+\section[Responsables]{Responsables de las pruebas}
+
+Las dos estudiantes desarrolladoras diseñan, ejecutan y mantienen la suite, y
+corrigen los defectos que detecta. La contraparte de
+Enfermería revisa en cada entrega la pertinencia de los textos, los contenidos y
+los criterios de alerta.
+
+\section[Calendario]{Calendario de pruebas}
+
+Las pruebas acompañan a cada sprint. Toda historia de usuario se integra con sus
+pruebas, y al cierre del sprint se ejecuta la suite completa antes de generar el
+APK de revisión.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Calendario de pruebas por sprint.}
+\label{tab:calendario-pruebas}
+\begin{tabularx}{\textwidth}{P{0.50}P{0.80}P{1.70}}
+\toprule
+\filaencabezado \encab{Sprint} & \encab{Periodo} & \encab{Pruebas} \\
+\midrule
+Sprint 1 & 26 ago -- 15 sep & Acceso, cifrado, registro clínico, motor de
+reglas e historial. \\
+Sprint 2 & 16 sep -- 20 oct & Panel, exportación, biblioteca, contenido sin
+conexión, video, chat, preguntas frecuentes, conversaciones, recordatorios. \\
+Sprint 3 & 21 oct -- 13 nov & Datos por paciente, aislamiento entre usuarios,
+navegación y sincronización sin conexión. Ejecución completa de la suite. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section[Detalle de las Pruebas]{Detalle de las pruebas}
+
+La suite de la aplicación suma 294 casos de prueba en 36 archivos, y la del
+servidor, 54 casos en 4 archivos, para un total de 348 casos automatizados
+(cifras de la ejecución más reciente). Las carpetas de prueba de la aplicación
+replican la estructura del código: cada funcionalidad tiene sus pruebas de
+dominio, de datos y de presentación. La Tabla~\ref{tab:inventario-tests}
+relaciona cada área con los archivos que la verifican y los requerimientos que
+cubre; los archivos se nombran sin la ruta ni el sufijo \emph{\_test}.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Distribución de la suite automatizada.}
+\label{tab:inventario-tests}
+\begin{tabularx}{\textwidth}{P{0.75}P{0.30}P{1.35}P{0.60}}
+\toprule
+\filaencabezado \encab{Área} & \encab{Archivos} & \encab{Elemento verificado} & \encab{RF} \\
+\midrule
+App (navegación y tema) & 5 & navegacion\_principal, fundido\_ramas y paleta del tema con su contraste & RF-18 \\
+Autenticación (dominio) & 1 & validaciones\_registro & RF-02 \\
+Biblioteca & 10 & Categorías, secciones, temas y modelo del material, caché de contenido, reproductor, visor de PDF y tarjeta & RF-24 a RF-27 \\
+Chat & 2 & Modelo de conversación y burbujas del chat & RF-19, RF-20 \\
+Configuración & 2 & Escala de texto y modo de tema & --- \\
+Historial & 2 & Exportadores y vista previa de Excel & RF-16, RF-17 \\
+Pacientes & 1 & proveedores\_pacientes (paciente activo) & RF-08 \\
+Panel y preguntas frecuentes & 2 & pantalla\_panel\_principal y pantalla\_preguntas\_frecuentes & RF-18, RF-21 \\
+Registro clínico (dominio) & 2 & motor\_reglas\_clinicas y registro\_clinico & RF-11, RF-13 \\
+Compartido & 6 & Widgets reutilizables, entre ellos el banner de conexión & RF-28 \\
+Núcleo & 3 & servicio\_conectividad, calendario\_avisos y silencio\_avisos & RF-23, RF-28 \\
+\midrule
+\filatotal \textbf{Aplicación (flutter test)} & \textbf{36} & \textbf{294 casos} & \\
+\midrule
+Servidor: auth & 1 & Registro, inicio de sesión, rutas protegidas, clave de datos y recuperación de contraseña & RF-02 a RF-05 \\
+Servidor: datos & 1 & Aislamiento entre usuarios, rechazo de campos en claro, upsert idempotente, paginación, cascadas, conversaciones y favoritos & RF-07, RF-10, RF-11, RF-14, RF-20, RF-22, RF-28 \\
+Servidor: correos & 1 & Cambio de correo, correo de respaldo y verificación del registro con enlaces de un solo uso & RF-04, RF-06 \\
+Servidor: plantillas & 1 & Plantillas de correo y páginas web de restablecimiento y confirmación & RF-04, RF-06 \\
+\midrule
+\filatotal \textbf{Servidor (npm test)} & \textbf{4} & \textbf{54 casos} & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Las pruebas del servidor son las que sostienen las garantías de seguridad del
+sistema. Verifican que un usuario no ve ni modifica datos de otro, que el
+servidor rechaza con error 400 los campos clínicos enviados en claro, que una
+escritura repetida no duplica registros, que la paginación por fecha y por rango
+entrega los registros esperados y que los enlaces de verificación vencen, son de
+un solo uso y no revelan si un correo existe.
+
+Como evidencia complementaria, el sistema se recorrió de punta a punta en un
+teléfono Android conectado a la API: registro de la cuenta, inicio de sesión,
+alta de un paciente y envío y confirmación de los correos de verificación. Esta
+prueba manual no genera un registro de resultados por caso.
+
+El motor de reglas clínicas concentra las pruebas más detalladas de la aplicación, porque de él
+depende la clasificación del nivel de alerta. Sus casos recorren los
+umbrales de cada signo vital y de la escala ESAS con valores límite, por ejemplo
+una temperatura de 39,5~°C, que todavía se clasifica como alerta, frente a una
+de 39,6~°C, que ya es crítica. El Anexo de especificación de pruebas detalla los
+casos por unidad.
+
+\section[Conclusiones]{Conclusiones de prueba}
+
+Las suites de la aplicación y del servidor cubren la mayoría de los
+requerimientos funcionales y permiten ejecutar la verificación completa en pocos minutos
+antes de cada entrega. El énfasis en el motor de reglas y en el cifrado responde
+a que ambos concentran el riesgo del sistema, uno por su efecto en la
+orientación al cuidador y el otro por la protección de datos de salud.
+
+La suite incluye también los requerimientos del sprint~3, implementados por
+adelantado: la separación de datos por paciente, el aislamiento entre usuarios y
+la sincronización sin conexión. Queda pendiente validar en un dispositivo real
+la caída y la recuperación de la red, que las pruebas automáticas simulan.
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}

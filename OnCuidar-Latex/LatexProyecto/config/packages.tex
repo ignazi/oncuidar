@@ -1,0 +1,65 @@
+% ---------------------------------------------------------------------------
+% config/packages.tex — Paquetes del documento
+% ---------------------------------------------------------------------------
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% Márgenes y espacio
+\usepackage[letterpaper]{geometry} % se ajusta en formatting.tex
+\usepackage{setspace}
+\usepackage{parskip} % actúa solo si no se redefine el sangrado
+
+% Gráficos y flotantes
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Tablas
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{xltabular} % longtable con columnas X (tablas largas que respetan el margen)
+\usepackage{rotating}  % sidewaysfigure para diagramas apaisados
+\usepackage{pdflscape} % páginas horizontales (se muestran giradas en el PDF)
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{makecell}
+\usepackage{adjustbox}
+
+% Tipografía y microtipografía
+\usepackage{mathptmx} % Times
+\usepackage{microtype}
+
+% Color
+\usepackage[table]{xcolor}
+
+% Matemáticas
+\usepackage{amsmath}
+
+% Estructura y listas
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{needspace}
+
+% Código
+\usepackage{listings}
+
+% Referencias cruzadas y PDF
+\usepackage{hyperref}
+
+% Bibliografía (natbib + estilos APA-like)
+\usepackage[round]{natbib}
+\bibliographystyle{unsrtnat}
+%\bibliographystyle{apalike} % alternativa APA clásica
+
+% Diagramas (opcional; por defecto las figuras son externas)
+\usepackage{tikz}
+\usetikzlibrary{positioning, shapes.geometric, arrows.meta, fit, calc}
+
+% Idioma: babel se carga al final para que sus caracteres activos no
+% interfieran con hyperref/natbib (solución al conflicto con \citep).
+\usepackage[spanish,es-tabla,es-noshorthands]{babel}

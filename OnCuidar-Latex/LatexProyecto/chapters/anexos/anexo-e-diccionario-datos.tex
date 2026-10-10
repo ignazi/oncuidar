@@ -1,0 +1,562 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+\chapter[Anexo: Diccionario de Datos]{ANEXO: Diccionario de Datos del Modelo de Datos}
+
+Este anexo describe las tablas de la base de datos PostgreSQL 15 definidas en el
+script de esquema del proyecto. Los nombres de tablas y columnas son los que
+usa el servidor. Las columnas marcadas como cifradas contienen texto cifrado con
+AES-256-GCM en el dispositivo del cuidador. El servidor no puede descifrarlas y
+rechaza la escritura de datos clínicos en claro.
+
+Las tablas pacientes, registros\_clinicos, recordatorios y
+conversaciones guardan sus datos sensibles en una columna cifrados de
+tipo jsonb, que reúne claves cuyo nombre termina en \_cifrado
+o \_cifrada. Para cada una de esas tablas se describen primero las columnas y
+después las claves de su columna cifrados. Las columnas en claro son las que
+el servidor necesita para relacionar, ordenar y filtrar. Los tipos de fecha
+usan zona horaria (timestamptz) y los identificadores de usuario son uuid.
+
+\section{Resumen de las tablas}
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.90}P{1.10}}
+    \caption{Tablas de la base de datos y su entidad de dependencia.}
+    \label{tab:dicc-jerarquia}\\
+    \toprule
+    \filaencabezado \encab{Tabla} & \encab{Depende de} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{2}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Tabla} & \encab{Depende de} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{2}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    usuarios & Raíz: el cuidador \\
+    pacientes & usuarios (cuidador) \\
+    registros\_\allowbreak{}clinicos & pacientes \\
+    recordatorios & pacientes (programados por el cuidador) \\
+    conversaciones & usuarios (cuidador) \\
+    favoritos & usuarios y material\_educativo (tabla puente) \\
+    material\_\allowbreak{}educativo & Transversal, compartida y de solo lectura \\
+    claves\_\allowbreak{}datos & usuarios (una por cuidador) \\
+    tokens\_\allowbreak{}restablecer & usuarios \\
+    tokens\_\allowbreak{}correo & usuarios \\
+    esperas\_\allowbreak{}recuperacion & Independiente (limita reenvíos) \\
+\end{xltabular}
+\endgroup
+
+Las preguntas frecuentes que usan el chat y la pantalla de preguntas frecuentes
+no residen en la base de datos. Se incluyen en la propia aplicación, en la lista
+preguntasFrecuentes del módulo faq, y el chat elige la
+respuesta por coincidencia de palabras clave. Tampoco existe una tabla de
+síntomas, porque el catálogo ESAS forma parte de la aplicación.
+
+\section{Cuidador (usuarios)}
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla usuarios.}
+    \label{tab:dicc-usuarios}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    id & uuid & No & Identificador del cuidador. Clave primaria, generada por el servidor. & No \\
+    correo & text & No & Correo principal de acceso. Es único. & No \\
+    contrasena\_\allowbreak{}hash & text & Sí & Contraseña almacenada como hash bcrypt. & No \\
+    creado\_\allowbreak{}en & timestamptz & Sí & Fecha de creación de la cuenta. & No \\
+    version\_\allowbreak{}encriptacion & int & Sí & Versión del esquema de cifrado aplicado (2 por defecto). & No \\
+    cifrados & jsonb & Sí & Texto cifrado de los datos personales del cuidador (claves de la tabla siguiente). & Sí \\
+    correo\_\allowbreak{}verificado & boolean & Sí & Indica si el correo principal fue confirmado mediante enlace. & No \\
+    correo\_\allowbreak{}respaldo\_\allowbreak{}hash & text & Sí & HMAC del correo de respaldo confirmado. Nunca se guarda el correo en claro. & No \\
+    pendiente\_\allowbreak{}correo & text & Sí & Correo nuevo a la espera de confirmación. & No \\
+    pendiente\_\allowbreak{}correo\_\allowbreak{}tipo & text & Sí & Tipo de cambio pendiente (cambio de correo principal o respaldo). & No \\
+    pendiente\_\allowbreak{}correo\_\allowbreak{}solicitado\_\allowbreak{}en & timestamptz & Sí & Fecha de la solicitud pendiente. & No \\
+    respaldo\_\allowbreak{}pendiente\_\allowbreak{}servidor & boolean & Sí & Marca que existe un respaldo por confirmar. & No \\
+\end{xltabular}
+\endgroup
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Claves de la columna cifrados de usuarios.}
+    \label{tab:dicc-usuarios-cifrados}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    nombre\_\allowbreak{}cifrado & texto cifrado & Sí & Nombre completo del cuidador. & Sí \\
+    telefono\_\allowbreak{}cifrado & texto cifrado & Sí & Teléfono del cuidador. & Sí \\
+    relacion\_\allowbreak{}cifrada & texto cifrado & Sí & Parentesco con el paciente (madre, padre, tutor u otro). & Sí \\
+    direccion\_\allowbreak{}cifrada & texto cifrado & Sí & Dirección del cuidador. & Sí \\
+    correo\_\allowbreak{}respaldo\_\allowbreak{}cifrado & texto cifrado & Sí & Correo de respaldo, cifrado para que el cliente pueda mostrarlo. & Sí \\
+\end{xltabular}
+\endgroup
+
+\section{Paciente (pacientes)}
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla pacientes.}
+    \label{tab:dicc-pacientes}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    usuario\_\allowbreak{}id & uuid & No & Cuidador propietario. Clave foránea a usuarios, con eliminación en cascada. Parte de la clave primaria. & No \\
+    id & text & No & Identificador del paciente. Parte de la clave primaria. & No \\
+    notificaciones\_\allowbreak{}activas & boolean & Sí & Indica si las notificaciones del paciente están habilitadas (verdadero por defecto). & No \\
+    maximo\_\allowbreak{}registros\_\allowbreak{}dia & int & Sí & Límite de registros clínicos programados por día (3 por defecto). & No \\
+    archivado & boolean & Sí & Marca el paciente como archivado y lo excluye de las listas activas. & No \\
+    creado\_\allowbreak{}en & timestamptz & Sí & Fecha de alta del paciente. & No \\
+    version\_\allowbreak{}encriptacion & int & Sí & Versión del esquema de cifrado. & No \\
+    cifrados & jsonb & Sí & Texto cifrado de los datos del paciente (claves de la tabla siguiente). & Sí \\
+\end{xltabular}
+\endgroup
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Claves de la columna cifrados de pacientes.}
+    \label{tab:dicc-pacientes-cifrados}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    nombre\_\allowbreak{}cifrado & texto cifrado & Sí & Nombre del paciente. & Sí \\
+    rut\_\allowbreak{}cifrado & texto cifrado & Sí & RUT del paciente. & Sí \\
+    edad\_\allowbreak{}cifrada & texto cifrado & Sí & Edad del paciente. & Sí \\
+    diagnostico\_\allowbreak{}cifrado & texto cifrado & Sí & Diagnóstico oncológico. & Sí \\
+    fase\_\allowbreak{}tratamiento\_\allowbreak{}cifrado & texto cifrado & Sí & Fase del tratamiento. & Sí \\
+    centro\_\allowbreak{}salud\_\allowbreak{}nombre\_\allowbreak{}cifrado & texto cifrado & Sí & Nombre del centro de salud. & Sí \\
+    centro\_\allowbreak{}salud\_\allowbreak{}direccion\_\allowbreak{}cifrado & texto cifrado & Sí & Dirección del centro de salud. & Sí \\
+    centro\_\allowbreak{}salud\_\allowbreak{}telefono\_\allowbreak{}cifrado & texto cifrado & Sí & Teléfono del centro de salud. & Sí \\
+    contacto\_\allowbreak{}emergencia\_\allowbreak{}nombre\_\allowbreak{}cifrado & texto cifrado & Sí & Nombre del contacto de emergencia. & Sí \\
+    contacto\_\allowbreak{}emergencia\_\allowbreak{}telefono\_\allowbreak{}cifrado & texto cifrado & Sí & Teléfono del contacto de emergencia. & Sí \\
+\end{xltabular}
+\endgroup
+
+\section{Registro clínico (registros\_clinicos)}
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla registros\_clinicos.}
+    \label{tab:dicc-registros}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    usuario\_\allowbreak{}id & uuid & No & Cuidador propietario. Parte de la clave primaria y de la clave foránea compuesta a pacientes. & No \\
+    paciente\_\allowbreak{}id & text & No & Paciente al que pertenece el registro. Parte de la clave primaria y de la clave foránea a pacientes, con eliminación en cascada. & No \\
+    id & text & No & Identificador del registro. Parte de la clave primaria. & No \\
+    fecha & timestamptz & Sí & Fecha de la valoración. Se usa para filtrar por rango. & No \\
+    creado\_\allowbreak{}en & timestamptz & Sí & Fecha y hora de creación. Ordena el historial. & No \\
+    tipo\_\allowbreak{}registro & text & Sí & Tipo de registro clínico (programado o extra). & No \\
+    nivel\_\allowbreak{}alerta & text & Sí & Nivel calculado por el motor de reglas clínicas: normal, alerta o crítico. & No \\
+    version\_\allowbreak{}encriptacion & int & Sí & Versión del esquema de cifrado. & No \\
+    cifrados & jsonb & Sí & Texto cifrado del contenido clínico (claves de la tabla siguiente). & Sí \\
+\end{xltabular}
+\endgroup
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Claves de la columna cifrados de registros\_clinicos.}
+    \label{tab:dicc-registros-cifrados}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    signos\_\allowbreak{}vitales\_\allowbreak{}cifrado & texto cifrado & Sí & Temperatura, frecuencia cardíaca, saturación y frecuencia respiratoria, serializados como JSON antes de cifrar. & Sí \\
+    sintomas\_\allowbreak{}cifrado & texto cifrado & Sí & Lista de síntomas ESAS con intensidad 0--10 y nota por síntoma, serializada y cifrada. & Sí \\
+    contenido\_\allowbreak{}registro\_\allowbreak{}cifrado & texto cifrado & Sí & Observaciones del registro. & Sí \\
+    mensaje\_\allowbreak{}alerta\_\allowbreak{}cifrado & texto cifrado & Sí & Mensaje de alerta asociado al nivel detectado. & Sí \\
+\end{xltabular}
+\endgroup
+
+Los signos vitales y los síntomas se guardan en una única clave cifrada cada uno, porque el cliente los serializa como JSON antes de cifrar. Un registro sin signos vitales omite esa clave.
+
+\section{Recordatorio (recordatorios)}
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla recordatorios.}
+    \label{tab:dicc-recordatorios}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    usuario\_\allowbreak{}id & uuid & No & Cuidador que programa el recordatorio. Parte de la clave primaria y de la clave foránea compuesta a pacientes. & No \\
+    paciente\_\allowbreak{}id & text & No & Paciente al que se dirige el recordatorio. Clave foránea a pacientes, con eliminación en cascada. & No \\
+    id & text & No & Identificador del recordatorio. Parte de la clave primaria. & No \\
+    activo & boolean & Sí & Indica si el recordatorio está activo (verdadero por defecto). & No \\
+    creado\_\allowbreak{}en & timestamptz & Sí & Fecha de creación. & No \\
+    version\_\allowbreak{}encriptacion & int & Sí & Versión del esquema de cifrado. & No \\
+    cifrados & jsonb & Sí & Texto cifrado del recordatorio (claves de la tabla siguiente). & Sí \\
+\end{xltabular}
+\endgroup
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Claves de la columna cifrados de recordatorios.}
+    \label{tab:dicc-recordatorios-cifrados}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    titulo\_\allowbreak{}cifrado & texto cifrado & Sí & Título del recordatorio. & Sí \\
+    descripcion\_\allowbreak{}cifrada & texto cifrado & Sí & Descripción del recordatorio. & Sí \\
+    datos\_\allowbreak{}cifrados & texto cifrado & Sí & Programación serializada como JSON antes de cifrar: tipo (medicamento, medición, cita u otro), fecha y hora, días de repetición, recurrencia y a quién se dirige. & Sí \\
+\end{xltabular}
+\endgroup
+
+\section{Conversación (conversaciones)}
+\label{sec:conversaciones}
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla conversaciones.}
+    \label{tab:dicc-conversaciones}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    usuario\_\allowbreak{}id & uuid & No & Cuidador propietario. Clave foránea a usuarios, con eliminación en cascada. Parte de la clave primaria. & No \\
+    id & text & No & Identificador de la conversación. Parte de la clave primaria. & No \\
+    ultima\_\allowbreak{}actividad & timestamptz & Sí & Fecha de la última actividad. Ordena las conversaciones. & No \\
+    creado\_\allowbreak{}en & timestamptz & Sí & Fecha de creación. & No \\
+    version\_\allowbreak{}encriptacion & int & Sí & Versión del esquema de cifrado. & No \\
+    cifrados & jsonb & Sí & Texto cifrado de la conversación (claves de la tabla siguiente). & Sí \\
+\end{xltabular}
+\endgroup
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Claves de la columna cifrados de conversaciones.}
+    \label{tab:dicc-conversaciones-cifrados}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    titulo\_\allowbreak{}cifrado & texto cifrado & Sí & Título de la conversación. & Sí \\
+    mensajes\_\allowbreak{}cifrado & texto cifrado & Sí & Mensajes con su texto e indicador de emisor, serializados como JSON antes de cifrar. Su orden es la posición en la lista. & Sí \\
+\end{xltabular}
+\endgroup
+
+A diferencia de los registros y los recordatorios, las conversaciones dependen del cuidador y no del paciente, porque el chat es general para la cuenta, igual que el contenido educativo.
+
+\section{Material educativo (material\_educativo)}
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla material\_educativo (transversal, de solo lectura desde la aplicación).}
+    \label{tab:dicc-material}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    id & text & No & Identificador del material. Clave primaria. & No \\
+    titulo & text & Sí & Título del material. & No \\
+    categoria & text & Sí & Categoría (filtro de la biblioteca). & No \\
+    tema & text & Sí & Tema o etiqueta del material. & No \\
+    cuerpo & text & Sí & Cuerpo del contenido, con secciones tituladas. & No \\
+    url\_\allowbreak{}imagen & text & Sí & Ruta de la imagen destacada. & No \\
+    url\_\allowbreak{}archivo & text & Sí & Ruta del archivo adjunto (video, guía, infografía o documento), servido por la API. & No \\
+    url\_\allowbreak{}miniatura & text & Sí & Ruta de la miniatura. & No \\
+    tipo\_\allowbreak{}archivo & text & Sí & Tipo del archivo adjunto. & No \\
+    tamano\_\allowbreak{}bytes & bigint & Sí & Tamaño del archivo adjunto. & No \\
+    creado\_\allowbreak{}en & timestamptz & Sí & Fecha de publicación. & No \\
+\end{xltabular}
+\endgroup
+
+La aplicación no escribe en esta tabla. La API la carga al iniciar, a partir de un
+catálogo incluido en el repositorio del proyecto, solo si está vacía, y expone
+los archivos adjuntos desde su propio almacenamiento. Las rutas se guardan
+relativas y la API las entrega como direcciones absolutas.
+
+\section{Favoritos (favoritos)}
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla favoritos (tabla puente entre cuidador y material educativo).}
+    \label{tab:dicc-favoritos}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    usuario\_\allowbreak{}id & uuid & No & Cuidador que marcó el favorito. Clave foránea a usuarios, con eliminación en cascada. Parte de la clave primaria. & No \\
+    material\_\allowbreak{}id & text & No & Material marcado. Referencia lógica a material\_educativo. Parte de la clave primaria. & No \\
+    creado\_\allowbreak{}en & timestamptz & Sí & Fecha en que se marcó. & No \\
+\end{xltabular}
+\endgroup
+
+\section{Tablas de seguridad de la cuenta}
+
+Estas tablas no forman parte del modelo conceptual, porque el cliente nunca las
+lee ni las escribe de forma directa. La administra únicamente la API, que las
+usa para entregar la clave de datos, restablecer contraseñas y confirmar correos.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla claves\_datos.}
+    \label{tab:dicc-claves}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    usuario\_\allowbreak{}id & uuid & No & Cuidador dueño de la clave. Clave primaria y clave foránea a usuarios, con eliminación en cascada. & No \\
+    clave\_\allowbreak{}sellada & text & No & Clave de datos del cliente (32 bytes) sellada con AES-256-GCM mediante la clave maestra del servidor, con formato iv.etiqueta.cifrado en base64. & Sí \\
+    creado\_\allowbreak{}en & timestamptz & Sí & Fecha de creación. & No \\
+\end{xltabular}
+\endgroup
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla tokens\_restablecer.}
+    \label{tab:dicc-restablecer}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    token\_\allowbreak{}hash & text & No & SHA-256 del token enviado por correo. Clave primaria. El token en claro nunca se guarda. & No \\
+    usuario\_\allowbreak{}id & uuid & No & Cuidador que solicitó el restablecimiento. Clave foránea a usuarios, con eliminación en cascada. & No \\
+    expira\_\allowbreak{}en & timestamptz & No & Vencimiento del enlace (una hora desde su emisión). & No \\
+    usado & boolean & Sí & Indica si el enlace ya se utilizó (de un solo uso). & No \\
+\end{xltabular}
+\endgroup
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla tokens\_correo.}
+    \label{tab:dicc-tcorreo}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    token\_\allowbreak{}hash & text & No & SHA-256 del token enviado por correo. Clave primaria. & No \\
+    usuario\_\allowbreak{}id & uuid & No & Cuidador al que corresponde el enlace. Clave foránea a usuarios, con eliminación en cascada. & No \\
+    tipo & text & No & Tipo de confirmación: verificacion (registro), cambio (correo principal) o respaldo. & No \\
+    correo\_\allowbreak{}nuevo & text & Sí & Correo que se activará al confirmar (solo para el cambio del correo principal). & No \\
+    respaldo\_\allowbreak{}hash & text & Sí & HMAC del correo de respaldo que se activará al confirmar. & No \\
+    creado\_\allowbreak{}en & timestamptz & Sí & Fecha de emisión. & No \\
+    expira\_\allowbreak{}en & timestamptz & No & Vencimiento del enlace (una hora desde su emisión). & No \\
+    usado & boolean & Sí & Indica si el enlace ya se utilizó (de un solo uso). & No \\
+\end{xltabular}
+\endgroup
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{1.05}P{0.55}P{0.32}P{1.58}P{0.50}}
+    \caption{Diccionario de datos de la tabla esperas\_recuperacion.}
+    \label{tab:dicc-esperas}\\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{5}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Columna} & \encab{Tipo} & \encab{Nulo} & \encab{Descripción} & \encab{Cifrado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{5}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    hash & text & No & Hash del identificador de la solicitud de recuperación. Clave primaria. & No \\
+    ultimo\_\allowbreak{}envio\_\allowbreak{}en & timestamptz & Sí & Fecha del último envío. Limita la frecuencia de reenvíos. & No \\
+\end{xltabular}
+\endgroup
+
+La clave de datos de cada cuidador se genera la primera vez que la solicita la
+aplicación (\texttt{POST /clave-datos}) y se guarda sellada con la clave maestra
+definida en el entorno del servidor. Si esa clave maestra se pierde, las claves
+selladas no pueden abrirse. La aplicación no realiza intercambio de claves
+propio: recibe la clave de datos por una conexión autenticada y la conserva en el
+almacenamiento seguro del teléfono.
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}

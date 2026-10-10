@@ -1,0 +1,64 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}}
+\chapter[Conclusiones]{Conclusiones}
+
+\section{Contrastación de objetivos}
+
+El objetivo general del proyecto es desarrollar una solución móvil que
+centralice el registro, el seguimiento, la consulta y la orientación del
+cuidador. A la fecha de este informe, OnCuidar cumple ese propósito en su flujo
+principal. El cuidador crea su cuenta, registra la valoración diaria del
+paciente, recibe un nivel de alerta, consulta y exporta el historial, resuelve
+dudas en la biblioteca, el asistente o las preguntas frecuentes y programa
+recordatorios.
+
+Respecto de los objetivos específicos, el análisis de las necesidades del
+cuidador se concretó en 29 requerimientos funcionales derivados de las historias
+de usuario y de los contenidos de Enfermería. El diseño se materializó en una
+arquitectura por capas en la aplicación, una API REST propia con un modelo de
+datos relacional y cifrado en el cliente, y una interfaz validada con
+prototipos. La implementación completó los módulos de
+los sprints~1 y~2, y el sprint~3 aborda la separación de datos por paciente, el
+aislamiento entre usuarios y el funcionamiento sin conexión. La validación
+técnica se apoya en 294 pruebas automatizadas de la aplicación y 54 del
+backend, que se ampliarán con los requerimientos del último sprint.
+
+Los objetivos del software, que son ordenar el seguimiento domiciliario y
+orientar al cuidador ante signos de alerta, se alcanzarán con el uso de la
+aplicación por parte de las familias, más allá del término del proyecto.
+
+\section{Conclusiones sobre herramientas y metodología}
+
+Flutter resultó adecuado para un equipo de dos personas con un plazo acotado,
+pues una sola base de código cubre Android e iOS. Por requerimiento de la
+universidad, el backend se construyó como una API REST propia con Node.js y una
+base de datos relacional PostgreSQL, empaquetadas con Docker Compose y destinadas
+a ejecutarse como contenedores Podman en el servidor institucional. Esta decisión
+entrega control total sobre los datos y su cifrado y cumple lo solicitado, a
+cambio de asumir la operación del servidor, la gestión de las claves, el envío
+de correos y el mantenimiento de la base de datos, tareas que un servicio
+administrado resuelve por el equipo. Dos decisiones técnicas destacan por su
+valor en un contexto de salud. El cifrado de los datos sensibles en el propio
+dispositivo permite que ni siquiera el servidor ni la base de datos los tengan
+legibles, y el servidor rechaza los campos clínicos en claro. La orientación
+basada en reglas y respuestas validadas, en lugar de inteligencia artificial
+generativa, mantiene cada respuesta dentro del alcance definido por Enfermería.
+
+Scrum permitió mostrar una versión funcional a la contraparte al final de cada
+sprint y ajustar textos y criterios a tiempo. La estimación por puntos de caso
+de uso mostró que el alcance completo excedía el presupuesto de horas, lo que
+obligó a priorizar el backlog desde el inicio.
+
+Como trabajo futuro, la primera tarea es completar el despliegue en el servidor
+de la universidad una vez activada la cuenta, y servir la API sobre HTTPS. Luego
+corresponde programar respaldos periódicos de PostgreSQL, validar la aplicación
+en dispositivos reales y en iOS, que aún no se ha probado, y ejecutar el plan de
+certificación del funcionamiento sin conexión.
+
+\section{Conclusiones generales}
+
+Desde el punto de vista académico, el proyecto integra ingeniería de
+requerimientos, diseño de software, bases de datos, seguridad de la información
+y pruebas en un problema real del sistema de salud. Desde el punto de vista
+personal, trabajar con una contraparte clínica enseñó que en salud cada texto y
+cada umbral importan, y que un buen software de apoyo reconoce sus límites y
+deriva al profesional cuando corresponde.

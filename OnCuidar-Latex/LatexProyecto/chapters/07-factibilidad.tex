@@ -1,0 +1,274 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+\chapter[Factibilidad]{Factibilidad}
+
+Este capítulo evalúa si el proyecto puede llevarse a cabo desde tres
+perspectivas: técnica, operativa y económica. Como se trata de un prototipo
+académico de salud digital sin fines comerciales, la evaluación económica
+valoriza los ahorros de tiempo clínico y de material en lugar de ingresos por
+ventas.
+
+\section[Técnica]{Factibilidad técnica}
+
+\subsection{Ambiente de desarrollo}
+
+El desarrollo se realiza en los computadores personales de las estudiantes, con
+Flutter SDK y Android Studio, Node.js y PostgreSQL para el backend, Docker
+Compose para ejecutar el sistema completo, Git y GitHub para el control de
+versiones y Figma para el diseño de la interfaz. Todas estas herramientas son
+gratuitas o de código abierto.
+
+\subsection{Ambiente de operación}
+
+La aplicación se instala en teléfonos Android e iOS de gama media. No requiere
+equipos adicionales en el hospital ni en el hogar del cuidador.
+
+\subsection{Infraestructura de servidores y datos}
+
+El sistema se compone de una API REST en Node.js y una base de datos PostgreSQL,
+ambas de código abierto y empaquetadas en contenedores. Para el despliegue se
+cuenta con el servicio Podman Tesistas del servidor que la Universidad del
+Bío-Bío dispone para proyectos de título, que cubre la ejecución de los
+contenedores y el almacenamiento de los archivos educativos para el volumen de
+un prototipo, sin costo para el proyecto. La activación de la cuenta en ese
+servidor está pendiente; mientras tanto, el sistema completo se ejecuta
+localmente con Docker Compose y se ha probado con la aplicación instalada en un
+teléfono Android. Los correos de verificación y recuperación se envían por SMTP
+desde una cuenta de Gmail del proyecto.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Recursos técnicos del proyecto.}
+\label{tab:recursos-tecnicos}
+\begin{tabularx}{\textwidth}{P{0.95}P{1.60}P{0.45}}
+\toprule
+\filaencabezado \encab{Recurso} & \encab{Detalle} & \encab{Costo} \\
+\midrule
+Computadores de desarrollo & Equipos personales de las estudiantes. & \$0 \\
+Teléfonos de prueba & Dispositivos Android e iOS de las estudiantes. & \$0 \\
+Herramientas de software & Flutter, Node.js, PostgreSQL, Docker, GitHub y Figma
+en sus versiones gratuitas o de código abierto. & \$0 \\
+Servidor de la universidad (Podman Tesistas) & Ejecución de la API y la base de
+datos en contenedores. & \$0 \\
+Servicio de correo (Gmail, cuenta del proyecto) & Envío de los correos de
+verificación y recuperación. & \$0 \\
+\midrule
+\filatotal \textbf{Total} & & \textbf{\$0} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Capacidades del equipo}
+
+Las estudiantes cuentan con formación en programación, bases de datos,
+ingeniería de requerimientos y diseño de interfaces. Las brechas en desarrollo
+móvil con Flutter, desarrollo de la API con Node.js y PostgreSQL, y cifrado en el
+cliente se cubren con
+documentación oficial, apoyo del docente guía y aprendizaje progresivo en cada
+sprint. El conocimiento clínico no recae en el equipo de desarrollo, sino en la
+contraparte de Enfermería, que define los contenidos y los criterios de alerta.
+
+\subsection{Restricciones técnicas}
+
+El contexto de salud impone dos restricciones. La primera es proteger los datos
+sensibles, lo que se resuelve con cifrado AES-256-GCM en el dispositivo y un
+servidor que rechaza guardar esos datos en claro. La segunda es no entregar
+respuestas fuera del alcance validado, por lo que la orientación se basa en
+reglas y respuestas predefinidas, sin inteligencia artificial generativa. Esta
+decisión también elimina costos por uso de servicios externos y permite que la
+orientación funcione sin conexión.
+
+\section[Operativa]{Factibilidad operativa}
+
+La aplicación está dirigida a cuidadores con distintos niveles de familiaridad
+tecnológica y sin formación clínica. Por ello, cada pantalla se centra en una
+tarea concreta y usa un lenguaje cotidiano. La implantación no modifica los
+procesos del hospital, porque el cuidador sigue asistiendo a sus controles y el
+equipo clínico conserva su forma de trabajo. La aplicación solo agrega un
+historial ordenado que el cuidador puede mostrar en cada control.
+
+Los impactos esperados se resumen a continuación.
+
+\begin{itemize}
+    \item El cuidador accede a información validada en el momento de la duda y
+    lleva un registro ordenado del seguimiento.
+    \item El paciente se beneficia de una observación más sistemática que
+    favorece la detección oportuna de signos de alerta.
+    \item El equipo clínico dispone de antecedentes domiciliarios estructurados
+    para revisar en cada control.
+    \item Como impacto negativo posible, un cuidador podría confiar en exceso en
+    la clasificación de la aplicación. Para mitigarlo, cada alerta recuerda que
+    la orientación es educativa y recomienda contactar al equipo de salud ante
+    cualquier riesgo.
+\end{itemize}
+
+El proyecto cuenta con el apoyo de la contraparte de Enfermería de la
+Universidad del Bío-Bío, que entrega los contenidos, revisa los criterios de
+alerta y valida los textos de la aplicación. Por lo anterior, el proyecto se
+considera operativamente factible.
+
+\section[Económica]{Factibilidad económica}
+
+\subsection{Costos}
+
+El costo principal es el esfuerzo de desarrollo. Se consideran dos
+desarrolladoras con una dedicación de 15~horas semanales durante 16~semanas y
+un valor hora referencial de \$5.231.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Estimación del costo de desarrollo.}
+\label{tab:estimacion-costos}
+\begin{tabularx}{\textwidth}{P{1.40}P{0.60}}
+\toprule
+\filaencabezado \encab{Concepto} & \encab{Valor} \\
+\midrule
+Valor hora por desarrolladora & \$5.231 \\
+Horas semanales por desarrolladora & 15 \\
+Semanas de desarrollo & 16 \\
+Horas totales por desarrolladora & 240 \\
+Desarrolladoras & 2 \\
+Horas totales de desarrollo & 480 \\
+\midrule
+\filatotal \textbf{Costo total de desarrollo} & \textbf{\$2.510.880} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Los computadores, teléfonos, conexión a internet y herramientas ya están
+disponibles, por lo que no suman costo. El servidor de la universidad y la
+cuenta de correo del proyecto no tienen costo durante la etapa de prototipo.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Inversión inicial.}
+\label{tab:inversion-inicial}
+\begin{tabularx}{\textwidth}{P{1.15}P{1.25}P{0.60}}
+\toprule
+\filaencabezado \encab{Ítem} & \encab{Detalle} & \encab{Costo} \\
+\midrule
+Desarrollo del prototipo & 480 horas a \$5.231 la hora & \$2.510.880 \\
+Herramientas de desarrollo & Versiones gratuitas & \$0 \\
+Computadores y teléfonos & Equipos disponibles & \$0 \\
+Servidor de la universidad (Podman Tesistas) & Servicio provisto por la universidad & \$0 \\
+Servicio de correo (Gmail, cuenta del proyecto) & Cuenta existente & \$0 \\
+\midrule
+\filatotal \textbf{Inversión inicial} & & \textbf{\$2.510.880} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La mantención anual considera 10~horas por desarrolladora para ajustes menores y
+corrección de errores. La revisión del contenido clínico la realiza la
+contraparte sin costo para el proyecto.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Costo anual de mantención.}
+\label{tab:mantencion}
+\begin{tabularx}{\textwidth}{P{1.50}P{0.50}}
+\toprule
+\filaencabezado \encab{Concepto} & \encab{Costo anual} \\
+\midrule
+Servidor de la universidad (Podman Tesistas) & \$0 \\
+Servicio de correo (Gmail, cuenta del proyecto) & \$0 \\
+Revisión de contenido clínico & \$0 \\
+Ajustes técnicos (2 desarrolladoras, 10 h al año, \$5.231 la hora) & \$104.620 \\
+\midrule
+\filatotal \textbf{Total mantención anual} & \textbf{\$104.620} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Beneficios}
+
+Los beneficios tangibles se estiman para un escenario de 50~cuidadores, con el
+valor hora de un profesional de enfermería, de \$9.103, como referencia para el
+tiempo clínico ahorrado.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Beneficios tangibles anuales.}
+\label{tab:beneficios}
+\begin{tabularx}{\textwidth}{P{1.20}P{1.20}P{0.60}}
+\toprule
+\filaencabezado \encab{Beneficio} & \encab{Cálculo} & \encab{Monto anual} \\
+\midrule
+Dudas frecuentes resueltas sin llamar al equipo clínico &
+50 cuidadores, 4 consultas al año, 0,5~h cada una &
+\$910.300 \\
+Revisión más rápida de antecedentes en los controles &
+50 cuidadores, 10 controles al año, 10 minutos ahorrados en cada uno &
+\$758.583 \\
+Menos material educativo impreso &
+50 cuidadores, 20 hojas al año, \$25 por hoja &
+\$25.000 \\
+\midrule
+\filatotal \textbf{Beneficios anuales} & & \textbf{\$1.693.883} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Entre los beneficios intangibles se cuentan la menor incertidumbre del cuidador,
+la detección más oportuna de signos de alerta y una educación homogénea para
+todas las familias.
+
+\subsection{Flujo de caja y VAN}
+
+El flujo de caja considera un horizonte de cinco años. El año~0 registra la
+inversión inicial y desde el año~1 se suman los beneficios y se descuenta la
+mantención.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\tablazebra
+\caption{Flujo de caja neto del proyecto.}
+\label{tab:flujo-caja}
+\begin{tabularx}{\textwidth}{P{1.72}*{6}{>{\raggedleft\arraybackslash\hsize=0.88\hsize}X}}
+\toprule
+\filaencabezado \encab{Concepto} & \encab{Año 0} & \encab{Año 1} & \encab{Año 2} & \encab{Año 3} & \encab{Año 4} & \encab{Año 5} \\
+\midrule
+Beneficios (+) & \$0 & \$1.693.883 & \$1.693.883 & \$1.693.883 & \$1.693.883 & \$1.693.883 \\
+Mantención (--) & \$0 & -\$104.620 & -\$104.620 & -\$104.620 & -\$104.620 & -\$104.620 \\
+Inversión inicial (--) & -\$2.510.880 & \$0 & \$0 & \$0 & \$0 & \$0 \\
+\midrule
+\filatotal \textbf{Flujo neto} & \textbf{-\$2.510.880} & \textbf{\$1.589.263} & \textbf{\$1.589.263} & \textbf{\$1.589.263} & \textbf{\$1.589.263} & \textbf{\$1.589.263} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Con una tasa de descuento del 10~\% anual, el valor actual neto es:
+
+\begin{equation}
+\begin{split}
+VAN &= -2.510.880 + \sum_{t=1}^{5} \frac{1.589.263}{(1+0{,}10)^t} \\
+    &= \$3.513.677
+\end{split}
+\label{eq:van}
+\end{equation}
+
+La tasa interna de retorno alcanza cerca de un 56~\% y la inversión se recupera
+en aproximadamente un año y siete meses. Como el VAN es positivo, el proyecto
+resulta económicamente conveniente desde la perspectiva del ahorro social y
+operativo.
+
+\section[Conclusión]{Conclusión de la factibilidad}
+
+El proyecto es factible en las tres dimensiones evaluadas. En lo técnico, las
+herramientas son gratuitas, están disponibles y el equipo cuenta con las
+capacidades necesarias, apoyado por la contraparte en lo clínico. En lo
+operativo, la aplicación responde a una necesidad concreta del cuidador sin
+alterar los procesos del hospital. En lo económico, el VAN de \$3.513.677 y la
+recuperación de la inversión en menos de dos años respaldan el desarrollo.
+
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}

@@ -1,0 +1,170 @@
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+\chapter[Anexo: Especificación de las Pruebas]{ANEXO: Especificación de las Pruebas}
+
+Este anexo detalla una selección representativa de los 348 casos de las suites
+automatizadas: 294 de la aplicación, ejecutados con flutter test, y 54 del
+servidor, ejecutados con npm test. Las columnas de salida obtenida y resultado
+se completan con la ejecución final de ambas suites al cierre del proyecto.
+
+\section[Pruebas de Unidad]{Pruebas de unidad}
+
+Las pruebas de unidad de la aplicación se ejecutan con flutter test en el
+computador de desarrollo, sin conexión a servicios reales. Las pruebas del
+servidor se ejecutan con Jest y supertest contra una base PostgreSQL de pruebas
+real, por lo que no requieren dobles de la base de datos.
+
+\subsection{Motor de reglas clínicas}
+
+No requiere precondiciones, porque el motor recibe los signos vitales y los
+síntomas como parámetros y no accede a datos almacenados.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.45}P{1.00}P{1.05}P{0.90}P{0.80}P{0.80}}
+    \caption{Casos de prueba del motor de reglas clínicas.}
+    \label{tab:pu-motor}\\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{Característica} & \encab{Datos de entrada} & \encab{Salida esperada} & \encab{Salida obtenida} & \encab{Resultado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{6}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{Característica} & \encab{Datos de entrada} & \encab{Salida esperada} & \encab{Salida obtenida} & \encab{Resultado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{6}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    PU-01 & Fiebre alta & Temperatura 39,6~°C & Crítico & --- & --- \\
+    PU-02 & Límite de fiebre alta & Temperatura 39,5~°C & Alerta & --- & --- \\
+    PU-03 & Fiebre moderada & Temperatura 38,6~°C & Alerta & --- & --- \\
+    PU-04 & Hipotermia & Temperatura 34,9~°C & Crítico & --- & --- \\
+    PU-05 & Taquicardia & Frecuencia cardíaca 131~lpm & Crítico & --- & --- \\
+    PU-06 & Saturación baja & Saturación 91~\% & Alerta & --- & --- \\
+    PU-07 & Saturación muy baja & Saturación 89~\% & Crítico & --- & --- \\
+    PU-08 & Síntoma insoportable & Un síntoma con intensidad 10 & Crítico & --- & --- \\
+    PU-09 & Dos síntomas severos & Dos síntomas con intensidad 7 & Crítico & --- & --- \\
+    PU-10 & Síntomas moderados & Tres síntomas con intensidad 5 & Alerta & --- & --- \\
+    PU-11 & Síntoma leve & Un síntoma con intensidad 2 & Normal & --- & --- \\
+    PU-12 & Nivel no disminuye & Fiebre de 40~°C y síntomas leves & Crítico & --- & --- \\
+\end{xltabular}
+\endgroup
+
+\subsection{Servicio de cifrado}
+
+Requiere una clave de datos de prueba, equivalente a la que entrega el servidor
+a cada usuario.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.45}P{1.00}P{1.05}P{0.90}P{0.80}P{0.80}}
+    \caption{Casos de prueba del servicio de cifrado.}
+    \label{tab:pu-cifrado}\\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{Característica} & \encab{Datos de entrada} & \encab{Salida esperada} & \encab{Salida obtenida} & \encab{Resultado} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{6}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{Característica} & \encab{Datos de entrada} & \encab{Salida esperada} & \encab{Salida obtenida} & \encab{Resultado} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{6}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    PU-13 & Cifrado reversible & Texto cualquiera & Al descifrar se obtiene el mismo texto & --- & --- \\
+    PU-14 & Clave inválida & Clave con formato incorrecto & Error de formato & --- & --- \\
+    PU-15 & Bloqueo al cerrar sesión & Cifrar tras bloquear la clave & Operación rechazada & --- & --- \\
+    PU-16 & Clave de otro usuario & Cifrar con un identificador distinto & Operación rechazada & --- & --- \\
+    PU-17 & Campo sensible en claro & Enviar al servidor un paciente con un campo clínico sin cifrar & Respuesta 400 y paciente no guardado & --- & --- \\
+    PU-18 & Lectura descifrada & Leer pacientes guardados & Datos legibles en la aplicación & --- & --- \\
+\end{xltabular}
+\endgroup
+
+\section[Pruebas de Sistema]{Pruebas de sistema}
+
+Las pruebas de sistema montan cada pantalla completa con datos simulados y
+reproducen la interacción del cuidador; el recorrido contra la API real se
+verifica con el script tool/humo\_api.dart y con una prueba manual en un
+teléfono Android. Se ejecutan en tamaños de pantalla de
+320$\times$568 y 360$\times$800 puntos.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.45}P{0.50}P{1.20}P{1.35}P{0.75}P{0.75}}
+    \caption{Casos de prueba de sistema.}
+    \label{tab:ps}\\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{RF} & \encab{Entrada} & \encab{Salida esperada} & \encab{Salida obtenida} & \encab{Evaluación} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{6}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{ID} & \encab{RF} & \encab{Entrada} & \encab{Salida esperada} & \encab{Salida obtenida} & \encab{Evaluación} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{6}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    PS-01 & RF-02 & Formulario de registro completo & Crea la cuenta y abre el panel principal & --- & --- \\
+    PS-02 & RF-02 & Falla de conexión con el servidor & No navega y muestra el error & --- & --- \\
+    PS-03 & RF-11 & Saturación de 101~\% & No guarda y avisa el rango permitido & --- & --- \\
+    PS-04 & RF-12 & Registro programado con el tope alcanzado & Se guarda como registro extra & --- & --- \\
+    PS-05 & RF-13 & Temperatura de 40~°C & Muestra el indicador crítico en vivo & --- & --- \\
+    PS-06 & RF-14 & Filtro por nivel de alerta & Solo aparecen los registros de ese nivel & --- & --- \\
+    PS-07 & RF-16 & Exportar a PDF con un registro & Genera un PDF válido & --- & --- \\
+    PS-08 & RF-17 & Exportar a Excel & Genera un XLSX con la hoja Historial & --- & --- \\
+    PS-09 & RF-19 & Texto libre con palabras clave & Responde la pregunta frecuente correspondiente & --- & --- \\
+    PS-10 & RF-22 & Crear un recordatorio & Guarda el título y la descripción cifrados & --- & --- \\
+    PS-11 & RF-23 & Desactivar un recordatorio & Cancela la notificación programada & --- & --- \\
+    PS-12 & RNF-01 & Pantallas de registro e inicio de sesión en 320$\times$568 & El contenido no se desborda & --- & --- \\
+\end{xltabular}
+\endgroup
+
+\section[Pruebas de Aceptación]{Pruebas de aceptación}
+
+El proyecto se desarrolla en nivel TRL~3 y, de acuerdo con el protocolo
+presentado al Comité de Ética Científica de la universidad, no contempla pruebas
+con cuidadores. La aceptación se verifica contra los criterios de aceptación de
+cada historia de usuario y la contraparte de Enfermería revisa el resultado en
+cada entrega. La evaluación con usuarios queda a cargo del equipo de Enfermería
+en una etapa posterior al proyecto. La Tabla~\ref{tab:aceptacion} resume el
+estado de las historias al cierre del sprint~2.
+
+\begingroup
+\small
+\tablazebra
+\begin{xltabular}{\textwidth}{P{0.75}P{0.60}P{1.65}}
+    \caption{Estado de aceptación de las historias de usuario.}
+    \label{tab:aceptacion}\\
+    \toprule
+    \filaencabezado \encab{Historias} & \encab{Estado} & \encab{Observación} \\
+    \midrule
+    \endfirsthead
+    \rowcolor{white}\multicolumn{3}{@{}l}{\footnotesize\itshape Tabla \thetable{} (continuación)} \\
+    \toprule
+    \filaencabezado \encab{Historias} & \encab{Estado} & \encab{Observación} \\
+    \midrule
+    \endhead
+    \midrule
+    \rowcolor{white}\multicolumn{3}{r@{}}{\footnotesize\itshape Continúa en la página siguiente} \\
+    \endfoot
+    \bottomrule
+    \endlastfoot
+    HU-01 a HU-17, HU-19 a HU-22 & Aceptadas & Cumplen sus criterios de
+    aceptación. HU-06, HU-07 y HU-11 todavía no tienen pruebas automatizadas
+    dedicadas. \\
+    HU-18 & En base & Falta verificar en un dispositivo real los permisos, la
+    apertura desde la notificación y la reprogramación al iniciar sesión. \\
+    HU-24 a HU-27 & En base & Corresponden al sprint~3. \\
+\end{xltabular}
+\endgroup

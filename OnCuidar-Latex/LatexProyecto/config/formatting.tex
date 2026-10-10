@@ -1,0 +1,213 @@
+% ---------------------------------------------------------------------------
+% config/formatting.tex — Formato académico del documento
+% ---------------------------------------------------------------------------
+
+% Márgenes académicos
+\geometry{
+    left=3cm,
+    right=2.5cm,
+    top=3cm,
+    bottom=3cm,
+    letterpaper
+}
+
+% Interlineado 1,5; sin sangría de párrafo (sin tab) y con espacio entre
+% párrafos para que se distingan visualmente.
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\headheight}{16pt}
+
+% Tolerancia de línea (evita overfull hbox)
+\pretolerance=1000
+\tolerance=2000
+\emergencystretch=4em
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+
+% Control de flotantes
+\raggedbottom
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.7}
+
+% Hipervínculos
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0},
+    linkcolor=black,
+    urlcolor=black,
+    citecolor=black
+}
+
+% Columnas tabulares controladas (heredadas del anteproyecto)
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash\hspace{0pt}}X}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash\hspace{0pt}}p{#1}}
+\newcolumntype{R}[1]{>{\RaggedLeft\arraybackslash\hspace{0pt}}p{#1}}
+
+% Nombres de índices en español
+\addto\captionsspanish{
+    \renewcommand{\contentsname}{Índice General}
+    \renewcommand{\listfigurename}{Índice de Figuras}
+    \renewcommand{\listtablename}{Índice de Tablas}
+}
+
+% Títulos de secciones numerados (formato limpio)
+% El capítulo arranca en página nueva; diseño block con líneas arriba/abajo,
+% fuente 12/14 en negrita y mayúsculas (estilo Google Docs del snippet).
+% Las líneas usan el mismo gris que la regla del pie de página.
+% -20pt reduce el espacio antes del título; 20pt tras la línea inferior.
+\titleformat{\chapter}[block]
+  {{\color{gray}\titlerule}\vspace{1ex}\fontsize{12}{14}\bfseries}
+  {\thechapter}
+  {1em}
+  {\MakeUppercase}
+  [\vspace{1ex}{\color{gray}\titlerule}]
+\titlespacing*{\chapter}{0pt}{-20pt}{20pt}
+
+% Capítulos sin número (Resumen, Abstract, Índices): centrados, tamaño 16,
+% texto normal (sin mayúsculas) y SIN las líneas horizontales.
+\titleformat{name=\chapter,numberless}[block]
+  {\centering\normalfont\fontsize{16}{20}\bfseries}
+  {}
+  {0pt}
+  {}
+  {}
+\titlespacing*{name=\chapter,numberless}{0pt}{-20pt}{20pt}
+
+\titleformat{\section}
+  {\Needspace{8\baselineskip}\normalfont\large\bfseries}
+  {\thesection.}
+  {0.6em}
+  {}
+
+\titleformat{\subsection}
+  {\Needspace{6\baselineskip}\normalfont\normalsize\bfseries}
+  {\thesubsection.}
+  {0.6em}
+  {}
+
+\titleformat{\subsubsection}
+  {\Needspace{5\baselineskip}\normalfont\normalsize\bfseries}
+  {\thesubsubsection.}
+  {0.6em}
+  {}
+
+\titleformat{\paragraph}
+  {\normalfont\normalsize\bfseries}
+  {}
+  {0em}
+  {}
+
+\titlespacing*{\section}{0pt}{0.45cm}{0.25cm}
+\titlespacing*{\subsection}{0pt}{0.45cm}{0.2cm}
+\titlespacing*{\subsubsection}{0pt}{0.35cm}{0.15cm}
+\titlespacing*{\paragraph}{0pt}{0.3cm}{0.15cm}
+
+% Leyendas de tablas y figuras
+\captionsetup{
+    font=small,
+    labelfont=bf,
+    labelsep=colon,
+    justification=centering
+}
+
+% Listas
+\setlist[itemize]{
+    leftmargin=1.2cm,
+    itemsep=1pt,
+    topsep=3pt
+}
+
+\setlist[enumerate]{
+    leftmargin=1.2cm,
+    itemsep=2pt,
+    topsep=3pt
+}
+
+% Colores UBB
+\definecolor{ubbblue}{RGB}{25,75,140}
+\definecolor{softblue}{RGB}{225,238,250}
+\definecolor{softgreen}{RGB}{228,242,225}
+\definecolor{softyellow}{RGB}{255,246,214}
+\definecolor{softred}{RGB}{250,226,226}
+\definecolor{softgray}{RGB}{245,245,245}
+\definecolor{linegray}{RGB}{90,90,90}
+\definecolor{deepblue}{RGB}{20,58,112}
+\definecolor{tealsoft}{RGB}{218,242,239}
+\definecolor{lavendersoft}{RGB}{236,232,250}
+\definecolor{screenbg}{RGB}{248,250,252}
+\definecolor{bordergray}{RGB}{120,130,145}
+
+% Encabezado y pie de página (diseño limpio: sin encabezado, número en gris
+% con regla de pie)
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead{}
+\fancyfoot{}
+% Barrita: raise -0.13cm deja su punta casi tocando la línea horizontal del pie
+% y 0.62cm de alto la alinea con la altura de la cifra.
+\fancyfoot[L]{\color{gray}\fontsize{12}{14}\selectfont\textbf{\thepage} \hspace{0.2cm}\smash{\rule[-0.13cm]{1.5pt}{0.62cm}}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{1pt}
+\renewcommand{\footrule}{\hbox to\headwidth{\color{gray}\leaders\hrule height \footrulewidth\hfill}}
+
+% Las páginas de inicio de capítulo usan \thispagestyle{plain}; le damos el
+% mismo pie de página para que el número gris aparezca también ahí.
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[L]{\color{gray}\fontsize{12}{14}\selectfont\textbf{\thepage} \hspace{0.2cm}\smash{\rule[-0.13cm]{1.5pt}{0.62cm}}}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{1pt}
+  \renewcommand{\footrule}{\hbox to\headwidth{\color{gray}\leaders\hrule height \footrulewidth\hfill}}
+}
+
+% Evitar viudas y huérfanas
+\widowpenalty=10000
+\clubpenalty=10000
+\interlinepenalty=200
+
+% Estilo de código: texto en la fuente normal del documento, sin monoespaciada.
+% columns=fullflexible es obligatorio porque, sin él, listings asume columnas
+% de ancho fijo y la sangría del contenido se destruiría con una fuente proporcional.
+\lstset{
+    basicstyle=\normalfont\footnotesize,
+    columns=fullflexible,
+    breaklines=true,
+    frame=single,
+    framerule=0.3pt,
+    rulecolor=\color{linegray},
+    backgroundcolor=\color{softgray},
+    aboveskip=8pt,
+    belowskip=8pt,
+    showstringspaces=false
+}
+% ---------------------------------------------------------------------------
+% Estilo unificado de tablas
+% ---------------------------------------------------------------------------
+\definecolor{tablahead}{RGB}{217,217,217}  % encabezado (gris)
+\definecolor{tablazebra}{RGB}{255,255,255} % filas alternadas (desactivadas)
+\definecolor{tablatotal}{RGB}{237,237,237} % filas de totales y de grupo
+\definecolor{tablaborde}{RGB}{90,90,90}    % bordes de tablas con cuadrícula
+\definecolor{tablaetiqueta}{RGB}{242,242,242} % columna de etiquetas (fichas)
+
+\renewcommand{\arraystretch}{1.35}
+\setlength{\aboverulesep}{0pt}
+\setlength{\belowrulesep}{0pt}
+\setlength{\extrarowheight}{1pt}
+\setlength{\heavyrulewidth}{1.1pt}
+\setlength{\lightrulewidth}{0.5pt}
+\setlength{\LTpre}{6pt}
+\setlength{\LTpost}{6pt}
+\arrayrulecolor{black}
+
+% Columna X proporcional: P{k} ocupa k veces el ancho medio de las columnas X.
+\newcolumntype{P}[1]{>{\RaggedRight\arraybackslash\hspace{0pt}\hsize=#1\hsize\linewidth=\hsize}X}
+% Celda de encabezado y activación de filas alternadas
+\newcommand{\encab}[1]{{\bfseries #1}}
+\newcommand{\tablazebra}{\setstretch{1.05}\rowcolors{2}{white}{tablazebra}}
+\newcommand{\filaencabezado}{\rowcolor{tablahead}}
+\newcommand{\filatotal}{\rowcolor{tablatotal}}
+% Fila separadora de grupo dentro de una tabla (por ejemplo, módulo del sistema)
+\newcommand{\filagrupo}[2]{\rowcolor{tablatotal}\multicolumn{#1}{l}{\bfseries\itshape #2} \\}

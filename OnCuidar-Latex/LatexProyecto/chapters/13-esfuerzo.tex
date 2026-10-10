@@ -1,0 +1,43 @@
+\chapter[Resumen de Esfuerzo Requerido]{Resumen del Esfuerzo Requerido}
+
+El proyecto planifica 480 horas de trabajo, que resultan de dos desarrolladoras
+con 15 horas semanales durante 16 semanas. La Tabla~\ref{tab:esfuerzo} las
+distribuye por fase.
+
+\begin{table}[H]
+\centering
+\small
+\tablazebra
+\caption{Esfuerzo por fase del desarrollo.}
+\label{tab:esfuerzo}
+\begin{tabularx}{\textwidth}{P{1.86}P{0.62}P{0.52}}
+\toprule
+\filaencabezado \encab{Actividad o fase} & \encab{Participación} & \encab{Horas} \\
+\midrule
+Levantamiento de información con Enfermería & 10~\% & 48 \\
+Análisis y especificación de requerimientos & 15~\% & 72 \\
+Diseño de la solución y prototipos & 15~\% & 72 \\
+Construcción en tres sprints & 40~\% & 192 \\
+Pruebas automatizadas & 15~\% & 72 \\
+Documentación & 5~\% & 24 \\
+\midrule
+\filatotal \textbf{Total} & \textbf{100~\%} & \textbf{480} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La estimación por puntos de caso de uso del anexo de planificación arroja
+129~UCP. Con el factor de 20~horas por UCP que propone la industria, el esfuerzo
+esperado sería de unas 2.580 horas, más de cinco veces el presupuesto disponible.
+Esta brecha explica tres decisiones del proyecto. La primera fue acotar el
+producto a un prototipo de nivel TRL~3. La segunda fue priorizar el backlog para
+construir primero el flujo clínico principal. La tercera fue apoyarse en
+paquetes y software libre existentes, como Express, PostgreSQL y las librerías
+de cifrado, exportación y notificaciones, que resuelven parte importante de la complejidad.
+
+A la fecha de este informe, la aplicación suma 27.413 líneas de código Dart en
+188 archivos y el backend 1.483 líneas de código JavaScript en 16 archivos, más
+294 casos de prueba de la aplicación y 54 del backend. La relación efectiva entre el esfuerzo
+planificado y el tamaño estimado es de unas 3,7 horas por UCP. Las horas reales
+de cada fase se registrarán al cierre del sprint~3 para compararlas con esta
+planificación.
